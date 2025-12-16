@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="UBS.Watchdog.API/UBS.Watchdog.API.csproj" />
-  <Project Path="UBS.Watchdog.Application/UBS.Watchdog.Application.csproj" />
-  <Project Path="UBS.Watchdog.Domain/UBS.Watchdog.Domain.csproj" />
-  <Project Path="UBS.Watchdog.Infrastructure/UBS.Watchdog.Infrastructure.csproj" />
-</Solution>
