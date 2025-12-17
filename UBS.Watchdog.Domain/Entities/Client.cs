@@ -11,8 +11,8 @@ public class Client
 	public KycStatus KycStatus { get; private set; }
 
 	//Creating protected read-only Transactions list
-	public IReadOnlyCollection<Transactions> Transactions => _transactions;
-	private readonly List<Transactions> _transactions = new();
+	public IReadOnlyCollection<Transaction> Transactions => _transactions;
+	private readonly List<Transaction> _transactions = new();
 
 	//Necessary for EF
 	protected Client() { }
@@ -27,7 +27,7 @@ public class Client
 	}
 
 	//Simple domain methods
-	public void GetRiskLevel(RiskLevel newLevel)
+	public void UpdateRiskLevel(RiskLevel newLevel)
 	{
 		RiskLevel = newLevel;
 	}
