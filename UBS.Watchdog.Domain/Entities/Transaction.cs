@@ -48,7 +48,7 @@ public class Transaction
 
         if (alert.TransactionId  != Id)
         {
-            throw new InvalidOperationException("Cannot add alert: the alert does not belong to this transaction.");
+            throw new InvalidOperationException("Adição de alerta inválida: O alerta não pertence a esta transação.");
         }
 
         _alerts.Add(alert);

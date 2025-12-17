@@ -35,7 +35,7 @@ public class Alert
 
 		if (Status != AlertStatus.New)
 		{
-			throw new InvalidOperationException("Only new alerts can be analyzed.");
+			throw new InvalidOperationException("Apenas novos alertas podem ser analisados..");
 		}
 
 		Status = AlertStatus.InAnalysis;
@@ -46,7 +46,7 @@ public class Alert
 
 		if (Status != AlertStatus.InAnalysis)
 		{
-			throw new InvalidOperationException("Only alerts in analysis can be resolved.");
+			throw new InvalidOperationException("Apenas alertas em análise podem ser fechados.");
 		}
 
 		Status = AlertStatus.Resolved;
