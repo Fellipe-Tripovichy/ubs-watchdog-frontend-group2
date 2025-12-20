@@ -1,4 +1,4 @@
-namespace UBS.WATCHDOG.Domain.Entities;
+namespace UBS.Watchdog.Domain.Entities;
 
 using System;
 
