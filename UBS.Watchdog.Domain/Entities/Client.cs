@@ -1,6 +1,7 @@
-namespace UBS.Watchdog.Domain.Entities;
-
+using UBS.Watchdog.Domain.Enums;
 using System;
+
+namespace UBS.Watchdog.Domain.Entities;
 
 public class Client
 {
