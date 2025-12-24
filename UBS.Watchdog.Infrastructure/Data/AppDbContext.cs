@@ -16,7 +16,6 @@ namespace UBS.Watchdog.Infrastructure.Data
 
 		public DbSet<Cliente> Clientes { get; set; } = null!;
 		public DbSet<Alerta> Alertas { get; set; } = null!;
-
 		public DbSet<Transacao> Transacoes { get; set; } = null!;
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
