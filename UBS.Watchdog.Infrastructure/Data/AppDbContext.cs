@@ -21,8 +21,8 @@ namespace UBS.Watchdog.Infrastructure.Data
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
-
 			modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+			Console.WriteLine("CONFIGURATIONS APLICADAS");
 		}
 	}
 }
