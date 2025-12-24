@@ -31,7 +31,7 @@ namespace UBS.Watchdog.Infrastructure.Data.Configurations
                 .HasConversion<DateTime>();
                 
             builder.HasOne(t => t.Cliente)
-                .WithMany(t => t.Transacoes)
+                .WithMany(c => c.Transacoes)
                 .HasForeignKey(t => t.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
             }
