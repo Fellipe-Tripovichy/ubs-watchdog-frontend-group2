@@ -20,6 +20,7 @@ const buttonVariants = cva(
         link: "text-secondary-foreground underline-offset-4",
       },
       size: {
+        small: "py-2 px-3 has-[>svg]:px-2 text-xs",
         default: "h-12 px-4 py-2 has-[>svg]:px-3",
       },
     },
@@ -36,10 +37,12 @@ function Button({
   size = "default",
   asChild = false,
   children,
+  showArrow = true,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    showArrow?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
   const [isHovered, setIsHovered] = useState(false);
@@ -57,24 +60,26 @@ function Button({
       <div className={cn(variant === "secondary" && isHovered ? "" : "ml-[1px]")}>
         {children}
       </div>
-      <span className="relative inline-flex items-center ml-2">
+      {showArrow && (
+        <span className="relative inline-flex items-center ml-2">
         <ArrowRight
-          size={24}
+          size={size === "small" ? 16 : 24}
           className={cn(
-            "absolute transition-all duration-500 ease-in-out",
+            "absolute transition-all duration-400 ease-in-out",
             variant === "default" ? "text-primary-foreground" : "text-primary",
             isHovered ? "opacity-100 -translate-x-1" : "opacity-0 translate-x-0"
           )}
         />
         <ChevronRight
-          size={24}
+          size={size === "small" ? 16 : 24}
           className={cn(
-            "transition-all duration-600 ease-in-out",
+            "transition-all duration-400 ease-in-out",
             variant === "default" ? "text-primary-foreground" : "text-primary",
             isHovered ? "opacity-0 translate-x-0" : "opacity-100 -translate-x-1"
-          )}
-        />
-      </span>
+            )}
+          />
+        </span>
+      )}
     </Comp>
   )
 }
