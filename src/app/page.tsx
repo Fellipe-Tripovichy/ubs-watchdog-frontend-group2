@@ -1,38 +1,52 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/iconButton";
 import { LinkButton } from "@/components/ui/linkButton";
+import { HeroTitle } from "@/components/ui/heroTitle";
+import { CardButton } from "@/components/ui/cardButton";
 
 export default function Home() {
+  function handleScrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="flex flex-col items-start min-h-screen justify-center">
       <div className="w-full relative">
         <img src="/hero-image-1.jpg" alt="UBS Watchdog" className="h-[400px] w-full object-cover" />
-        <div className="absolute top-0 left-0 max-w-[1554px] mx-auto w-full px-8 h-full z-10 flex items-center justify-start">
-          <div className="bg-background/80 p-6 z-5 flex items-center justify-center w-full md:w-2/5">
-            <h1 className="text-4xl font-bold text-secondary-foreground">UBS Watchdog</h1>
+        <div className="absolute top-0 left-0 w-full h-full z-10 flex items-center justify-start">
+          <div className="w-full max-w-[1554px] mx-auto px-8">
+            <div className="bg-background/90 p-6 z-5 flex flex-col items-start justify-start w-full md:w-2/5">
+              <HeroTitle as="h1" subtitle="Sistema integrado de monitoração de transações financeiras">UBS Watchdog</HeroTitle>
+              <Button variant="default" className="w-full md:w-auto mt-8">
+                Faça seu login
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      <main className="flex min-h-screen w-full flex-col items-start gap-4 max-w-[1554px] mx-auto w-full px-8">
-        <Button variant="default" >
-          Click me
-        </Button>
-        <Button variant="secondary" >
-          Click me
-        </Button>
-        <Button variant="link" >
-          Click me
-        </Button>
-        <IconButton icon="chevron-right" variant="default" size="small" disabled />
-        <IconButton icon="chevron-right" variant="secondary" size="default" disabled />
-        <IconButton icon="chevron-right" variant="destructive" size="large" disabled />
-        <LinkButton>
-          Click me
-        </LinkButton>
-        <LinkButton size="small">
-          Click me
-        </LinkButton>
-      </main>
+      <div className="flex min-h-screen w-full flex-col items-start gap-16 max-w-[1554px] mx-auto w-full px-8 pt-10">
+        <div>
+          <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">O que é o UBS Watchdog?</h2>
+          <div className="h-1 w-20 bg-primary mt-3"></div>
+          <p className="text-[16px] text-muted-foreground mt-6">
+            O UBS Watchdog é uma plataforma inteligente de compliance dedicada à detecção proativa de riscos financeiros. O sistema automatiza o monitoramento de transações para identificar padrões de fraude e lavagem de dinheiro em tempo real, substituindo processos manuais por alertas precisos e relatórios estratégicos para a tomada de decisão ágil.
+          </p>
+        </div>
+        <div>
+          <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Serviços disponíveis</h2>
+          <div className="h-1 w-20 bg-primary mt-3"></div>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <CardButton icon="/services-transaction.jpg" title="Realização de transações" description="Monitoração de transações financeiras em tempo real" />
+            <CardButton icon="/services-compliance.jpg" title="Monitoramento de conformidade" description="Monitoração de transações financeiras em tempo real" />
+            <CardButton icon="/services-report.jpg" title="Análise de relatórios" description="Monitoração de transações financeiras em tempo real" />
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
+        </div>
+      </div>
     </div>
   );
 }

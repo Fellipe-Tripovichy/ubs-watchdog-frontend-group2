@@ -52,7 +52,7 @@ export function NavigationBar() {
                                         ))}
                                     </div>
                                     <div className="flex flex-col items-start gap-4">
-                                        <LinkButton className="w-min" icon="log-in">
+                                        <LinkButton className="w-min" icon="log-in" iconLeft={true}>
                                             Faça seu login
                                         </LinkButton>
                                     </div>

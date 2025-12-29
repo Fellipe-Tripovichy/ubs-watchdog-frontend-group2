@@ -27,7 +27,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "text-muted-foreground hover:text-secondary-foreground after:absolute after:bottom-0 after:left-0 after:bg-primary after:transition-all after:duration-500 after:ease-out after:w-0 hover:after:w-full",
+        default: "text-muted-foreground hover:text-secondary-foreground after:absolute after:bottom-0 after:left-0 after:bg-primary after:transition-all after:duration-300 after:ease-out after:w-0 hover:after:w-full",
       },
       size: {
         default: "py-2 after:h-[2px]",
@@ -47,12 +47,14 @@ function LinkButton({
   size = "default",
   asChild = false,
   icon,
+  iconLeft = false,
   children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     icon?: string
+    iconLeft?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
   const [isHovered, setIsHovered] = useState(false);
@@ -70,12 +72,19 @@ function LinkButton({
       {...props}
     >
       <div className="flex items-center">
-        {IconComponent && (
+        {iconLeft && IconComponent && (
           <IconComponent
-            className={cn("mr-1", size === "small" ? "size-3" : "size-4")}
+            className={cn("mr-2", size === "small" ? "size-3" : "size-4")}
           />
         )}
-        {children}
+        <div className={cn(IconComponent && "pb-[2px]")}>
+          {children}
+        </div>
+        {!iconLeft && IconComponent && (
+          <IconComponent
+            className={cn("ml-2", size === "small" ? "size-3" : "size-4")}
+          />
+        )}
       </div>
     </Comp>
   )
