@@ -5,6 +5,7 @@ import { IconButton } from "@/components/ui/iconButton";
 import { LinkButton } from "@/components/ui/linkButton";
 import { HeroTitle } from "@/components/ui/heroTitle";
 import { CardButton } from "@/components/ui/cardButton";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 export default function Home() {
   function handleScrollToTop(): void {
@@ -34,7 +35,7 @@ export default function Home() {
             O UBS Watchdog é uma plataforma inteligente de compliance dedicada à detecção proativa de riscos financeiros. O sistema automatiza o monitoramento de transações para identificar padrões de fraude e lavagem de dinheiro em tempo real, substituindo processos manuais por alertas precisos e relatórios estratégicos para a tomada de decisão ágil.
           </p>
         </div>
-        <div>
+        <div className="bg-accent py-10">
           <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Serviços disponíveis</h2>
           <div className="h-1 w-20 bg-primary mt-3"></div>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -43,7 +44,16 @@ export default function Home() {
             <CardButton icon="/services-report.jpg" title="Análise de relatórios" description="Monitoração de transações financeiras em tempo real" />
           </div>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between w-full">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">
+                  <LinkButton>Home</LinkButton>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
         </div>
       </div>
