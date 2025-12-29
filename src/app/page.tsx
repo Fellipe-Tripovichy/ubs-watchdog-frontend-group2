@@ -5,7 +5,7 @@ import { IconButton } from "@/components/ui/iconButton";
 import { LinkButton } from "@/components/ui/linkButton";
 import { HeroTitle } from "@/components/ui/heroTitle";
 import { CardButton } from "@/components/ui/cardButton";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default function Home() {
   function handleScrollToTop(): void {
@@ -27,15 +27,15 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="flex min-h-screen w-full flex-col items-start gap-16 max-w-[1554px] mx-auto w-full px-8 pt-10">
-        <div>
+      <div className="flex min-h-screen w-full flex-col items-start max-w-[1554px] mx-auto w-full pt-10">
+        <div className="px-8 py-10">
           <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">O que é o UBS Watchdog?</h2>
           <div className="h-1 w-20 bg-primary mt-3"></div>
           <p className="text-[16px] text-muted-foreground mt-6">
             O UBS Watchdog é uma plataforma inteligente de compliance dedicada à detecção proativa de riscos financeiros. O sistema automatiza o monitoramento de transações para identificar padrões de fraude e lavagem de dinheiro em tempo real, substituindo processos manuais por alertas precisos e relatórios estratégicos para a tomada de decisão ágil.
           </p>
         </div>
-        <div className="bg-accent py-10">
+        <div className="bg-accent py-16 px-8">
           <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Serviços disponíveis</h2>
           <div className="h-1 w-20 bg-primary mt-3"></div>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -44,16 +44,8 @@ export default function Home() {
             <CardButton icon="/services-report.jpg" title="Análise de relatórios" description="Monitoração de transações financeiras em tempo real" />
           </div>
         </div>
-        <div className="flex items-center justify-between w-full">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">
-                  <LinkButton>Home</LinkButton>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+        <div className="flex items-center justify-between w-full px-8 pt-20 pb-10">
+          <Breadcrumb />
           <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
         </div>
       </div>

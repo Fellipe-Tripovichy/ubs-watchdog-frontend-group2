@@ -4,6 +4,7 @@ import { IconButton } from "@/components/ui/iconButton";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/linkButton";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import Link from "next/link";
 
 const navigationItems = [
     {
@@ -46,9 +47,11 @@ export function NavigationBar() {
                                 <div className="divide-muted divide-y pt-28 px-10 pb-5 flex flex-col gap-4 justify-start">
                                     <div className="flex flex-col items-start gap-4 pb-4">
                                         {navigationItems.map((item) => (
-                                            <LinkButton className="w-min" key={item.label}>
-                                                {item.label}
-                                            </LinkButton>
+                                            <Link href={item.href} key={item.label}>
+                                                <LinkButton className="w-min">
+                                                    {item.label}
+                                                </LinkButton>
+                                            </Link>
                                         ))}
                                     </div>
                                     <div className="flex flex-col items-start gap-4">
@@ -68,9 +71,11 @@ export function NavigationBar() {
             <div className="hidden lg:block max-w-[1554px] mx-auto">
                 <div className="flex items-center justify-start w-full px-8 max-w-[1554px] gap-10">
                     {navigationItems.map((item) => (
-                        <LinkButton key={item.label}>
-                            {item.label}
-                        </LinkButton>
+                        <Link href={item.href} key={item.label}>
+                            <LinkButton>
+                                {item.label}
+                            </LinkButton>
+                        </Link>
                     ))}
                 </div>
             </div>

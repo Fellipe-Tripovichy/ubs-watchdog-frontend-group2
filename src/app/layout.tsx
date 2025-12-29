@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NavigationBar } from "@/components/ui/navigationBar";
+import { Footer } from "@/components/ui/footer";
 
 const frutiger = localFont({
   src: [
@@ -40,6 +41,7 @@ export default function RootLayout({
       >
         <NavigationBar />
         {children}
+        <Footer />
       </body>
     </html>
   );

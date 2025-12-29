@@ -1,14 +1,67 @@
+"use client"
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { LinkButton } from "./linkButton"
+
+// Map path segments to readable labels
+const pathLabelMap: Record<string, string> = {
+  "": "Home",
+  "transactions": "Transações",
+  "complience": "Conformidade",
+  "authentication": "Autenticação",
+  "reports": "Relatórios",
+}
 
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
-  return <div className="flex items-center gap-2">
-    <p className="text-muted-foreground font-semibold text-sm">Você está aqui:</p>
-    <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />
-  </div>
+  const pathname = usePathname()
+  const pathSegments = pathname.split("/").filter(Boolean)
+  
+  // Build breadcrumb items
+  const breadcrumbItems = [
+    { href: "/", label: pathLabelMap[""] || "Home" },
+    ...pathSegments.map((segment, index) => {
+      const href = "/" + pathSegments.slice(0, index + 1).join("/")
+      return {
+        href,
+        label: pathLabelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
+      }
+    }),
+  ]
+
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <p className="text-muted-foreground font-semibold text-sm flex">Você está aqui:</p>
+      <nav aria-label="breadcrumb" data-slot="breadcrumb" className="flex items-center" {...props}>
+        <BreadcrumbList>
+          {breadcrumbItems.map((item, index) => {
+            const isLast = index === breadcrumbItems.length - 1
+            return (
+              <React.Fragment key={item.href}>
+                <BreadcrumbItem>
+                  {isLast ? (
+                    <BreadcrumbPage>
+                      <LinkButton size="small">{item.label}</LinkButton>
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink href={item.href}>
+                      <LinkButton size="small" asChild>
+                        <Link href={item.href}>{item.label}</Link>
+                      </LinkButton>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+                {!isLast && <BreadcrumbSeparator />}
+              </React.Fragment>
+            )
+          })}
+        </BreadcrumbList>
+      </nav>
+    </div>
+  )
 }
 
 function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
@@ -35,20 +88,21 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 function BreadcrumbLink({
-  asChild,
+  href,
   className,
+  children,
   ...props
-}: React.ComponentProps<"a"> & {
-  asChild?: boolean
+}: React.ComponentProps<"div"> & {
+  href?: string
 }) {
-  const Comp = asChild ? Slot : "a"
-
   return (
-    <Comp
+    <div
       data-slot="breadcrumb-link"
       className={cn("hover:text-foreground transition-colors", className)}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }
 
