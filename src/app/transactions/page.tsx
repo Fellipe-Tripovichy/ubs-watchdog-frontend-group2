@@ -30,11 +30,6 @@ export default function TransactionsPage() {
             </ul>
           </div>
         </div>
-
-        <div className="flex items-center justify-between w-full mt-12">
-          <Breadcrumb />
-          <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
-        </div>
       </div>
     </div>
   );

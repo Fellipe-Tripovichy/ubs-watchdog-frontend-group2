@@ -27,10 +27,10 @@ export function NavigationBar() {
     return (
         <div className="w-full mx-auto border-b border-muted sticky top-0 z-50 bg-background">
             <div className="flex items-center justify-between w-full px-8 py-6 max-w-[1554px] mx-auto">
-                <div className="flex items-center gap-4">
+                <Link className="flex items-center gap-4" href="/">
                     <img src="/UBS_logo.png" alt="logo" className="w-auto h-8" />
                     <p className="text-muted-foreground text-sm">Brasil</p>
-                </div>
+                </Link>
                 <div>
                     <div className="flex items-center gap-4 block lg:hidden">
                         <IconButton
@@ -55,17 +55,21 @@ export function NavigationBar() {
                                         ))}
                                     </div>
                                     <div className="flex flex-col items-start gap-4">
-                                        <LinkButton className="w-min" icon="log-in" iconLeft={true}>
-                                            Faça seu login
-                                        </LinkButton>
+                                        <Link href="/authentication/login">
+                                            <LinkButton className="w-min" icon="log-in" iconLeft={true}>
+                                                Faça seu login
+                                            </LinkButton>
+                                        </Link>
                                     </div>
                                 </div>
                             </DrawerContent>
                         </Drawer>
                     </div>
-                    <Button variant="default" size="small" showArrow={false} className="hidden lg:block">
-                        Faça seu login
-                    </Button>
+                    <Link href="/authentication/login">
+                        <Button variant="default" size="small" showArrow={false} className="hidden lg:block">
+                            Faça seu login
+                        </Button>
+                    </Link>
                 </div>
             </div>
             <div className="hidden lg:block max-w-[1554px] mx-auto">

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { NavigationBar } from "@/components/ui/navigationBar";
-import { Footer } from "@/components/ui/footer";
+import { LayoutWrapper } from "@/components/ui/layoutWrapper";
 
 const frutiger = localFont({
   src: [
@@ -39,9 +38,9 @@ export default function RootLayout({
         className={`${frutiger.variable} antialiased bg-background`}
         suppressHydrationWarning
       >
-        <NavigationBar />
-        {children}
-        <Footer />
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );
