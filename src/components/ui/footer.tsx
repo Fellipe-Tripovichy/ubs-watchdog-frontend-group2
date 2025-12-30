@@ -9,7 +9,7 @@ const footerLinks = [
     },
     {
         label: "Conformidade",
-        href: "/complience",
+        href: "/compliance",
     },
     {
         label: "Relatórios",

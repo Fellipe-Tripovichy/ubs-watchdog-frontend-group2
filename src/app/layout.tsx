@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { LayoutWrapper } from "@/components/ui/layoutWrapper";
+import ReduxProvider from "@/lib/redux-provider";
 
 const frutiger = localFont({
   src: [
@@ -38,9 +39,11 @@ export default function RootLayout({
         className={`${frutiger.variable} antialiased bg-background`}
         suppressHydrationWarning
       >
-        <LayoutWrapper>
-          {children}
-        </LayoutWrapper>
+        <ReduxProvider>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+        </ReduxProvider>
       </body>
     </html>
   );

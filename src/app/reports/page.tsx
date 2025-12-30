@@ -1,8 +1,5 @@
 "use client"
 
-import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { LinkButton } from "@/components/ui/linkButton";
-
 export default function ReportsPage() {
   function handleScrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -10,7 +7,7 @@ export default function ReportsPage() {
 
   return (
     <div className="flex flex-col items-start min-h-screen w-full">
-      <div className="w-full max-w-[1554px] mx-auto px-8 py-10">
+      <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8 py-10">
         <div className="flex flex-col gap-8">
           <div>
             <h1 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Relatórios</h1>

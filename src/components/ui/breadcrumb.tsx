@@ -11,7 +11,7 @@ import { LinkButton } from "./linkButton"
 const pathLabelMap: Record<string, string> = {
   "": "Home",
   "transactions": "Transações",
-  "complience": "Conformidade",
+  "compliance": "Conformidade",
   "authentication": "Autenticação",
   "reports": "Relatórios",
 }
