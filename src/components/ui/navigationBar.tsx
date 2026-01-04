@@ -46,7 +46,7 @@ export function NavigationBar() {
         <div className="w-full mx-auto border-b border-muted sticky top-0 z-50 bg-background">
             <div className="flex items-center justify-between w-full px-4 md:px-8 py-6 max-w-[1554px] mx-auto">
                 <Link className="flex items-center gap-4" href="/">
-                    <img src="/UBS_logo.png" alt="logo" className="w-auto h-8" />
+                    <img src="/UBS_logo.png" alt="UBS Logo" className="w-auto h-8" />
                     <p className="text-muted-foreground text-sm">Brasil</p>
                 </Link>
                 <div>
