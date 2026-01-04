@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { getUserData, selectIsAuthenticated, selectUser } from "@/features/auth/authSlice";
+import { getUserData, selectIsAuthenticated, selectUser, toggleLoading } from "@/features/auth/authSlice";
 
 export function AuthInitializer() {
   const dispatch = useAppDispatch();
@@ -21,6 +21,8 @@ export function AuthInitializer() {
 
     if (accessToken && !isAuthenticated && !user) {
       dispatch(getUserData());
+    } else {
+      dispatch(toggleLoading(false));
     }
   }, [dispatch, isAuthenticated, user]);
 

@@ -37,7 +37,7 @@ export interface AuthState {
 const initialState: AuthState = {
     token: '',
     user: null,
-    loading: false,
+    loading: true,
 };
 
 // Async thunks (must be defined before the slice that references them)
@@ -108,6 +108,13 @@ export const getUserData = createAsyncThunk(
             emailVerified: user.emailVerified,
         };
         return { user: userData, token };
+    }
+);
+
+export const toggleLoading = createAsyncThunk(
+    'auth/toggleLoading',
+    async (loading: boolean) => {
+        return loading;
     }
 );
 
@@ -192,6 +199,17 @@ export const authSlice = createSlice({
                 state.user = null;
                 state.token = '';
                 deleteCookie('accessToken');
+            });
+        // toggleLoading
+        builder
+            .addCase(toggleLoading.pending, (state) => {
+                state.loading = false;
+            })
+            .addCase(toggleLoading.fulfilled, (state, action) => {
+                state.loading = action.payload;
+            })
+            .addCase(toggleLoading.rejected, (state) => {   
+                state.loading = false;
             });
     },
 });
