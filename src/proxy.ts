@@ -5,22 +5,25 @@ export function proxy(request: NextRequest) {
   const protectedRoutes = ['/transactions', '/compliance', '/compliance', '/reports'];
   const { pathname } = request.nextUrl;
 
-  // Logs appear in server terminal, NOT browser console
-  console.log("🔵 PROXY EXECUTING - Path:", pathname);
-  console.log("🔵 PROXY - Request URL:", request.url);
-
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
   );
 
-  if (pathname.startsWith('/authentication') || pathname === '/') {
+  if (pathname === '/') {
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith('/authentication')) {
+    const token = request.cookies.get('accessToken')?.value || null;
+    if (token) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
     return NextResponse.next();
   }
 
   if (isProtectedRoute) {
     const token = request.cookies.get('accessToken')?.value || null;
 
-    console.log("🔵 PROXY - Protected route detected. Token:", token ? "Present" : "Missing");
     if (!token) {
       return NextResponse.redirect(new URL('/authentication/login', request.url));
     }

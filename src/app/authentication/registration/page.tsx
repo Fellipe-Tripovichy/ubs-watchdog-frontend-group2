@@ -8,13 +8,11 @@ import { Input } from "@/components/ui/input";
 import React from "react";
 import { validateEmail } from "@/lib/utils";
 import { createUser, selectLoading } from "@/features/auth/authSlice";
-import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function RegistrationPage() {
 
-    const router = useRouter();
     const dispatch = useAppDispatch();
 
     const [responseStatus, setResponseStatus] = React.useState("waitingSubmission");

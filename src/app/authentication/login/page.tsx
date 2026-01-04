@@ -26,7 +26,8 @@ export default function LoginPage() {
         const result = await dispatch(login({ email, password }));
 
         if (login.fulfilled.match(result)) {
-            router.push("/");
+            // router.push("/");
+            window.location.reload();
         } else {
             setResponseStatus("error");
         }
