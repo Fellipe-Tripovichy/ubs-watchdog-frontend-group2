@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const protectedRoutes = ['/transactions', '/compliance', '/compliance', '/reports'];
   const { pathname } = request.nextUrl;
+
+  console.log("request", request);
+  console.log("pathname", pathname);
 
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
@@ -15,6 +18,8 @@ export function middleware(request: NextRequest) {
 
   if (isProtectedRoute) {
     const token = request.cookies.get('accessToken')?.value || null;
+
+    console.log("token", token);
     if (!token) {
       return NextResponse.redirect(new URL('/authentication/login', request.url));
     }
