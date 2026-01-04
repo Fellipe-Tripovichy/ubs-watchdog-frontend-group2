@@ -19,11 +19,6 @@ export function AuthInitializer() {
 
     const accessToken = getCookie('accessToken');
 
-
-    console.log("accessToken", accessToken);
-    console.log("isAuthenticated", isAuthenticated);
-    console.log("user", user);
-
     if (accessToken && !isAuthenticated && !user) {
       dispatch(getUserData());
     }

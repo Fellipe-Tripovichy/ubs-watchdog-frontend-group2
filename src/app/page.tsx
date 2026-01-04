@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { HeroTitle } from "@/components/ui/heroTitle";
 import { CardButton } from "@/components/ui/cardButton";
 import Link from "next/link";
-import React from "react";
 import { cookies } from "next/headers";
 
 
