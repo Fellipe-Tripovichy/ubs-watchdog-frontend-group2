@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, sendEmailVerification, onAuthStateChanged, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, sendEmailVerification, onAuthStateChanged, getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 export const createUserWithEmailAndPasswordAPI = async (email: string, password: string, name: string) => {
@@ -47,4 +47,14 @@ export const getUserDataAPI = (): Promise<any> => {
             reject(error);
         });
     });
+}
+
+export const resetPasswordAPI = async (email: string) => {
+    return sendPasswordResetEmail(auth, email)
+        .then(() => {
+            return true;
+        })
+        .catch(() => {
+            return false;
+        });
 }

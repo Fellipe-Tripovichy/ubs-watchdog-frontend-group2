@@ -8,7 +8,7 @@ import { HeroTitle } from "@/components/ui/heroTitle";
 import { Input } from "@/components/ui/input";
 import { validateEmail } from "@/lib/utils";
 import React from "react";
-import { login, selectLoading } from "@/features/auth/authSlice";
+import { login, resetPassword, selectLoading } from "@/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,9 +16,8 @@ import { Spinner } from "@/components/ui/spinner";
 export default function LoginPage() {
     const dispatch = useAppDispatch();
 
-    const router = useRouter();
-
     const [responseStatus, setResponseStatus] = React.useState("waitingSubmission");
+    const [showResetPassword, setShowResetPassword] = React.useState(false);
     const loading = useAppSelector(selectLoading);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -33,13 +32,27 @@ export default function LoginPage() {
         }
     }
 
+    async function handleResetPassword(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+        e.preventDefault();
+        const result = await dispatch(resetPassword(email));
+        if (resetPassword.fulfilled.match(result)) {
+            setResponseStatus("successResetPassword");
+        } else {
+            setResponseStatus("errorResetPassword");
+        }
+    }
+
     const [isValid, setIsValid] = React.useState(false);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
 
     React.useEffect(() => {
-        setIsValid(validateEmail(email) && password.length >= 8);
-    }, [email, password]);
+        if (!showResetPassword) {
+            setIsValid(validateEmail(email) && password.length >= 8);
+        } else {
+            setIsValid(validateEmail(email));
+        }
+    }, [email, password, showResetPassword]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full">
@@ -58,7 +71,7 @@ export default function LoginPage() {
                     <div className="md:max-w-md w-full md:min-w-[400px]">
                         {responseStatus === "waitingSubmission" && (
                             <>
-                                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                                <form onSubmit={showResetPassword ? handleResetPassword : handleSubmit} className="flex flex-col gap-6">
                                     <div className="flex flex-col gap-2">
                                         <label htmlFor="email" className="text-sm font-regular text-secondary-foreground">
                                             Email
@@ -76,20 +89,22 @@ export default function LoginPage() {
                                         />
                                     </div>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="password" className="text-sm font-regular text-secondary-foreground">
-                                            Senha
-                                        </label>
-                                        <Input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            required
-                                            placeholder="••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                        />
-                                    </div>
+                                    {!showResetPassword && (
+                                        <div className="flex flex-col gap-2">
+                                            <label htmlFor="password" className="text-sm font-regular text-secondary-foreground">
+                                                Senha
+                                            </label>
+                                            <Input
+                                                type="password"
+                                                id="password"
+                                                name="password"
+                                                required
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                            />
+                                        </div>
+                                    )}
 
                                     <Button type="submit" disabled={!isValid} className="w-full mt-2">
                                         {loading ? (
@@ -97,31 +112,63 @@ export default function LoginPage() {
                                                 <Spinner className="size-4 text-primary-foreground" />
                                                 <span>Entrando...</span>
                                             </div>
+                                        ) : showResetPassword && loading ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Spinner className="size-4 text-primary-foreground" />
+                                                <span>Resetando senha...</span>
+                                            </div>
+                                        ) : showResetPassword && !loading ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <span>Recuperar senha</span>
+                                            </div>
                                         ) : "Entrar"}
                                     </Button>
                                 </form>
-                                <div className="mt-6 text-center">
+                                {!showResetPassword && <div className="mt-2 text-center pb-6 border-b border-border">
+                                    <p className="text-sm text-muted-foreground">
+                                        Não lembra sua senha?{" "}
+                                        <a className="text-primary hover:underline cursor-pointer" onClick={() => setShowResetPassword(true)}>
+                                            Recuperar senha
+                                        </a>
+                                    </p>
+                                </div>}
+                                {!showResetPassword && <div className="mt-6 text-center">
                                     <p className="text-sm text-muted-foreground">
                                         Não tem uma conta?{" "}
                                         <Link href="/authentication/registration" className="text-primary hover:underline">
                                             Cadastre-se
                                         </Link>
                                     </p>
-                                </div>
+                                </div>}
                             </>
                         )}
                         {responseStatus === "error" && (
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[20px] font-regular text-secondary-foreground">Erro ao fazer login!</h3>
-                                <p className="text-sm text-muted-foreground">Por favor, tente novamente ou contate o suporte.</p>
-                                <Link href="/authentication/login">
-                                    <Button variant="default" className="w-full mt-2">
-                                        Voltar para o login
-                                    </Button>
-                                </Link>
+                                <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
+                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                    Voltar para o login
+                                </Button>
                             </div>
                         )}
-
+                        {responseStatus === "successResetPassword" && (
+                            <div className="flex flex-col gap-2">
+                                <h3 className="text-[20px] font-regular text-secondary-foreground">Senha resetada com sucesso!</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Verifique seu email para mais informações.</p>
+                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                    Voltar para o login
+                                </Button>
+                            </div>
+                        )}
+                        {responseStatus === "errorResetPassword" && (
+                            <div className="flex flex-col gap-2">
+                                <h3 className="text-[20px] font-regular text-secondary-foreground">Erro ao resetar senha!</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
+                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                    Voltar para o login
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

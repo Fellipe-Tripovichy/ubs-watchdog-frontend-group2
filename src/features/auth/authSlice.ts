@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '@/lib/store';
-import { createUserWithEmailAndPasswordAPI, getUserDataAPI, signInWithEmailAndPasswordAPI, signOutAPI } from './authAPI';
+import { createUserWithEmailAndPasswordAPI, getUserDataAPI, resetPasswordAPI, signInWithEmailAndPasswordAPI, signOutAPI } from './authAPI';
 
 // Helper function to set cookie on client side
 const setCookie = (name: string, value: string, days: number = 7) => {
@@ -118,6 +118,17 @@ export const toggleLoading = createAsyncThunk(
     }
 );
 
+export const resetPassword = createAsyncThunk(
+    'auth/resetPassword',
+    async (email: string) => {
+        const success = await resetPasswordAPI(email);
+        if (!success) {
+            throw new Error('Failed to reset password');
+        }
+        return true;
+    }
+);
+
 // Create slice
 export const authSlice = createSlice({
     name: 'auth',
@@ -209,6 +220,17 @@ export const authSlice = createSlice({
                 state.loading = action.payload;
             })
             .addCase(toggleLoading.rejected, (state) => {   
+                state.loading = false;
+            });
+        // resetPassword
+        builder
+            .addCase(resetPassword.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(resetPassword.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(resetPassword.rejected, (state) => {
                 state.loading = false;
             });
     },
