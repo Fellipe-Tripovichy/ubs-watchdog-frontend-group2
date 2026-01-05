@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Repositories\Alertas\" />
-    <Folder Include="Repositories\Transações\" />
   </ItemGroup>
 
 </Project>
