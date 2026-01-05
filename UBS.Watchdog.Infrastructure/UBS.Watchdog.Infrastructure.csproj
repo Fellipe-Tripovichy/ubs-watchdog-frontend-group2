@@ -19,8 +19,4 @@
     <ProjectReference Include="..\UBS.Watchdog.Domain\UBS.Watchdog.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\Alertas\" />
-  </ItemGroup>
-
 </Project>
