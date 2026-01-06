@@ -100,10 +100,13 @@ describe('Button', () => {
 
   it('should render ChevronRight icon with correct initial state', () => {
     const { container } = render(<Button>Click me</Button>);
-    const chevron = container.querySelector('svg');
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThan(0);
+    // Find ChevronRight (should be visible initially with opacity-100)
+    const chevron = Array.from(svgs).find(svg => 
+      svg.classList.contains('opacity-100') && !svg.classList.contains('-translate-x-1')
+    );
     expect(chevron).toBeInTheDocument();
-    // ChevronRight should be visible initially (opacity-100)
-    expect(chevron).toHaveClass('opacity-100');
   });
 
   it('should animate arrows on hover', () => {
@@ -200,14 +203,16 @@ describe('Button', () => {
   });
 
   it('should render with asChild prop', () => {
-    render(
-      <Button asChild>
+    const { container } = render(
+      <Button asChild showArrow={false}>
         <a href="/test">Link</a>
       </Button>
     );
-    const link = screen.getByText('Link');
+    const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
-    expect(link.tagName).toBe('A');
+    expect(link?.tagName).toBe('A');
+    // When asChild is true, Slot merges props with the child element
+    expect(link).toHaveAttribute('data-slot', 'button');
   });
 
   it('should apply margin to children wrapper when not secondary variant or not hovered', () => {

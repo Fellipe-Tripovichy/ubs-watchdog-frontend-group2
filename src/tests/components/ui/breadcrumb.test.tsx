@@ -11,12 +11,6 @@ jest.mock('next/link', () => {
   };
 });
 
-jest.mock('@/components/ui/linkButton', () => ({
-  LinkButton: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-}));
-
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('Breadcrumb', () => {

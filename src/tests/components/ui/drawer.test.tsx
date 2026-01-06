@@ -26,13 +26,13 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on Drawer root', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const drawer = container.querySelector('[data-slot="drawer"]');
+    const drawer = baseElement.querySelector('[data-slot="drawer"]');
     expect(drawer).toBeInTheDocument();
   });
 
@@ -70,24 +70,24 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const content = container.querySelector('[data-slot="drawer-content"]');
+    const content = baseElement.querySelector('[data-slot="drawer-content"]');
     expect(content).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const content = container.querySelector('[data-slot="drawer-content"]');
+    const content = baseElement.querySelector('[data-slot="drawer-content"]');
     expect(content).toHaveClass('bg-background');
     expect(content).toHaveClass('fixed');
     expect(content).toHaveClass('flex');
@@ -96,36 +96,36 @@ describe('Drawer', () => {
   });
 
   it('should merge custom className with default classes in DrawerContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent className="custom-class">Content</DrawerContent>
       </Drawer>
     );
-    const content = container.querySelector('[data-slot="drawer-content"]');
+    const content = baseElement.querySelector('[data-slot="drawer-content"]');
     expect(content).toHaveClass('custom-class');
     expect(content).toHaveClass('bg-background');
   });
 
   it('should render DrawerOverlay inside DrawerContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const overlay = container.querySelector('[data-slot="drawer-overlay"]');
+    const overlay = baseElement.querySelector('[data-slot="drawer-overlay"]');
     expect(overlay).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerOverlay', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const overlay = container.querySelector('[data-slot="drawer-overlay"]');
+    const overlay = baseElement.querySelector('[data-slot="drawer-overlay"]');
     expect(overlay).toHaveClass('fixed');
     expect(overlay).toHaveClass('inset-0');
     expect(overlay).toHaveClass('z-40');
@@ -133,7 +133,7 @@ describe('Drawer', () => {
   });
 
   it('should merge custom className with default classes in DrawerOverlay', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -141,7 +141,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const overlay = container.querySelector('[data-slot="drawer-overlay"]');
+    const overlay = baseElement.querySelector('[data-slot="drawer-overlay"]');
     expect(overlay).toHaveClass('custom-overlay-class');
   });
 
@@ -158,7 +158,7 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerHeader', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -166,12 +166,12 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const header = container.querySelector('[data-slot="drawer-header"]');
+    const header = baseElement.querySelector('[data-slot="drawer-header"]');
     expect(header).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerHeader', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -179,14 +179,14 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const header = container.querySelector('[data-slot="drawer-header"]');
+    const header = baseElement.querySelector('[data-slot="drawer-header"]');
     expect(header).toHaveClass('flex');
     expect(header).toHaveClass('flex-col');
     expect(header).toHaveClass('p-4');
   });
 
   it('should merge custom className with default classes in DrawerHeader', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -194,7 +194,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const header = container.querySelector('[data-slot="drawer-header"]');
+    const header = baseElement.querySelector('[data-slot="drawer-header"]');
     expect(header).toHaveClass('custom-header-class');
   });
 
@@ -211,7 +211,7 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerFooter', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -219,12 +219,12 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const footer = container.querySelector('[data-slot="drawer-footer"]');
+    const footer = baseElement.querySelector('[data-slot="drawer-footer"]');
     expect(footer).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerFooter', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -232,7 +232,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const footer = container.querySelector('[data-slot="drawer-footer"]');
+    const footer = baseElement.querySelector('[data-slot="drawer-footer"]');
     expect(footer).toHaveClass('mt-auto');
     expect(footer).toHaveClass('flex');
     expect(footer).toHaveClass('flex-col');
@@ -241,7 +241,7 @@ describe('Drawer', () => {
   });
 
   it('should merge custom className with default classes in DrawerFooter', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -249,7 +249,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const footer = container.querySelector('[data-slot="drawer-footer"]');
+    const footer = baseElement.querySelector('[data-slot="drawer-footer"]');
     expect(footer).toHaveClass('custom-footer-class');
   });
 
@@ -268,7 +268,7 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerTitle', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -278,12 +278,12 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const title = container.querySelector('[data-slot="drawer-title"]');
+    const title = baseElement.querySelector('[data-slot="drawer-title"]');
     expect(title).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerTitle', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -293,13 +293,13 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const title = container.querySelector('[data-slot="drawer-title"]');
+    const title = baseElement.querySelector('[data-slot="drawer-title"]');
     expect(title).toHaveClass('text-foreground');
     expect(title).toHaveClass('font-semibold');
   });
 
   it('should merge custom className with default classes in DrawerTitle', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -309,7 +309,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const title = container.querySelector('[data-slot="drawer-title"]');
+    const title = baseElement.querySelector('[data-slot="drawer-title"]');
     expect(title).toHaveClass('custom-title-class');
   });
 
@@ -328,7 +328,7 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerDescription', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -338,12 +338,12 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const description = container.querySelector('[data-slot="drawer-description"]');
+    const description = baseElement.querySelector('[data-slot="drawer-description"]');
     expect(description).toBeInTheDocument();
   });
 
   it('should apply default classes to DrawerDescription', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -353,13 +353,13 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const description = container.querySelector('[data-slot="drawer-description"]');
+    const description = baseElement.querySelector('[data-slot="drawer-description"]');
     expect(description).toHaveClass('text-muted-foreground');
     expect(description).toHaveClass('text-sm');
   });
 
   it('should merge custom className with default classes in DrawerDescription', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -369,7 +369,7 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const description = container.querySelector('[data-slot="drawer-description"]');
+    const description = baseElement.querySelector('[data-slot="drawer-description"]');
     expect(description).toHaveClass('custom-description-class');
   });
 
@@ -386,7 +386,7 @@ describe('Drawer', () => {
   });
 
   it('should have data-slot attribute on DrawerClose', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>
@@ -394,29 +394,29 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    const close = container.querySelector('[data-slot="drawer-close"]');
+    const close = baseElement.querySelector('[data-slot="drawer-close"]');
     expect(close).toBeInTheDocument();
   });
 
   it('should render DrawerPortal component', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const portal = container.querySelector('[data-slot="drawer-portal"]');
+    const portal = baseElement.querySelector('[data-slot="drawer-portal"]');
     expect(portal).toBeInTheDocument();
   });
 
   it('should pass through additional props to Drawer', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open data-testid="custom-drawer">
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent>Content</DrawerContent>
       </Drawer>
     );
-    const drawer = container.querySelector('[data-slot="drawer"]');
+    const drawer = baseElement.querySelector('[data-slot="drawer"]');
     expect(drawer).toHaveAttribute('data-testid', 'custom-drawer');
   });
 
@@ -432,13 +432,13 @@ describe('Drawer', () => {
   });
 
   it('should pass through additional props to DrawerContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Drawer open>
         <DrawerTrigger>Open</DrawerTrigger>
         <DrawerContent data-testid="custom-content">Content</DrawerContent>
       </Drawer>
     );
-    const content = container.querySelector('[data-testid="custom-content"]');
+    const content = baseElement.querySelector('[data-testid="custom-content"]');
     expect(content).toBeInTheDocument();
   });
 });

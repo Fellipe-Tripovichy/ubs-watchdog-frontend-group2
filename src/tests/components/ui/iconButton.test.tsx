@@ -131,14 +131,17 @@ describe('IconButton', () => {
   });
 
   it('should render with asChild prop', () => {
-    render(
+    const { container } = render(
       <IconButton icon="menu" asChild>
         <a href="/test">Link</a>
       </IconButton>
     );
-    const link = screen.getByText('Link');
+    const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
-    expect(link.tagName).toBe('A');
+    expect(link?.tagName).toBe('A');
+    // When asChild is true, Slot merges props and the icon replaces children
+    const svg = link?.querySelector('svg');
+    expect(svg).toBeInTheDocument();
   });
 
   it('should handle different icon names', () => {

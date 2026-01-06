@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { Input } from '@/components/ui/input';
 import React from 'react';
 
@@ -9,7 +9,9 @@ describe('Input', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
@@ -188,7 +190,9 @@ describe('Input', () => {
     expect(validationRule).not.toHaveBeenCalled();
     
     // Fast-forward time
-    jest.advanceTimersByTime(300);
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
     
     await waitFor(() => {
       expect(validationRule).toHaveBeenCalled();
@@ -265,7 +269,9 @@ describe('Input', () => {
     
     fireEvent.change(input, { target: { value: '' } });
     
-    jest.advanceTimersByTime(300);
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
     
     expect(validationRule).not.toHaveBeenCalled();
   });
@@ -277,7 +283,9 @@ describe('Input', () => {
     
     fireEvent.change(input, { target: { value: 'test' } });
     
-    jest.advanceTimersByTime(300);
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
     
     expect(validationRule).toHaveBeenCalledWith('test');
   });

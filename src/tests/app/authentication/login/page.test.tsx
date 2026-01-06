@@ -1,4 +1,31 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+
+// Mock Firebase before any imports that use it
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(),
+}));
+
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => ({})),
+  createUserWithEmailAndPassword: jest.fn(),
+  signInWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+  updateProfile: jest.fn(),
+  sendEmailVerification: jest.fn(),
+  onAuthStateChanged: jest.fn(),
+  sendPasswordResetEmail: jest.fn(),
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(() => ({})),
+}));
+
+jest.mock('firebase/storage', () => ({
+  getStorage: jest.fn(() => ({})),
+}));
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '@/app/authentication/login/page';
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';

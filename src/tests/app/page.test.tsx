@@ -14,12 +14,6 @@ jest.mock('next/link', () => {
   };
 });
 
-jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-}));
-
 jest.mock('@/components/ui/heroTitle', () => ({
   HeroTitle: ({ children, subtitle, ...props }: any) => (
     <div data-testid="hero-title" {...props}>

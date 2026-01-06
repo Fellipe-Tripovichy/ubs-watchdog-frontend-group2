@@ -176,14 +176,19 @@ describe('CardButton', () => {
   });
 
   it('should render with asChild prop', () => {
-    render(
+    const { container } = render(
       <CardButton {...defaultProps} asChild>
         <a href="/test">Link</a>
       </CardButton>
     );
-    const link = screen.getByText('Link');
+    const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
-    expect(link.tagName).toBe('A');
+    expect(link?.tagName).toBe('A');
+    // When asChild is true, Slot merges props and CardButton content replaces children
+    // Verify the CardButton content is rendered inside the link
+    expect(link).toHaveAttribute('data-slot', 'card-button');
+    const title = screen.getByText('Test Title');
+    expect(title).toBeInTheDocument();
   });
 
   it('should apply variant classes', () => {

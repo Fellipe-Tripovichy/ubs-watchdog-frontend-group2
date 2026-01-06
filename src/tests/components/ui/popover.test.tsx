@@ -15,13 +15,13 @@ describe('Popover', () => {
   });
 
   it('should have data-slot attribute on Popover root', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    const popover = container.querySelector('[data-slot="popover"]');
+    const popover = baseElement.querySelector('[data-slot="popover"]');
     expect(popover).toBeInTheDocument();
   });
 
@@ -59,49 +59,49 @@ describe('Popover', () => {
   });
 
   it('should have data-slot attribute on PopoverContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    const content = container.querySelector('[data-slot="popover-content"]');
+    const content = baseElement.querySelector('[data-slot="popover-content"]');
     expect(content).toBeInTheDocument();
   });
 
   it('should apply default classes to PopoverContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    const content = container.querySelector('[data-slot="popover-content"]');
+    const content = baseElement.querySelector('[data-slot="popover-content"]');
     expect(content).toHaveClass('bg-popover');
     expect(content).toHaveClass('text-popover-foreground');
     expect(content).toHaveClass('rounded-md');
   });
 
   it('should merge custom className with default classes in PopoverContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent className="custom-class">Content</PopoverContent>
       </Popover>
     );
-    const content = container.querySelector('[data-slot="popover-content"]');
+    const content = baseElement.querySelector('[data-slot="popover-content"]');
     expect(content).toHaveClass('custom-class');
     expect(content).toHaveClass('bg-popover');
   });
 
   it('should pass through additional props to PopoverContent', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent data-testid="custom-content">Content</PopoverContent>
       </Popover>
     );
-    const content = container.querySelector('[data-testid="custom-content"]');
+    const content = baseElement.querySelector('[data-testid="custom-content"]');
     expect(content).toBeInTheDocument();
   });
 
@@ -130,13 +130,13 @@ describe('Popover', () => {
   });
 
   it('should pass through additional props to Popover', () => {
-    const { container } = render(
+    const { baseElement } = render(
       <Popover open data-testid="custom-popover">
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    const popover = container.querySelector('[data-slot="popover"]');
+    const popover = baseElement.querySelector('[data-slot="popover"]');
     expect(popover).toHaveAttribute('data-testid', 'custom-popover');
   });
 
