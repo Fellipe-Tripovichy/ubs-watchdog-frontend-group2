@@ -30,10 +30,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const [touched, setTouched] = React.useState(false)
     const validationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
-    // Use controlled value if provided, otherwise use internal state
     const inputValue = value === undefined ? internalValue : String(value)
 
-    // Validate function
     const validate = React.useCallback((val: string) => {
       if (!validationRule) {
         setError(null)
@@ -49,27 +47,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         setError(result)
         return false
       } else {
-        // If validationRule returns false, use errorMessage prop or default message
         const error = errorMessage || "Invalid input"
         setError(error)
         return false
       }
     }, [validationRule, errorMessage])
 
-    // Debounced validation function
     const debouncedValidate = React.useCallback((val: string, delay: number = 300) => {
-      // Clear any existing timeout
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current)
       }
 
-      // Set a new timeout for validation
       validationTimeoutRef.current = setTimeout(() => {
         validate(val)
       }, delay)
     }, [validate])
 
-    // Cleanup timeout on unmount
     React.useEffect(() => {
       return () => {
         if (validationTimeoutRef.current) {
@@ -78,7 +71,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
     }, [])
 
-    // Handle change
     const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value
       
@@ -93,31 +85,24 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onChange?.(e)
     }, [value, touched, debouncedValidate, onChange])
 
-    // Handle blur
     const handleBlur = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-      // Clear any pending validation timeout
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current)
       }
 
       setTouched(true)
-      // Validate immediately on blur (user is done with the field)
       validate(e.target.value)
       onBlur?.(e)
     }, [validate, onBlur])
 
-    // Update error state when validationRule or errorMessage changes (only if touched)
     React.useEffect(() => {
-      // Clear any pending validation timeout
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current)
       }
 
       if (touched && inputValue) {
-        // Use immediate validation when rule changes (not user input)
         validate(inputValue)
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [validationRule, errorMessage])
 
     const isInvalid = Boolean(error)
