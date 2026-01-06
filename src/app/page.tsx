@@ -11,12 +11,12 @@ export default async function Home() {
   const isAuthenticated = token !== null;
 
   return (
-    <div className="flex flex-col items-start min-h-screen justify-center">
+    <div className="flex flex-col items-start justify-center">
       <div className="w-full relative">
         <img src="/hero-image-1.jpg" alt="UBS Watchdog" className="h-[400px] w-full object-cover" />
         <div className="absolute top-0 left-0 w-full h-full z-10 flex items-center justify-start">
           <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8">
-            <div className="bg-background/90 p-6 z-5 flex flex-col items-start justify-start w-full md:w-3/5 lg:w-2/5">
+            <div className="bg-background/95 p-6 z-5 flex flex-col items-start justify-start w-full md:w-3/5 lg:w-2/5">
               <HeroTitle as="h1" subtitle="Sistema integrado de monitoração de transações financeiras">UBS Watchdog</HeroTitle>
               {isAuthenticated ?
                 (<Link href="/transactions">
@@ -36,15 +36,15 @@ export default async function Home() {
           </div>
         </div>
       </div>
-      <div className="flex min-h-screen w-full flex-col items-start pt-10">
+      <div className="flex w-full flex-col items-start pt-10 h-full">
         <div className="px-4 md:px-8 py-10 max-w-[1554px] mx-auto w-full">
-          <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">O que é o UBS Watchdog?</h2>
+          <h2 className="text-[28px] md:text-[40px] font-regular text-foreground">O que é o UBS Watchdog?</h2>
           <div className="h-1 w-20 bg-primary mt-3"></div>
           <p className="text-[16px] text-muted-foreground mt-6">
             O UBS Watchdog é uma plataforma inteligente de compliance dedicada à detecção proativa de riscos financeiros. O sistema automatiza o monitoramento de transações para identificar padrões de fraude e lavagem de dinheiro em tempo real, substituindo processos manuais por alertas precisos e relatórios estratégicos para a tomada de decisão ágil.
           </p>
         </div>
-        <div className="bg-accent py-16 w-full">
+        <div className="bg-secondary py-16 w-full">
           <div className="max-w-[1554px] mx-auto px-4 md:px-8">
             <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Serviços disponíveis</h2>
             <div className="h-1 w-20 bg-primary mt-3"></div>

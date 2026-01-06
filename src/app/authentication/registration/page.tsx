@@ -41,7 +41,7 @@ export default function RegistrationPage() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full">
-            <div className="bg-accent/90 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
+            <div className="bg-card/95 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
                 <div className="flex items-center justify-center ">
                     <div className="flex flex-col items-start justify-start md:max-w-md w-full md:min-w-[400px] pb-14">
                         <Link href="/" className="mb-6">
@@ -59,7 +59,7 @@ export default function RegistrationPage() {
                             <div>
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                                     <div className="flex flex-col gap-2">
-                                        <label htmlFor="name" className="text-sm font-medium text-secondary-foreground">
+                                        <label htmlFor="name" className="text-sm font-medium text-foreground">
                                             Nome completo
                                         </label>
                                         <Input
@@ -74,7 +74,7 @@ export default function RegistrationPage() {
                                     </div>
 
                                     <div className="flex flex-col gap-2">
-                                        <label htmlFor="email" className="text-sm font-medium text-secondary-foreground">
+                                        <label htmlFor="email" className="text-sm font-medium text-foreground">
                                             Email
                                         </label>
                                         <Input
@@ -91,7 +91,7 @@ export default function RegistrationPage() {
                                     </div>
 
                                     <div className="flex flex-col gap-2">
-                                        <label htmlFor="password" className="text-sm font-medium text-secondary-foreground">
+                                        <label htmlFor="password" className="text-sm font-medium text-foreground">
                                             Senha
                                         </label>
                                         <Input
@@ -108,7 +108,7 @@ export default function RegistrationPage() {
                                     </div>
 
                                     <div className="flex flex-col gap-2">
-                                        <label htmlFor="confirmPassword" className="text-sm font-medium text-secondary-foreground">
+                                        <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                                             Confirmar senha
                                         </label>
                                         <Input
@@ -147,7 +147,7 @@ export default function RegistrationPage() {
                         )}
                         {responseStatus === "success" && (
                             <div className="flex flex-col gap-2">
-                                <h3 className="text-[20px] font-regular text-secondary-foreground">Cadastro realizado com sucesso!</h3>
+                                <h3 className="text-[20px] font-regular text-foreground">Cadastro realizado com sucesso!</h3>
                                 <p className="text-sm text-muted-foreground">Agora, antes de continuar, por favor, verifique seu email para ativar sua conta.</p>
                                 <Link href="/authentication/login">
                                     <Button variant="default" className="w-full mt-2">
@@ -158,7 +158,7 @@ export default function RegistrationPage() {
                         )}
                         {responseStatus === "error" && (
                             <div className="flex flex-col gap-2">
-                                <h3 className="text-[20px] font-regular text-secondary-foreground">Erro ao cadastrar!</h3>
+                                <h3 className="text-[20px] font-regular text-foreground">Erro ao cadastrar!</h3>
                                 <p className="text-sm text-muted-foreground">Por favor, tente novamente ou contate o suporte.</p>
                                 <Link href="/authentication/registration">
                                     <Button variant="default" className="w-full mt-2">

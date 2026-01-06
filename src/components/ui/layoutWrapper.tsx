@@ -10,12 +10,12 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const isAuthenticationPage = pathname.includes("/authentication");
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen justify-between">
       <AuthInitializer />
       {!isAuthenticationPage && <NavigationBar />}
       {children}
       {!isAuthenticationPage && <Footer />}
-    </>
+    </div>
   );
 }
 

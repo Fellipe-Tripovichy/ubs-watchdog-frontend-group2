@@ -18,7 +18,7 @@ export function HeroTitle({
     <div className="flex flex-col gap-2 pl-5 border-l-4 border-primary">
       <Component
         className={cn(
-          "text-[32px] md:text-[40px] font-regular text-secondary-foreground",
+          "text-[32px] md:text-[40px] font-regular text-foreground",
           className
         )}
         {...props}
@@ -26,7 +26,7 @@ export function HeroTitle({
         {children}
       </Component>
       {subtitle && (
-        <p className="text-[20px] text-secondary-foreground">
+        <p className="text-[20px] text-foreground">
           {subtitle}
         </p>
       )}

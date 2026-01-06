@@ -12,12 +12,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        default: "bg-primary text-primary-foreground hover:bg-accent",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         secondary:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:border-2 dark:border-input dark:hover:bg-input/50",
-        link: "text-secondary-foreground underline-offset-4",
+          "border bg-background shadow-xs hover:bg-background hover:text-foreground hover:border-2 dark:border-input dark:hover:bg-input/50",
+        link: "text-foreground underline-offset-4",
       },
       size: {
         small: "py-2 px-3 has-[>svg]:px-2 text-xs",
@@ -65,7 +65,7 @@ function Button({
         <ArrowRight
           size={size === "small" ? 16 : 24}
           className={cn(
-            "absolute transition-all duration-400 ease-in-out",
+            "absolute transition-all duration-300 ease-in-out",
             variant === "default" ? "text-primary-foreground" : "text-primary",
             isHovered ? "opacity-100 -translate-x-1" : "opacity-0 translate-x-0"
           )}
@@ -73,7 +73,7 @@ function Button({
         <ChevronRight
           size={size === "small" ? 16 : 24}
           className={cn(
-            "transition-all duration-400 ease-in-out",
+            "transition-all duration-300 ease-in-out",
             variant === "default" ? "text-primary-foreground" : "text-primary",
             isHovered ? "opacity-0 translate-x-0" : "opacity-100 -translate-x-1"
             )}

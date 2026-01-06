@@ -30,7 +30,7 @@ const buttonVariants = cva(
         destructive:
           "text-destructive",
         secondary:
-          "text-muted-foreground",
+          "text-secondary-foreground",
       },
       size: {
         small: "p-0 h-8 w-8",

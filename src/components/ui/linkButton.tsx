@@ -27,7 +27,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "text-muted-foreground hover:text-secondary-foreground after:absolute after:bottom-0 after:left-0 after:bg-primary after:transition-all after:duration-300 after:ease-out after:w-0 hover:after:w-full",
+        default: "text-muted-foreground hover:text-foreground after:absolute after:bottom-0 after:left-0 after:bg-primary after:transition-all after:duration-300 after:ease-out after:w-0 hover:after:w-full",
       },
       size: {
         default: "py-2 after:h-[2px]",

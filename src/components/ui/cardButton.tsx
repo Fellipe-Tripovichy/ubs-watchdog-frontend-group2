@@ -62,8 +62,8 @@ function CardButton({
                     <img src={icon} alt={title} className="w-full min-h-64 object-cover" />
                 </div>
                 <div className={cn("text-left flex flex-col items-start justify-start absolute bottom-0 left-0 w-full h-full p-5 shadow-lg transition-colors duration-300", isHovered && "bg-background")}>
-                    <h3 className={cn("p-2 border-l-2 border-primary text-[18px] md:text-[20px] font-regular text-secondary-foreground", isHovered ? "underline" : "bg-background/80")}>{title}</h3>
-                    <p className={cn("p-2 text-[14px] text-secondary-foreground opacity-0 transition-opacity duration-300 mt-6 font-regular", isHovered && "opacity-100")}>{description}</p>
+                    <h3 className={cn("p-2 border-l-2 border-primary text-[18px] md:text-[20px] font-regular text-foreground", isHovered ? "underline" : "bg-background/95")}>{title}</h3>
+                    <p className={cn("p-2 text-[14px] text-foreground opacity-0 transition-opacity duration-300 mt-6 font-regular", isHovered && "opacity-100")}>{description}</p>
                     <div className={cn("absolute bottom-5 right-5 p-2", isHovered ? "bg-transparent" : "bg-background rounded-full shadow-lg")}>
                         <ArrowRight className="w-6 h-6 text-primary" />
                     </div>

@@ -26,11 +26,11 @@ export function Footer() {
 
     return (
         <footer className="w-full mt-auto">
-            <div className="flex md:flex-row flex-col items-center justify-between w-full px-8 pt-20 pb-10 max-w-[1554px] mx-auto w-full">
+            <div className="flex md:flex-row flex-col items-center justify-between w-full px-8 pt-20 pb-10 max-w-[1554px] mx-auto">
                 <Breadcrumb />
                 <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
             </div>
-            <div className="bg-accent">
+            <div className="bg-secondary">
                 <div className="w-full max-w-[1554px] mx-auto px-8 py-8">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex flex-col gap-4">

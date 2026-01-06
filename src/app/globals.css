@@ -57,12 +57,12 @@
   --primary: #E60000;
   --primary-foreground: #FFFFFF;
   --primary-hover: #9a3d37;
-  --secondary: #ffffff;
+  --secondary: #f4f3ee;
   --secondary-foreground: #1c1c1c;
   --muted: #cccccc;
   --muted-foreground: #5a5d5c;
-  --accent: #f4f3ee;
-  --accent-foreground: #1c1c1c;
+  --accent: #B80000;
+  --accent-foreground: #ffffff;
   --destructive: #c81219;
   --border: #1c1c1c;
   --input: oklch(0.922 0 0);

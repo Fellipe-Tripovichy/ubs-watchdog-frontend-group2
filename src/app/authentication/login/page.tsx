@@ -56,7 +56,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full">
-            <div className="bg-accent/90 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
+            <div className="bg-card/95 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
                 <div className="flex items-center justify-center">
                     <div className="flex flex-col items-start justify-start md:max-w-md w-full md:min-w-[400px] pb-14">
                         <Link href="/" className="mb-6">
@@ -73,7 +73,7 @@ export default function LoginPage() {
                             <>
                                 <form onSubmit={showResetPassword ? handleResetPassword : handleSubmit} className="flex flex-col gap-6">
                                     <div className="flex flex-col gap-2">
-                                        <label htmlFor="email" className="text-sm font-regular text-secondary-foreground">
+                                        <label htmlFor="email" className="text-sm font-regular text-foreground">
                                             Email
                                         </label>
                                         <Input
@@ -91,7 +91,7 @@ export default function LoginPage() {
 
                                     {!showResetPassword && (
                                         <div className="flex flex-col gap-2">
-                                            <label htmlFor="password" className="text-sm font-regular text-secondary-foreground">
+                                            <label htmlFor="password" className="text-sm font-regular text-foreground">
                                                 Senha
                                             </label>
                                             <Input
@@ -144,7 +144,7 @@ export default function LoginPage() {
                         )}
                         {responseStatus === "error" && (
                             <div className="flex flex-col gap-2">
-                                <h3 className="text-[20px] font-regular text-secondary-foreground">Erro ao fazer login!</h3>
+                                <h3 className="text-[20px] font-regular text-foreground">Erro ao fazer login!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
                                 <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
                                     Voltar para o login
@@ -153,7 +153,7 @@ export default function LoginPage() {
                         )}
                         {responseStatus === "successResetPassword" && (
                             <div className="flex flex-col gap-2">
-                                <h3 className="text-[20px] font-regular text-secondary-foreground">Senha resetada com sucesso!</h3>
+                                <h3 className="text-[20px] font-regular text-foreground">Senha resetada com sucesso!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Verifique seu email para mais informações.</p>
                                 <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
                                     Voltar para o login
@@ -162,7 +162,7 @@ export default function LoginPage() {
                         )}
                         {responseStatus === "errorResetPassword" && (
                             <div className="flex flex-col gap-2">
-                                <h3 className="text-[20px] font-regular text-secondary-foreground">Erro ao resetar senha!</h3>
+                                <h3 className="text-[20px] font-regular text-foreground">Erro ao resetar senha!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
                                 <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
                                     Voltar para o login
