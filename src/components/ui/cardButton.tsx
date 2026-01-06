@@ -42,7 +42,7 @@ function CardButton({
     title,
     description,
     ...props
-}: CardButtonProps) {
+}: Readonly<CardButtonProps>) {
     const Comp = asChild ? Slot : "button"
 
     const [isHovered, setIsHovered] = useState(false)

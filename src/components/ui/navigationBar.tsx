@@ -63,7 +63,18 @@ export function NavigationBar() {
                                     <DrawerTitle>Menu</DrawerTitle>
                                 </DrawerHeader>
                                 <div className="flex justify-end align-start w-full h-28" >
-                                    <div className="w-16 h-16 mr-6 cursor-pointer" onClick={() => setIsDrawerOpen(!isDrawerOpen)}></div>
+                                    <button
+                                        type="button"
+                                        className="w-16 h-16 mr-6 cursor-pointer bg-transparent border-0 p-0"
+                                        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                setIsDrawerOpen(!isDrawerOpen);
+                                            }
+                                        }}
+                                        aria-label="Fechar menu"
+                                    />
                                 </div>
                                 <div className="divide-muted divide-y px-4 md:px-10 pb-5 flex flex-col gap-4 justify-start">
                                     <div className="flex flex-col items-start gap-4 pb-4">

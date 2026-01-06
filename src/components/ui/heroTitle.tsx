@@ -13,7 +13,7 @@ export function HeroTitle({
   as: Component = "h1",
   className,
   ...props
-}: HeroTitleProps) {
+}: Readonly<HeroTitleProps>) {
   return (
     <div className="flex flex-col gap-2 pl-5 border-l-4 border-primary">
       <Component

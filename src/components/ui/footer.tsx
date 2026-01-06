@@ -17,12 +17,12 @@ const footerLinks = [
     },
 ];
 
+function handleScrollToTop(): void {
+    globalThis.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 export function Footer() {
     const currentYear = new Date().getFullYear();
-
-    function handleScrollToTop(): void {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
 
     return (
         <footer className="w-full mt-auto">

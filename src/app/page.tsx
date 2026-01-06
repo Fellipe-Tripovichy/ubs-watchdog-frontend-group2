@@ -44,7 +44,7 @@ export default async function Home() {
             O UBS Watchdog é uma plataforma inteligente de compliance dedicada à detecção proativa de riscos financeiros. O sistema automatiza o monitoramento de transações para identificar padrões de fraude e lavagem de dinheiro em tempo real, substituindo processos manuais por alertas precisos e relatórios estratégicos para a tomada de decisão ágil.
           </p>
         </div>
-        <div className="bg-secondary py-16 w-full">
+        <div className="bg-secondary py-16 w-full h-fit">
           <div className="max-w-[1554px] mx-auto px-4 md:px-8">
             <h2 className="text-[28px] md:text-[40px] font-regular text-secondary-foreground">Serviços disponíveis</h2>
             <div className="h-1 w-20 bg-primary mt-3"></div>

@@ -5,7 +5,7 @@ import { NavigationBar } from "@/components/ui/navigationBar";
 import { Footer } from "@/components/ui/footer";
 import { AuthInitializer } from "@/components/authInitializer";
 
-export function LayoutWrapper({ children }: { children: React.ReactNode }) {
+export function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const isAuthenticationPage = pathname.includes("/authentication");
 

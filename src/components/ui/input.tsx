@@ -11,10 +11,20 @@ export interface InputProps extends Omit<React.ComponentProps<"input">, "onChang
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
 }
 
+function getInitialValue(value: string | number | readonly string[] | undefined, defaultValue: string | number | readonly string[] | undefined): string {
+  if (value !== undefined) {
+    return String(value)
+  }
+  if (defaultValue !== undefined) {
+    return String(defaultValue)
+  }
+  return ""
+}
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, validationRule, errorMessage, onChange, value, defaultValue, onBlur, ...props }, ref) => {
     const [internalValue, setInternalValue] = React.useState<string>(
-      value !== undefined ? String(value) : defaultValue !== undefined ? String(defaultValue) : ""
+      getInitialValue(value, defaultValue)
     )
     const [error, setError] = React.useState<string | null>(null)
     const [touched, setTouched] = React.useState(false)
@@ -110,7 +120,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [validationRule, errorMessage])
 
-    const isInvalid = error !== null
+    const isInvalid = error === null ? false : true
 
     return (
       <div className="flex flex-col gap-1 w-full">

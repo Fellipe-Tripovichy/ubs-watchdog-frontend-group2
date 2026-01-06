@@ -45,6 +45,16 @@ const buttonVariants = cva(
   }
 )
 
+function getIconSize(size: "small" | "default" | "large" | null | undefined): string {
+  if (size === "small") {
+    return "size-4"
+  }
+  if (size === "large") {
+    return "size-8"
+  }
+  return "size-6"
+}
+
 function IconButton({
   className,
   variant = "default",
@@ -71,7 +81,7 @@ function IconButton({
     >
       {IconComponent && (
         <IconComponent
-          className={cn(size === "small" ? "size-4" : size === "large" ? "size-8" : "size-6")}
+          className={cn(getIconSize(size))}
         />
       )}
     </Comp>

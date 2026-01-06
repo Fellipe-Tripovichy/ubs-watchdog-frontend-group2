@@ -57,7 +57,6 @@ function LinkButton({
     iconLeft?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
-  const [isHovered, setIsHovered] = useState(false);
 
   const IconComponent = icon ? getIcon(icon) : null;
 
@@ -67,8 +66,6 @@ function LinkButton({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
       <div className="flex items-center">

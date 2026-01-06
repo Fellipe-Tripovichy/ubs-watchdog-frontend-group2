@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { LinkButton } from "@/components/ui/linkButton";
 import Link from "next/link";
 import { HeroTitle } from "@/components/ui/heroTitle";
@@ -10,7 +9,6 @@ import { validateEmail } from "@/lib/utils";
 import React from "react";
 import { login, resetPassword, selectLoading } from "@/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
@@ -25,8 +23,7 @@ export default function LoginPage() {
         const result = await dispatch(login({ email, password }));
 
         if (login.fulfilled.match(result)) {
-            // router.push("/");
-            window.location.reload();
+            globalThis.location.reload();
         } else {
             setResponseStatus("error");
         }
@@ -47,12 +44,39 @@ export default function LoginPage() {
     const [password, setPassword] = React.useState("");
 
     React.useEffect(() => {
-        if (!showResetPassword) {
-            setIsValid(validateEmail(email) && password.length >= 8);
-        } else {
+        if (showResetPassword) {
             setIsValid(validateEmail(email));
+        } else {
+            setIsValid(validateEmail(email) && password.length >= 8);
         }
     }, [email, password, showResetPassword]);
+
+    const getButtonContent = () => {
+        if (loading) {
+            if (showResetPassword) {
+                return (
+                    <div className="flex items-center justify-center gap-2">
+                        <Spinner className="size-4 text-primary-foreground" />
+                        <span>Resetando senha...</span>
+                    </div>
+                );
+            }
+            return (
+                <div className="flex items-center justify-center gap-2">
+                    <Spinner className="size-4 text-primary-foreground" />
+                    <span>Entrando...</span>
+                </div>
+            );
+        }
+        if (showResetPassword) {
+            return (
+                <div className="flex items-center justify-center gap-2">
+                    <span>Recuperar senha</span>
+                </div>
+            );
+        }
+        return "Entrar";
+    };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full">
@@ -107,29 +131,19 @@ export default function LoginPage() {
                                     )}
 
                                     <Button type="submit" disabled={!isValid} className="w-full mt-2">
-                                        {loading ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Spinner className="size-4 text-primary-foreground" />
-                                                <span>Entrando...</span>
-                                            </div>
-                                        ) : showResetPassword && loading ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Spinner className="size-4 text-primary-foreground" />
-                                                <span>Resetando senha...</span>
-                                            </div>
-                                        ) : showResetPassword && !loading ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <span>Recuperar senha</span>
-                                            </div>
-                                        ) : "Entrar"}
+                                        {getButtonContent()}
                                     </Button>
                                 </form>
                                 {!showResetPassword && <div className="mt-2 text-center pb-6 border-b border-border">
                                     <p className="text-sm text-muted-foreground">
                                         Não lembra sua senha?{" "}
-                                        <a className="text-primary hover:underline cursor-pointer" onClick={() => setShowResetPassword(true)}>
+                                        <button
+                                            type="button"
+                                            className="text-primary hover:underline cursor-pointer bg-transparent border-0 p-0 font-inherit"
+                                            onClick={() => setShowResetPassword(true)}
+                                        >
                                             Recuperar senha
-                                        </a>
+                                        </button>
                                     </p>
                                 </div>}
                                 {!showResetPassword && <div className="mt-6 text-center">
@@ -146,7 +160,7 @@ export default function LoginPage() {
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[20px] font-regular text-foreground">Erro ao fazer login!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
-                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                <Button variant="default" className="w-full mt-2" onClick={() => globalThis.location.reload()}>
                                     Voltar para o login
                                 </Button>
                             </div>
@@ -155,7 +169,7 @@ export default function LoginPage() {
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[20px] font-regular text-foreground">Senha resetada com sucesso!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Verifique seu email para mais informações.</p>
-                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                <Button variant="default" className="w-full mt-2" onClick={() => globalThis.location.reload()}>
                                     Voltar para o login
                                 </Button>
                             </div>
@@ -164,7 +178,7 @@ export default function LoginPage() {
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[20px] font-regular text-foreground">Erro ao resetar senha!</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Por favor, tente novamente ou contate o suporte.</p>
-                                <Button variant="default" className="w-full mt-2" onClick={() => window.location.reload()}>
+                                <Button variant="default" className="w-full mt-2" onClick={() => globalThis.location.reload()}>
                                     Voltar para o login
                                 </Button>
                             </div>

@@ -1,10 +1,6 @@
 "use client"
 
 export default function TransactionsPage() {
-  function handleScrollToTop(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
       <div className="flex flex-col items-start">
         <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8 py-10">
@@ -16,7 +12,6 @@ export default function TransactionsPage() {
                 Monitoração de transações financeiras em tempo real. Visualize, analise e gerencie todas as transações do sistema.
               </p>
             </div>
-
             <div className="bg-secondary p-8 rounded-md">
               <h2 className="text-[24px] font-regular text-secondary-foreground mb-4">Funcionalidades</h2>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
