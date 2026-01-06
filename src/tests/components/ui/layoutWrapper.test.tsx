@@ -31,7 +31,10 @@ import { LayoutWrapper } from '@/components/ui/layoutWrapper';
 import { usePathname } from 'next/navigation';
 
 // Mock dependencies
-jest.mock('next/navigation');
+const mockUsePathname = jest.fn();
+jest.mock('next/navigation', () => ({
+  usePathname: () => mockUsePathname(),
+}));
 jest.mock('@/components/ui/navigationBar', () => ({
   NavigationBar: () => <div data-testid="navigation-bar">NavigationBar</div>,
 }));
@@ -42,7 +45,6 @@ jest.mock('@/components/authentication/authInitializer', () => ({
   AuthInitializer: () => <div data-testid="auth-initializer">AuthInitializer</div>,
 }));
 
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('LayoutWrapper', () => {
   beforeEach(() => {

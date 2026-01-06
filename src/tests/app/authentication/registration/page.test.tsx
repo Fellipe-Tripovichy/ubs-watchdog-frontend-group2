@@ -32,7 +32,11 @@ import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { createUser, selectLoading } from '@/features/auth/authSlice';
 
 // Mock dependencies
-jest.mock('@/lib/hooks');
+jest.mock('@/lib/hooks', () => ({
+  useAppSelector: jest.fn(),
+  useAppDispatch: jest.fn(),
+  useAppStore: jest.fn(),
+}));
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;

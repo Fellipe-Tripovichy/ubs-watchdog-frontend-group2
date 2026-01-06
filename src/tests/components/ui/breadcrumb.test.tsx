@@ -1,17 +1,17 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { usePathname } from 'next/navigation';
 
 // Mock dependencies
-jest.mock('next/navigation');
+const mockUsePathname = jest.fn();
+jest.mock('next/navigation', () => ({
+  usePathname: () => mockUsePathname(),
+}));
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
   };
 });
-
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('Breadcrumb', () => {
   beforeEach(() => {

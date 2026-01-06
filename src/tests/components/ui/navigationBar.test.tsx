@@ -33,7 +33,11 @@ import { useRouter } from 'next/navigation';
 import { selectIsAuthenticated, selectLoading, selectUser } from '@/features/auth/authSlice';
 
 // Mock dependencies
-jest.mock('@/lib/hooks');
+jest.mock('@/lib/hooks', () => ({
+  useAppSelector: jest.fn(),
+  useAppDispatch: jest.fn(),
+  useAppStore: jest.fn(),
+}));
 jest.mock('next/navigation');
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
