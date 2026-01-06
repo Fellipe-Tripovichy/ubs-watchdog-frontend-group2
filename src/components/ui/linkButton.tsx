@@ -4,7 +4,6 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
-import { useState } from "react"
 import * as LucideIcons from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 

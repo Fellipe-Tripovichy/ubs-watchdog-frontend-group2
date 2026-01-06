@@ -31,7 +31,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const validationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
     // Use controlled value if provided, otherwise use internal state
-    const inputValue = value !== undefined ? String(value) : internalValue
+    const inputValue = value === undefined ? internalValue : String(value)
 
     // Validate function
     const validate = React.useCallback((val: string) => {
@@ -120,7 +120,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [validationRule, errorMessage])
 
-    const isInvalid = error === null ? false : true
+    const isInvalid = Boolean(error)
 
     return (
       <div className="flex flex-col gap-1 w-full">
