@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { NavigationBar } from "@/components/ui/navigationBar";
 import { Footer } from "@/components/ui/footer";
-import { AuthInitializer } from "@/components/authInitializer";
+import { AuthInitializer } from "@/components/authentication/authInitializer";
 
 export function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
