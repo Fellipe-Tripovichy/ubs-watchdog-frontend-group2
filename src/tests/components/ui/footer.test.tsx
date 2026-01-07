@@ -41,7 +41,7 @@ describe('Footer', () => {
 
   it('should render Breadcrumb component', () => {
     render(<Footer />);
-    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'breadcrumb' })).toBeInTheDocument();
   });
 
   it('should render "Voltar ao topo" button', () => {

@@ -47,6 +47,28 @@ function Button({
   const Comp = asChild ? Slot : "button"
   const [isHovered, setIsHovered] = useState(false);
 
+  if (asChild) {
+    // When asChild is true, Slot expects a single child element
+    // We cannot wrap children in a div or add arrows as siblings
+    if (!React.isValidElement(children)) {
+      throw new Error('Button with asChild requires a single React element as a child')
+    }
+    
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        {...props}
+      >
+        {children}
+      </Comp>
+    )
+  }
+
   return (
     <Comp
       data-slot="button"

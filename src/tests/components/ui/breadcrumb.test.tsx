@@ -1,31 +1,38 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
-import { Breadcrumb } from '@/components/ui/breadcrumb';
 
-// Mock dependencies
-const mockUsePathname = jest.fn();
+// Mock next/navigation
 jest.mock('next/navigation', () => ({
-  usePathname: () => mockUsePathname(),
+  usePathname: jest.fn(() => '/'),
 }));
+
+// Mock next/link
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
   };
 });
 
+// Import after mocks are set up
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { usePathname } from 'next/navigation';
+
+// Get reference to the mocked function
+const usePathnameMock = usePathname as jest.Mock;
+
 describe('Breadcrumb', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    usePathnameMock.mockReturnValue('/');
   });
 
   it('should render', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     render(<Breadcrumb />);
     expect(screen.getByText('Você está aqui:')).toBeInTheDocument();
   });
 
   it('should render "Você está aqui:" text', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     render(<Breadcrumb />);
     const text = screen.getByText('Você está aqui:');
     expect(text).toBeInTheDocument();
@@ -33,7 +40,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should have data-slot attribute on breadcrumb nav', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const nav = container.querySelector('[data-slot="breadcrumb"]');
     expect(nav).toBeInTheDocument();
@@ -41,44 +48,44 @@ describe('Breadcrumb', () => {
   });
 
   it('should render Home for root path', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
 
   it('should render mapped labels for known paths', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Transações')).toBeInTheDocument();
   });
 
   it('should render mapped label for compliance path', () => {
-    mockUsePathname.mockReturnValue('/compliance');
+    usePathnameMock.mockReturnValue('/compliance');
     render(<Breadcrumb />);
     expect(screen.getByText('Conformidade')).toBeInTheDocument();
   });
 
   it('should render mapped label for reports path', () => {
-    mockUsePathname.mockReturnValue('/reports');
+    usePathnameMock.mockReturnValue('/reports');
     render(<Breadcrumb />);
     expect(screen.getByText('Relatórios')).toBeInTheDocument();
   });
 
   it('should render mapped label for authentication path', () => {
-    mockUsePathname.mockReturnValue('/authentication');
+    usePathnameMock.mockReturnValue('/authentication');
     render(<Breadcrumb />);
     expect(screen.getByText('Autenticação')).toBeInTheDocument();
   });
 
   it('should capitalize unknown path segments', () => {
-    mockUsePathname.mockReturnValue('/unknown-path');
+    usePathnameMock.mockReturnValue('/unknown-path');
     render(<Breadcrumb />);
     expect(screen.getByText('Unknown-path')).toBeInTheDocument();
   });
 
   it('should render multiple breadcrumb items for nested paths', () => {
-    mockUsePathname.mockReturnValue('/transactions/123');
+    usePathnameMock.mockReturnValue('/transactions/123');
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Transações')).toBeInTheDocument();
@@ -86,15 +93,15 @@ describe('Breadcrumb', () => {
   });
 
   it('should render separators between breadcrumb items', () => {
-    mockUsePathname.mockReturnValue('/transactions');
-    const { container } = render(<Breadcrumb />);
+    usePathnameMock.mockReturnValue('/transactions');
+    const { container} = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
     // Should have 1 separator between Home and Transações
     expect(separators.length).toBe(1);
   });
 
   it('should not render separator after last item', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
     // Should have 1 separator (between Home and Transações), not after Transações
@@ -102,7 +109,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should render last item as BreadcrumbPage', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const breadcrumbPage = container.querySelector('[data-slot="breadcrumb-page"]');
     expect(breadcrumbPage).toBeInTheDocument();
@@ -110,14 +117,14 @@ describe('Breadcrumb', () => {
   });
 
   it('should render non-last items as BreadcrumbLink', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const breadcrumbLink = container.querySelector('[data-slot="breadcrumb-link"]');
     expect(breadcrumbLink).toBeInTheDocument();
   });
 
   it('should have correct hrefs for breadcrumb links', () => {
-    mockUsePathname.mockReturnValue('/transactions/123');
+    usePathnameMock.mockReturnValue('/transactions/123');
     render(<Breadcrumb />);
     const homeLink = screen.getByText('Home').closest('a');
     const transactionsLink = screen.getByText('Transações').closest('a');
@@ -127,7 +134,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should have data-slot attribute on BreadcrumbList', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const list = container.querySelector('[data-slot="breadcrumb-list"]');
     expect(list).toBeInTheDocument();
@@ -135,14 +142,14 @@ describe('Breadcrumb', () => {
   });
 
   it('should apply default classes to BreadcrumbList', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const list = container.querySelector('[data-slot="breadcrumb-list"]');
     expect(list).toHaveClass('text-muted-foreground', 'flex', 'flex-wrap', 'items-center');
   });
 
   it('should have data-slot attribute on BreadcrumbItem', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const items = container.querySelectorAll('[data-slot="breadcrumb-item"]');
     expect(items.length).toBeGreaterThan(0);
@@ -152,28 +159,28 @@ describe('Breadcrumb', () => {
   });
 
   it('should apply default classes to BreadcrumbItem', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const item = container.querySelector('[data-slot="breadcrumb-item"]');
     expect(item).toHaveClass('inline-flex', 'items-center', 'gap-1.5');
   });
 
   it('should apply default classes to BreadcrumbLink', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const link = container.querySelector('[data-slot="breadcrumb-link"]');
     expect(link).toHaveClass('hover:text-foreground', 'transition-colors');
   });
 
   it('should apply default classes to BreadcrumbPage', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const page = container.querySelector('[data-slot="breadcrumb-page"]');
     expect(page).toHaveClass('text-foreground', 'font-normal');
   });
 
   it('should render ChevronRight separator icon', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
     const svg = separator?.querySelector('svg');
@@ -181,7 +188,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should apply default classes to BreadcrumbSeparator', () => {
-    mockUsePathname.mockReturnValue('/transactions');
+    usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
     expect(separator).toHaveClass('[&>svg]:size-3.5');
@@ -189,14 +196,14 @@ describe('Breadcrumb', () => {
   });
 
   it('should apply default classes to wrapper div', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('flex', 'items-center', 'justify-center', 'gap-2');
   });
 
   it('should handle deep nested paths', () => {
-    mockUsePathname.mockReturnValue('/transactions/123/details');
+    usePathnameMock.mockReturnValue('/transactions/123/details');
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Transações')).toBeInTheDocument();
@@ -205,7 +212,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should pass through additional props to nav', () => {
-    mockUsePathname.mockReturnValue('/');
+    usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb data-testid="custom-breadcrumb" id="breadcrumb-id" />);
     const nav = container.querySelector('[data-slot="breadcrumb"]');
     expect(nav).toHaveAttribute('data-testid', 'custom-breadcrumb');
@@ -213,7 +220,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should render correct number of separators for multiple segments', () => {
-    mockUsePathname.mockReturnValue('/transactions/123/details');
+    usePathnameMock.mockReturnValue('/transactions/123/details');
     const { container } = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
     // Should have 3 separators: Home|Transações|123|Details
@@ -221,7 +228,7 @@ describe('Breadcrumb', () => {
   });
 
   it('should handle empty pathname segments correctly', () => {
-    mockUsePathname.mockReturnValue('//');
+    usePathnameMock.mockReturnValue('//');
     render(<Breadcrumb />);
     // Should still render Home
     expect(screen.getByText('Home')).toBeInTheDocument();

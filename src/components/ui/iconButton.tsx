@@ -61,6 +61,7 @@ function IconButton({
   size = "default",
   asChild = false,
   icon,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -71,6 +72,50 @@ function IconButton({
   
   const IconComponent = icon ? getIcon(icon) : null
 
+  const iconElement = IconComponent && (
+    <IconComponent
+      className={cn(getIconSize(size))}
+    />
+  )
+
+  if (asChild) {
+    if (!React.isValidElement(children)) {
+      throw new Error('IconButton with asChild requires a single React element as a child')
+    }
+    
+    const childElement = children as React.ReactElement
+    const existingChildren = childElement.props.children
+    
+    let newChildren: React.ReactNode
+    if (iconElement) {
+      const existingChildrenArray = React.Children.toArray(existingChildren)
+      const childrenWithKeys = existingChildrenArray.map((child, index) => {
+        if (React.isValidElement(child) && child.key == null) {
+          return React.cloneElement(child, { key: `icon-button-child-${index}` })
+        }
+        return child
+      })
+      const iconWithKey = React.isValidElement(iconElement)
+        ? React.cloneElement(iconElement, { key: 'icon-button-icon' })
+        : iconElement
+      newChildren = [...childrenWithKeys, iconWithKey]
+    } else {
+      newChildren = existingChildren
+    }
+    
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      >
+        {React.cloneElement(childElement, {}, newChildren)}
+      </Comp>
+    )
+  }
+
   return (
     <Comp
       data-slot="button"
@@ -79,11 +124,7 @@ function IconButton({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {IconComponent && (
-        <IconComponent
-          className={cn(getIconSize(size))}
-        />
-      )}
+      {iconElement}
     </Comp>
   )
 }

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { IconButton } from "@/components/ui/iconButton";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/linkButton";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import Link from "next/link";
 import { logout, selectIsAuthenticated, selectLoading, selectUser } from "@/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -43,7 +43,7 @@ export function NavigationBar() {
     const user = useAppSelector(selectUser);
 
     return (
-        <div className="w-full mx-auto border-b border-muted sticky top-0 z-50 bg-background">
+        <div data-testid="navigation-bar" className="w-full mx-auto border-b border-muted sticky top-0 z-50 bg-background">
             <div className="flex items-center justify-between w-full px-4 md:px-8 py-6 max-w-[1554px] mx-auto">
                 <Link className="flex items-center gap-4" href="/">
                     <img src="/UBS_Logo.png" alt="UBS Logo" className="w-auto h-8" />
@@ -61,16 +61,17 @@ export function NavigationBar() {
                             <DrawerContent className="block lg:hidden">
                                 <DrawerHeader className="hidden">
                                     <DrawerTitle>Menu</DrawerTitle>
+                                    <DrawerDescription>Menu de navegação principal</DrawerDescription>
                                 </DrawerHeader>
                                 <div className="flex justify-end align-start w-full h-28" >
                                     <button
                                         type="button"
                                         className="w-16 h-16 mr-6 cursor-pointer bg-transparent border-0 p-0"
-                                        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                                        onClick={() => setIsDrawerOpen(false)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' || e.key === ' ') {
                                                 e.preventDefault();
-                                                setIsDrawerOpen(!isDrawerOpen);
+                                                setIsDrawerOpen(false);
                                             }
                                         }}
                                         aria-label="Fechar menu"

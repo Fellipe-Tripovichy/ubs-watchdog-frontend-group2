@@ -46,7 +46,13 @@ jest.mock('@/lib/redux-provider', () => ({
   ),
 }));
 
+// Mock next/navigation - must be before LayoutWrapper mock
+jest.mock('next/navigation', () => ({
+  usePathname: jest.fn(() => '/'),
+}));
+
 jest.mock('@/components/ui/layoutWrapper', () => ({
+  __esModule: true,
   LayoutWrapper: ({ children }: any) => (
     <div data-testid="layout-wrapper">{children}</div>
   ),

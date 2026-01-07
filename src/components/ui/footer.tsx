@@ -25,7 +25,7 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full mt-auto">
+        <footer data-testid="footer" className="w-full mt-auto">
             <div className="flex md:flex-row flex-col items-center justify-between w-full px-8 pt-20 pb-10 max-w-[1554px] mx-auto">
                 <Breadcrumb />
                 <LinkButton icon="chevron-up" onClick={handleScrollToTop}>Voltar ao topo</LinkButton>
