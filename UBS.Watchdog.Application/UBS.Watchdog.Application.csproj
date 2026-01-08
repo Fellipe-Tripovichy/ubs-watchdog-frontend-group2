@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UBS.Watchdog.Domain\UBS.Watchdog.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

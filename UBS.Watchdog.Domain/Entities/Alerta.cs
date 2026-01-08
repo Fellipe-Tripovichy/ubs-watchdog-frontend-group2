@@ -2,7 +2,8 @@ using UBS.Watchdog.Domain.Enums;
 using System;
 
 namespace UBS.Watchdog.Domain.Entities;
-
+//Criados automaticamente quando regras são violadas.
+// WORKFLOW : Novo -> EmAnálise -> Resolvido
 public class Alerta
 {
 	public Guid Id { get; private set; }

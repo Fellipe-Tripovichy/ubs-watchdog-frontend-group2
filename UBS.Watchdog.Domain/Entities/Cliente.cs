@@ -25,6 +25,8 @@ public class Cliente
 		Alertas = new List<Alerta>();
 	}
 
+
+
 	public Cliente(string nome, string pais, NivelRisco nivelRisco)
 	{
 		if (string.IsNullOrWhiteSpace(nome))
