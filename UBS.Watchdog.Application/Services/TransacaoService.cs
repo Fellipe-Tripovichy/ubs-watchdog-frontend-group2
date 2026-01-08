@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UBS.Watchdog.Application.DTOs.Transacao;
+using UBS.Watchdog.Application.Mappings;
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Repositories;
@@ -14,29 +15,38 @@ namespace UBS.Watchdog.Application.Services
 
     public interface ITransacaoService
     {
-        Task<Transacao> RegistrarAsync(TransacaoRequest request);
-        Task<Transacao?> ObterPorIdAsync(Guid transacaoId);
-        Task<List<Transacao>> ListarTodasAsync();
-        Task<List<Transacao>> ListarPorClienteIdAsync(Guid clienteId);
+        Task<TransacaoResponse> RegistrarAsync(TransacaoRequest request);
+        Task<TransacaoResponse?> ObterPorIdAsync(Guid transacaoId);
+        Task<List<TransacaoResponse>> ListarTodasAsync();
+        Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId);
     }
     public class TransacaoService(ITransacaoRepository transacaoRepository) : ITransacaoService
     {
-        public Task<List<Transacao>> ListarPorClienteIdAsync(Guid clienteId)
+        public async Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId)
         {
-            return transacaoRepository.GetByClienteIdAsync(clienteId);
+            var transacoes = await transacaoRepository.GetByClienteIdAsync(clienteId);
+            return TransacaoMappings.toResponseList(transacoes);
         }
 
-        public Task<List<Transacao>> ListarTodasAsync()
+        public async Task<List<TransacaoResponse>> ListarTodasAsync()
         {
-            return transacaoRepository.GetAllAsync();
+            var transacoes = await transacaoRepository.GetAllAsync();
+
+            return TransacaoMappings.toResponseList(transacoes);
         }
 
-        public Task<Transacao?> ObterPorIdAsync(Guid transacaoId)
+        public async Task<TransacaoResponse?> ObterPorIdAsync(Guid transacaoId)
         {
-            return transacaoRepository.GetByIdAsync(transacaoId);
+            var transacao = await transacaoRepository.GetByIdAsync(transacaoId);
+            if (transacao == null)
+            {
+                return null;
+            }
+
+            return TransacaoMappings.toResponse(transacao);
         }
 
-        public Task<Transacao> RegistrarAsync(TransacaoRequest request)
+        public async Task<TransacaoResponse> RegistrarAsync(TransacaoRequest request)
         {
             var transacao = Transacao.Criar(
                 request.ClienteId,
@@ -45,7 +55,8 @@ namespace UBS.Watchdog.Application.Services
                 request.Moeda,
                 request.Contraparte);
 
-            return transacaoRepository.AddAsync(transacao);
+            await transacaoRepository.AddAsync(transacao);
+            return TransacaoMappings.toResponse(transacao);
         }
     }
 }

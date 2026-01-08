@@ -23,10 +23,9 @@ namespace UBS.Watchdog.Application.Mappings
             };
         }
 
-        public static List<ClienteResponse> ToResponseList(IEnumerable<Cliente> clientes)
+        public static List<ClienteResponse> ToResponseList(List<Cliente> clientes)
         {
             return clientes.Select(ToResponse).ToList();
         }
-
     }
 }

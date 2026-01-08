@@ -37,15 +37,15 @@ public class ClienteRepository(AppDbContext context) : IClienteRepository
         await context.SaveChangesAsync();
     }
 
-    public Task<List<Cliente>> GetByPaisAsync(string pais)
+    public async Task<List<Cliente>> GetByPaisAsync(string pais)
     {
-        return context.Clientes.Where(c => c.Pais.Equals(pais,StringComparison.OrdinalIgnoreCase))
+        return await context.Clientes.Where(c => c.Pais.Equals(pais,StringComparison.OrdinalIgnoreCase))
             .ToListAsync();
     }
 
-    public Task<List<Cliente>> GetByNivelRiscoAsync(NivelRisco nivelRisco)
+    public async Task<List<Cliente>> GetByNivelRiscoAsync(NivelRisco nivelRisco)
     {
-        return context.Clientes.Where(c => c.NivelRisco == nivelRisco)
+        return await context.Clientes.Where(c => c.NivelRisco == nivelRisco)
             .ToListAsync();
     }
 }
