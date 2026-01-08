@@ -16,7 +16,7 @@ namespace UBS.Watchdog.Application.Services
         Task<List<AlertaResponse>> ListarPorStatusAsync(StatusAlerta status);
         Task<List<AlertaResponse>> ListarComFiltrosAsync(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId);
         Task<AlertaResponse> IniciarAnaliseAsync(Guid id);
-        Task<AlertaResponse> ResolverAsync(Guid id, AtualizarStatusAlertaRequest request);
+        Task<AlertaResponse> ResolverAsync(Guid id, ResolverAlertaRequest request);
     }
     public class AlertaService
     {

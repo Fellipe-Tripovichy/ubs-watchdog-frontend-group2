@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UBS.Watchdog.Application.DTOs.Cliente;
+using UBS.Watchdog.Application.Mappings;
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Repositories;
@@ -13,10 +14,10 @@ namespace UBS.Watchdog.Application.Services
     public interface IClienteService
     {
         Task<ClienteResponse> CriarAsync(ClienteRequest request);
-        Task<Cliente?> ObterPorIdAsync(Guid clienteId);
-        Task<List<Cliente>> ListarTodosAsync();
-        Task<List<Cliente>> ListarPorPaisAsync(string pais);
-        Task<List<Cliente>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco);
+        Task<ClienteResponse?> ObterPorIdAsync(Guid clienteId);
+        Task<List<ClienteResponse>> ListarTodosAsync();
+        Task<List<ClienteResponse>> ListarPorPaisAsync(string pais);
+        Task<List<ClienteResponse>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco);
         //Task<ClienteResponse> AtualizarStatusKycAsync(Guid id, AtualizarStatusKycRequest request);
         //Task<ClienteResponse> AtualizarNivelRiscoAsync(Guid id, AtualizarNivelRiscoRequest request);
         Task DeletarAsync(Guid id);
@@ -28,19 +29,14 @@ namespace UBS.Watchdog.Application.Services
         public async Task<ClienteResponse> CriarAsync(ClienteRequest request) 
         {
             //TODO:LOG
-            var cliente = Cliente.Criar(
-                request.Nome,
-                request.Pais,
-                request.NivelRisco);
-
+            var cliente = Cliente.Criar(request.Nome,request.Pais,request.NivelRisco);
             await clienteRepository.AddAsync(cliente);
 
             //TODO:LOG
-
-            return cliente.ToResponse();
+            return ClienteMappings.ToResponse(cliente);
         }
 
-        public async Task<Cliente?> ObterPorIdAsync(Guid clienteId) 
+        public async Task<ClienteResponse?> ObterPorIdAsync(Guid clienteId) 
         {
             //TODO:LOG
             var cliente = await clienteRepository.GetByIdAsync(clienteId);
@@ -51,24 +47,24 @@ namespace UBS.Watchdog.Application.Services
                 return null;
             }
 
-            return cliente;
+            return ClienteMappings.ToResponse(cliente);
         }
 
-        public async Task<List<Cliente>> ListarTodosAsync() 
-        {
-            return await clienteRepository.GetAllAsync();
-        }
-
-        public async Task<List<Cliente>> ListarPorPaisAsync(string pais)
+        public async Task<List<ClienteResponse>> ListarTodosAsync() 
         {
             var clientes = await clienteRepository.GetAllAsync();
-            return clientes.Where(c => c.Pais.Equals(pais, StringComparison.OrdinalIgnoreCase)).ToList();
+            return ClienteMappings.ToResponseList(clientes);
         }
 
-        public async Task<List<Cliente>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco)
+        public async Task<List<ClienteResponse>> ListarPorPaisAsync(string pais)
         {
-            var clientes = await clienteRepository.GetAllAsync();
-            return clientes.Where(c => c.NivelRisco == nivelRisco).ToList();
+            var clientes = await clienteRepository.GetByPaisAsync(pais);
+            return ClienteMappings.ToResponseList(clientes);
+        }
+        public async Task<List<ClienteResponse>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco)
+        {
+            var clientes = await clienteRepository.GetByNivelRiscoAsync(nivelRisco);
+            return ClienteMappings.ToResponseList(clientes);
         }
 
         public async Task DeletarAsync(Guid id)

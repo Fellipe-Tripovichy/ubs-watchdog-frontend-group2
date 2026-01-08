@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UBS.Watchdog.Domain.Entities;
+using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Data;
 
 namespace UBS.Watchdog.Infrastructure.Repositories;
@@ -34,5 +35,17 @@ public class ClienteRepository(AppDbContext context) : IClienteRepository
         var cliente = await GetByIdAsync(id);
         context.Clientes.Remove(cliente);
         await context.SaveChangesAsync();
+    }
+
+    public Task<List<Cliente>> GetByPaisAsync(string pais)
+    {
+        return context.Clientes.Where(c => c.Pais.Equals(pais,StringComparison.OrdinalIgnoreCase))
+            .ToListAsync();
+    }
+
+    public Task<List<Cliente>> GetByNivelRiscoAsync(NivelRisco nivelRisco)
+    {
+        return context.Clientes.Where(c => c.NivelRisco == nivelRisco)
+            .ToListAsync();
     }
 }
