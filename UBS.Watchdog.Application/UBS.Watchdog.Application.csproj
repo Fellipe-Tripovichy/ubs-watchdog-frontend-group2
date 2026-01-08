@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UBS.Watchdog.Domain\UBS.Watchdog.Domain.csproj" />
+    <ProjectReference Include="..\UBS.Watchdog.Infrastructure\UBS.Watchdog.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

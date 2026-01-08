@@ -54,4 +54,11 @@ public class Cliente
 	{
 		NivelRisco = novoNivel;
 	}
+
+    public static Cliente Criar(string nome, string pais, string nivelRisco)
+    {
+		Enum.TryParse<NivelRisco>(nivelRisco, true, out var nivel);
+
+        return new Cliente(nome, pais, nivel);
+    }
 }
