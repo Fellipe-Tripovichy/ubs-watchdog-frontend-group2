@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(c =>
 	{
 		Title = "UBS Watchdog API - Grupo 2",
 		Version = "v1",
-		Description = "API para sistema de compliance financeiro - Detecção de transações suspeitas",
+		Description = "API para sistema de compliance financeiro - Detecï¿½ï¿½o de transaï¿½ï¿½es suspeitas",
 		Contact = new()
 		{
 			Name = "Grupo 2",
@@ -67,6 +67,10 @@ if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI();
+	// Executando migraÃ§Ã£o automaticamente
+	using var scope =  app.Services.CreateScope();
+	var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+	dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
