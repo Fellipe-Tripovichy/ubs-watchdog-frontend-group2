@@ -25,7 +25,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      
     container_name: ubs-watchdog-api
     ports:
       - '6001:5433'
