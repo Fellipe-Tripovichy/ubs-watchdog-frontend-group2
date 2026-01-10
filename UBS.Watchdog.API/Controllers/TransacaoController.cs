@@ -24,7 +24,7 @@ public class TransacaoController : ControllerBase
     [HttpGet ("{id:guid}", Name = "ObterTransacaoPorID")]
     public async Task<IActionResult> GetByID(Guid id)
     {
-        var transacao = _transacaoService.ObterPorIdAsync(id);
+        var transacao = await _transacaoService.ObterPorIdAsync(id);
         if (transacao == null) return NotFound($"Transação com ID '{id}' não existe.");
         return Ok(transacao);
     }
@@ -32,12 +32,12 @@ public class TransacaoController : ControllerBase
     [HttpGet (Name = "ObterTodasTransacoes")]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(_transacaoService.ListarTodasAsync());
+        return Ok(await _transacaoService.ListarTodasAsync());
     }
     
     [HttpGet("cliente/{clienteId:guid}", Name = "ObterTodasTransacoesPorCliente")]
     public async Task<IActionResult> GetByCliente(Guid clienteId)
     {
-        return Ok(_transacaoService.ListarPorClienteIdAsync(clienteId));
+        return Ok(await _transacaoService.ListarPorClienteIdAsync(clienteId));
     }
 }

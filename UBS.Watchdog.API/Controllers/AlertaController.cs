@@ -33,7 +33,7 @@ public class AlertaController : ControllerBase
     [HttpGet("cliente/{clienteId:guid}")]
     public async Task<IActionResult> GetByCliente(Guid clienteId)
     {
-        return Ok(_alertaService.ListarPorClienteAsync(clienteId));
+        return Ok(await _alertaService.ListarPorClienteAsync(clienteId));
     }
 
     [HttpGet ("status/{status:StatusAlerta}")]
