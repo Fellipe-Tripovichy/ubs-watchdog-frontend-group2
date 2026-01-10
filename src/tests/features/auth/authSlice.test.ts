@@ -1,41 +1,36 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
-jest.mock('firebase/auth', () => ({
+// 1. MOCK LOCAL FIREBASE CONFIG (The Fix)
+// We mock this FIRST to prevent the real file from running getAuth()
+jest.mock('@/lib/firebase', () => ({
   __esModule: true,
-  getAuth: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signInWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  updateProfile: jest.fn(),
-  sendEmailVerification: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  sendPasswordResetEmail: jest.fn(),
+  auth: {},
+  db: {},
+  storage: {},
 }));
 
+// 2. MOCK FIREBASE LIBRARIES
 jest.mock('firebase/app', () => ({
+  __esModule: true,
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
   getApp: jest.fn(),
 }));
 
+jest.mock('firebase/auth', () => ({
+  __esModule: true,
+  getAuth: jest.fn(() => ({})),
+}));
+
 jest.mock('firebase/firestore', () => ({
+  __esModule: true,
   getFirestore: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/storage', () => ({
+  __esModule: true,
   getStorage: jest.fn(() => ({})),
-}));
-
-// 2. MOCK YOUR LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This prevents src/lib/firebase.js from running and crashing with "invalid-api-key"
-jest.mock('@/lib/firebase', () => ({
-  auth: {
-    currentUser: { email: 'test@example.com', uid: '123' }
-  },
-  db: {},
-  storage: {},
 }));
 
 // 3. MOCK THE API MODULE
@@ -48,7 +43,7 @@ jest.mock('@/features/auth/authAPI', () => ({
   resetPasswordAPI: jest.fn(),
 }));
 
-// 4. IMPORT REDUCER AND TYPES
+// 4. IMPORTS
 import authReducer, {
   setToken,
   clearToken,
@@ -83,11 +78,11 @@ describe('authSlice', () => {
   // Retrieve the mocks dynamically using requireMock.
   // We use 'as any' to avoid TypeScript errors on the mock properties.
   const {
-      createUserWithEmailAndPasswordAPI,
-      signInWithEmailAndPasswordAPI,
-      signOutAPI,
-      getUserDataAPI,
-      resetPasswordAPI
+    createUserWithEmailAndPasswordAPI,
+    signInWithEmailAndPasswordAPI,
+    signOutAPI,
+    getUserDataAPI,
+    resetPasswordAPI
   } = jest.requireMock('@/features/auth/authAPI') as any;
 
   // Map them to your variable names and cast to jest.MockedFunction
@@ -99,7 +94,7 @@ describe('authSlice', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockFirebaseUser = {
       uid: '123',
       email: 'test@example.com',
@@ -189,7 +184,7 @@ describe('authSlice', () => {
 
   describe('login async thunk', () => {
     it('should handle pending state', () => {
-      mockLoginAPI.mockImplementation(() => new Promise(() => {}));
+      mockLoginAPI.mockImplementation(() => new Promise(() => { }));
       store.dispatch(login({ email: 'test@example.com', password: 'password123' }));
       const state = store.getState().auth as AuthState;
       expect(state.loading).toBe(true);
@@ -205,7 +200,7 @@ describe('authSlice', () => {
 
   describe('logout async thunk', () => {
     it('should handle pending state', () => {
-      mockSignOut.mockImplementation(() => new Promise(() => {}));
+      mockSignOut.mockImplementation(() => new Promise(() => { }));
       store.dispatch(logout());
       const state = store.getState().auth as AuthState;
       expect(state.loading).toBe(true);
@@ -232,7 +227,7 @@ describe('authSlice', () => {
 
   describe('getUserData async thunk', () => {
     it('should handle pending state', () => {
-      mockGetUserData.mockImplementation(() => new Promise(() => {}));
+      mockGetUserData.mockImplementation(() => new Promise(() => { }));
       store.dispatch(getUserData());
       const state = store.getState().auth as AuthState;
       expect(state.loading).toBe(true);
@@ -283,7 +278,7 @@ describe('authSlice', () => {
 
   describe('resetPassword async thunk', () => {
     it('should handle pending state', () => {
-      mockResetPassword.mockImplementation(() => new Promise(() => {}));
+      mockResetPassword.mockImplementation(() => new Promise(() => { }));
       store.dispatch(resetPassword('test@example.com'));
       const state = store.getState().auth as AuthState;
       expect(state.loading).toBe(true);

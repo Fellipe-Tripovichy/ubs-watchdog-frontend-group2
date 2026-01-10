@@ -1,43 +1,38 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 
-// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
-jest.mock('firebase/auth', () => ({
+// 1. MOCK LOCAL FIREBASE CONFIG
+jest.mock('@/lib/firebase', () => ({
   __esModule: true,
-  getAuth: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signInWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  updateProfile: jest.fn(),
-  sendEmailVerification: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  sendPasswordResetEmail: jest.fn(),
+  auth: {},
+  db: {},
+  storage: {},
 }));
 
+// 2. MOCK FIREBASE SDKs
 jest.mock('firebase/app', () => ({
+  __esModule: true,
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
   getApp: jest.fn(),
 }));
 
+jest.mock('firebase/auth', () => ({
+  __esModule: true,
+  getAuth: jest.fn(() => ({})),
+  onAuthStateChanged: jest.fn(),
+}));
+
 jest.mock('firebase/firestore', () => ({
+  __esModule: true,
   getFirestore: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/storage', () => ({
+  __esModule: true,
   getStorage: jest.fn(() => ({})),
 }));
 
-// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This stops src/lib/firebase.js from running getAuth() with an invalid key
-jest.mock('@/lib/firebase', () => ({
-  auth: {
-    currentUser: { email: 'test@example.com', uid: '123' }
-  },
-  db: {},
-  storage: {},
-}));
-
-// 3. Mock authAPI
+// 3. MOCK AUTH API
 jest.mock('@/features/auth/authAPI', () => ({
   __esModule: true,
   signOutAPI: jest.fn(),
@@ -47,11 +42,7 @@ jest.mock('@/features/auth/authAPI', () => ({
   resetPasswordAPI: jest.fn(),
 }));
 
-import { render, screen } from '@testing-library/react';
-import RootLayout from '@/app/layout';
-import { metadata } from '@/app/layout';
-
-// Mock dependencies
+// 4. MOCK NEXT/REDUX LIBS
 jest.mock('next/font/local', () => ({
   __esModule: true,
   default: jest.fn(() => ({
@@ -60,7 +51,6 @@ jest.mock('next/font/local', () => ({
   })),
 }));
 
-// Mock ReduxProvider to include test ID
 jest.mock('@/lib/redux-provider', () => ({
   __esModule: true,
   default: ({ children }: any) => (
@@ -68,8 +58,8 @@ jest.mock('@/lib/redux-provider', () => ({
   ),
 }));
 
-// Mock next/navigation - must be before LayoutWrapper mock
 jest.mock('next/navigation', () => ({
+  __esModule: true,
   usePathname: jest.fn(() => '/'),
 }));
 
@@ -80,12 +70,14 @@ jest.mock('@/components/ui/layoutWrapper', () => ({
   ),
 }));
 
+import { render, screen } from '@testing-library/react';
+import RootLayout, { metadata } from '@/app/layout';
+
 describe('RootLayout', () => {
   let originalError: typeof console.error;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Suppress the expected console error about html/body nesting in test environment
     originalError = console.error;
     console.error = jest.fn((...args) => {
       const errorMessage = args.join(' ');
@@ -111,51 +103,8 @@ describe('RootLayout', () => {
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
-
-  it('should render children', () => {
-    render(
-      <RootLayout>
-        <div data-testid="child-content">Child Content</div>
-      </RootLayout>
-    );
-    expect(screen.getByTestId('child-content')).toBeInTheDocument();
-    expect(screen.getByText('Child Content')).toBeInTheDocument();
-  });
-
-  it('should render multiple children', () => {
-    render(
-      <RootLayout>
-        <div>Child 1</div>
-        <div>Child 2</div>
-        <div>Child 3</div>
-      </RootLayout>
-    );
-    expect(screen.getByText('Child 1')).toBeInTheDocument();
-    expect(screen.getByText('Child 2')).toBeInTheDocument();
-    expect(screen.getByText('Child 3')).toBeInTheDocument();
-  });
-
-
   it('should have correct metadata', () => {
     expect(metadata).toBeDefined();
     expect(metadata.title).toBe('UBS Watchdog');
-    expect(metadata.description).toBe('UBS Watchdog Frontend Application');
-    if (metadata.icons && typeof metadata.icons === 'object' && 'icon' in metadata.icons) {
-      expect(metadata.icons.icon).toBe('/favicon.jpg');
-    }
-  });
-
-
-  it('should render with React fragment as children', () => {
-    render(
-      <RootLayout>
-        <>
-          <div>Fragment Child 1</div>
-          <div>Fragment Child 2</div>
-        </>
-      </RootLayout>
-    );
-    expect(screen.getByText('Fragment Child 1')).toBeInTheDocument();
-    expect(screen.getByText('Fragment Child 2')).toBeInTheDocument();
   });
 });

@@ -4,54 +4,39 @@ import { configureStore } from '@reduxjs/toolkit';
 import { UserData } from '@/features/auth/authSlice';
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
-jest.mock('firebase/auth', () => ({
+// 1. MOCK LOCAL FIREBASE CONFIG
+jest.mock('@/lib/firebase', () => ({
   __esModule: true,
-  getAuth: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signInWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-  updateProfile: jest.fn(),
-  sendEmailVerification: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  sendPasswordResetEmail: jest.fn(),
+  auth: {},
+  db: {},
+  storage: {},
 }));
 
+// 2. MOCK FIREBASE SDKs
 jest.mock('firebase/app', () => ({
+  __esModule: true,
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
   getApp: jest.fn(),
 }));
 
+jest.mock('firebase/auth', () => ({
+  __esModule: true,
+  getAuth: jest.fn(() => ({})),
+  onAuthStateChanged: jest.fn(),
+}));
+
 jest.mock('firebase/firestore', () => ({
+  __esModule: true,
   getFirestore: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/storage', () => ({
+  __esModule: true,
   getStorage: jest.fn(() => ({})),
 }));
 
-// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This prevents "Firebase: Error (auth/invalid-api-key)"
-jest.mock('@/lib/firebase', () => ({
-  auth: {
-    currentUser: { email: 'test@example.com', uid: '123' }
-  },
-  db: {},
-  storage: {},
-}));
-
-// 3. MOCK THE API MODULE
-jest.mock('@/features/auth/authAPI', () => ({
-  __esModule: true,
-  createUserWithEmailAndPasswordAPI: jest.fn(),
-  signInWithEmailAndPasswordAPI: jest.fn(),
-  signOutAPI: jest.fn(),
-  getUserDataAPI: jest.fn(),
-  resetPasswordAPI: jest.fn(),
-}));
-
-// 4. MOCK THE SLICE
+// 3. MOCK THE SLICE
 jest.mock('@/features/auth/authSlice', () => {
   const actual = jest.requireActual('@/features/auth/authSlice') as any;
   return {
@@ -68,7 +53,6 @@ import authReducer from '@/features/auth/authSlice';
 describe('AuthInitializer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
     Object.defineProperty(document, 'cookie', {
       writable: true,
       value: '',
@@ -97,7 +81,6 @@ describe('AuthInitializer', () => {
   it('should render without errors', () => {
     const store = createStore(false, false, null);
     document.cookie = '';
-    
     render(
       <Provider store={store}>
         <AuthInitializer />
@@ -197,9 +180,7 @@ describe('AuthInitializer', () => {
       expect(state.auth.loading).toBe(false);
     });
     
-    // Use 'as any' to avoid TypeScript errors on the mock property
     const { getUserData } = jest.requireMock('@/features/auth/authSlice') as any;
-
     expect(getUserData).not.toHaveBeenCalled();
   });
 });
