@@ -7,7 +7,8 @@ using UBS.Watchdog.Application.Services;
 using UBS.Watchdog.Infrastructure.Data;
 using UBS.Watchdog.Infrastructure.Repositories;
 using UBS.Watchdog.Infrastructure.Repositories.Alertas;
-using UBS.Watchdog.Infrastructure.Repositories.Transações;
+using UBS.Watchdog.Infrastructure.Repositories.Clientes;
+using UBS.Watchdog.Infrastructure.Repositories.Transacoes;
 
 var builder = WebApplication.CreateBuilder(args);
 

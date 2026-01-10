@@ -3,7 +3,7 @@ using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Data;
 
-namespace UBS.Watchdog.Infrastructure.Repositories;
+namespace UBS.Watchdog.Infrastructure.Repositories.Clientes;
 
 public class ClienteRepository(AppDbContext context) : IClienteRepository
 {

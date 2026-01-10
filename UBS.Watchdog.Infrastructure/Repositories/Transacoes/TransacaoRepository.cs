@@ -2,7 +2,7 @@
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Infrastructure.Data;
 
-namespace UBS.Watchdog.Infrastructure.Repositories.Transações
+namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 {
     public class TransacaoRepository(AppDbContext context) : ITransacaoRepository
     {

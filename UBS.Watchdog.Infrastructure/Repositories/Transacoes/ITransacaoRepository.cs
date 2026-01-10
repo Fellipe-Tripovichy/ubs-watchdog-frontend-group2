@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UBS.Watchdog.Domain.Entities;
+﻿using UBS.Watchdog.Domain.Entities;
 
-namespace UBS.Watchdog.Infrastructure.Repositories.Transações
+namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 {
     public interface ITransacaoRepository
     {

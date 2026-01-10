@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
-using UBS.Watchdog.Infrastructure.Repositories;
+using UBS.Watchdog.Infrastructure.Repositories.Clientes;
 
 namespace UBS.Watchdog.Application.Compliance
 {
