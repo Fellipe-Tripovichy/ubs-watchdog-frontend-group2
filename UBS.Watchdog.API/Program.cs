@@ -1,8 +1,13 @@
-using Serilog;
-using Serilog.Sinks;
-using Serilog.AspNetCore;
-using UBS.Watchdog.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.AspNetCore;
+using Serilog.Sinks;
+using UBS.Watchdog.Application.Compliance;
+using UBS.Watchdog.Application.Services;
+using UBS.Watchdog.Infrastructure.Data;
+using UBS.Watchdog.Infrastructure.Repositories;
+using UBS.Watchdog.Infrastructure.Repositories.Alertas;
+using UBS.Watchdog.Infrastructure.Repositories.Transações;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +39,19 @@ builder.Services.AddSwaggerGen(c =>
 		}
 	});
 });
+
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<ITransacaoRepository, TransacaoRepository>();
+builder.Services.AddScoped<IAlertaRepository, AlertaRepository>();
+
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<ITransacaoService, TransacaoService>();
+builder.Services.AddScoped<IAlertaService, AlertaService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IComplianceService, ComplianceService>();
+
+builder.Services.AddScoped<IRegraCompliance, RegraLimiteDiario>();
+builder.Services.AddScoped<IRegraCompliance, RegraPaisAltoRisco>();
 #endregion
 
 #region DbContext

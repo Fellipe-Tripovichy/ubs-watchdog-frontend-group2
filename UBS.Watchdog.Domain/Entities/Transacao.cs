@@ -48,5 +48,15 @@ public class Transacao
 
 		Alertas = new List<Alerta>();
 	}
+
+    public static Transacao Criar(Guid clienteId, string tipoTransacao, decimal valor, string moeda, string? contraparte)
+    {
+
+        Enum.TryParse<TipoTransacao>(tipoTransacao, true, out var tipoEnum);
+        Enum.TryParse<Moeda>(moeda, true, out var moedaEnum);
+
+
+        return new Transacao(clienteId, tipoEnum, valor, moedaEnum, contraparte);
+    }
 }
 
