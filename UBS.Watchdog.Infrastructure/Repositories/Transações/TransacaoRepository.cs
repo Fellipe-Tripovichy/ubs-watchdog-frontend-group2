@@ -62,5 +62,29 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transações
             context.Transacoes.Update(transacao);
             await context.SaveChangesAsync();
         }
+
+        public async Task<decimal> GetSomaDiariaAsync(Guid clienteId, DateTime data)
+        {
+            var inicioDia = data.Date;
+            var fimDia = inicioDia.AddDays(1);
+
+            return await context.Transacoes
+                .Where(t => t.ClienteId == clienteId
+                         && t.DataHora >= inicioDia
+                         && t.DataHora < fimDia)
+                .SumAsync(t => t.Valor);
+        }
+
+        public async Task<List<Transacao>> GetTransacoesDoDiaAsync(Guid clienteId, DateTime data)
+        {
+            var inicioDia = data.Date;
+            var fimDia = inicioDia.AddDays(1);
+
+            return await context.Transacoes
+                .Where(t => t.ClienteId == clienteId
+                         && t.DataHora >= inicioDia
+                         && t.DataHora < fimDia)
+                .ToListAsync();
+        }
     }
 }

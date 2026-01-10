@@ -24,7 +24,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transações
         Task DeleteAsync(Guid id);
 
         Task<List<Transacao>> GetByClienteIdAsync(Guid clienteId);
-
-        //Task<List<Transacao>> GetTransacoesDoDiaAsync(Guid clienteId, DateTime data);
+        Task<decimal> GetSomaDiariaAsync(Guid clienteId, DateTime date);
+        Task<List<Transacao>> GetTransacoesDoDiaAsync(Guid clienteId, DateTime data);
     }
 }

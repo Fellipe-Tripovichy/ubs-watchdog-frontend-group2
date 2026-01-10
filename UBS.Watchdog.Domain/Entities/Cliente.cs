@@ -45,7 +45,14 @@ public class Cliente
 		Transacoes = new List<Transacao>();
 		Alertas = new List<Alerta>();
 	}
-	public void AtualizarStatusKyc(StatusKyc novoStatus)
+
+    public static Cliente Criar(string nome, string pais, string nivelRisco)
+    {
+        Enum.TryParse<NivelRisco>(nivelRisco, true, out var nivel);
+
+        return new Cliente(nome, pais, nivel);
+    }
+    public void AtualizarStatusKyc(StatusKyc novoStatus)
 	{
 		StatusKyc = novoStatus;
 	}
@@ -54,11 +61,4 @@ public class Cliente
 	{
 		NivelRisco = novoNivel;
 	}
-
-    public static Cliente Criar(string nome, string pais, string nivelRisco)
-    {
-		Enum.TryParse<NivelRisco>(nivelRisco, true, out var nivel);
-
-        return new Cliente(nome, pais, nivel);
-    }
 }
