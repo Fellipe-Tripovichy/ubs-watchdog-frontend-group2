@@ -1,16 +1,51 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-// 1. MOCK LOCAL FIREBASE CONFIG (The Fix)
-// We mock this FIRST to prevent the real file from running getAuth()
+// 1. MOCK FIREBASE MODULES FIRST - Before any Firebase imports happen
+// Mock firebase/app to prevent initializeApp, getApps, getApp from executing
+jest.mock('firebase/app', () => ({
+  __esModule: true,
+  initializeApp: jest.fn(() => ({})),
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(() => ({})),
+}));
+
+// Mock firebase/auth to prevent getAuth and all auth functions from executing
+jest.mock('firebase/auth', () => ({
+  __esModule: true,
+  getAuth: jest.fn(() => ({})),
+  createUserWithEmailAndPassword: jest.fn(),
+  signInWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+  updateProfile: jest.fn(),
+  sendEmailVerification: jest.fn(),
+  onAuthStateChanged: jest.fn(),
+  sendPasswordResetEmail: jest.fn(),
+}));
+
+// Mock firebase/firestore to prevent getFirestore from executing
+jest.mock('firebase/firestore', () => ({
+  __esModule: true,
+  getFirestore: jest.fn(() => ({})),
+}));
+
+// Mock firebase/storage to prevent getStorage from executing
+jest.mock('firebase/storage', () => ({
+  __esModule: true,
+  getStorage: jest.fn(() => ({})),
+}));
+
+// 2. MOCK LOCAL FIREBASE CONFIG
+// We mock this to prevent the real file from running getAuth()
 jest.mock('@/lib/firebase', () => ({
   __esModule: true,
   auth: {},
   db: {},
   storage: {},
+  app: {},
 }));
 
-// 2. MOCK THE API MODULE
+// 3. MOCK THE API MODULE
 // Create mock functions with default implementations to ensure real functions are NEVER called
 jest.mock('@/features/auth/authAPI', () => {
   const mockCreateUserWithEmailAndPasswordAPI = jest.fn() as jest.MockedFunction<any>;
@@ -36,7 +71,7 @@ jest.mock('@/features/auth/authAPI', () => {
   };
 });
 
-// 3. IMPORTS
+// 4. IMPORTS
 import authReducer, {
   setToken,
   clearToken,
