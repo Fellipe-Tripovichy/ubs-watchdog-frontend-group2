@@ -15,15 +15,29 @@ public class TransacaoController : ControllerBase
         _transacaoService = transacaoService;
     }
 
-    [HttpPost]
+    [HttpPost (Name = "CriarTransacao")]
     public async Task<IActionResult> Create([FromBody] TransacaoRequest request)
     { 
-        return null;
+        return Created("", await _transacaoService.RegistrarAsync(request));
     }
 
-    [HttpGet("cliente/{clienteId:guid}")]
+    [HttpGet ("{id:guid}", Name = "ObterTransacaoPorID")]
+    public async Task<IActionResult> GetByID(Guid id)
+    {
+        var transacao = _transacaoService.ObterPorIdAsync(id);
+        if (transacao == null) return NotFound($"Transação com ID '{id}' não existe.");
+        return Ok(transacao);
+    }
+
+    [HttpGet (Name = "ObterTodasTransacoes")]
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(_transacaoService.ListarTodasAsync());
+    }
+    
+    [HttpGet("cliente/{clienteId:guid}", Name = "ObterTodasTransacoesPorCliente")]
     public async Task<IActionResult> GetByCliente(Guid clienteId)
     {
-        return null;
+        return Ok(_transacaoService.ListarPorClienteIdAsync(clienteId));
     }
 }

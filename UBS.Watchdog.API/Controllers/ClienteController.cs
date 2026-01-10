@@ -37,13 +37,13 @@ public class ClienteController : ControllerBase
         return Ok(await _clienteService.ListarTodosAsync());
     }
 
-    [HttpGet("{pais:string}", Name = "ObterClientesDeUmPaís")]
+    [HttpGet("/pais/{pais:string}", Name = "ObterClientesDeUmPaís")]
     public async Task<IActionResult> GetByPais(string pais)
     {
         return Ok(await _clienteService.ListarPorPaisAsync(pais));
     }
 
-    [HttpGet("{NivelRisco", Name =  "ObterTodosPorNivelRisco")]
+    [HttpGet("/risco/{nivelRisco:string}", Name =  "ObterTodosPorNivelRisco")]
     public async Task<IActionResult> GetByNivelRisco(string nivelRisco)
     {
         NivelRisco nivelRiscoValido;
