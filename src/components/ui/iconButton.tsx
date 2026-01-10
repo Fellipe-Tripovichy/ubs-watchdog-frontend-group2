@@ -83,7 +83,7 @@ function IconButton({
       throw new Error('IconButton with asChild requires a single React element as a child')
     }
     
-    const childElement = children as React.ReactElement
+    const childElement = children as React.ReactElement<{ children?: React.ReactNode }>
     const existingChildren = childElement.props.children
     
     let newChildren: React.ReactNode
