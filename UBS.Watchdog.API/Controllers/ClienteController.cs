@@ -37,21 +37,16 @@ public class ClienteController : ControllerBase
         return Ok(await _clienteService.ListarTodosAsync());
     }
 
-    [HttpGet("/pais/{pais:string}", Name = "ObterClientesDeUmPaís")]
+    [HttpGet("pais/{pais:string}", Name = "ObterClientesDeUmPaís")]
     public async Task<IActionResult> GetByPais(string pais)
     {
         return Ok(await _clienteService.ListarPorPaisAsync(pais));
     }
 
-    [HttpGet("/risco/{nivelRisco:string}", Name =  "ObterTodosPorNivelRisco")]
-    public async Task<IActionResult> GetByNivelRisco(string nivelRisco)
+    [HttpGet("risco/{nivelRisco:NivelRisco}", Name =  "ObterTodosPorNivelRisco")]
+    public async Task<IActionResult> GetByNivelRisco(NivelRisco nivelRisco)
     {
-        NivelRisco nivelRiscoValido;
-        if (NivelRisco.TryParse(nivelRisco, out nivelRiscoValido) == false)
-        {
-            return BadRequest("Nível de risco inválido. As opções aceitas são: 'Baixo', 'Médio' e 'Alto'.");
-        }
-        return Ok(await _clienteService.ListarPorNivelRiscoAsync(nivelRiscoValido));
+        return Ok(await _clienteService.ListarPorNivelRiscoAsync(nivelRisco));
     }
 
     [HttpDelete("{id:guid}", Name = "RemoverCliente")]
