@@ -11,7 +11,15 @@ jest.mock('@/features/auth/authAPI', () => ({
   resetPasswordAPI: jest.fn(),
 }));
 
-// 2. MOCK FIREBASE
+// 2. MOCK YOUR LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This prevents src/lib/firebase.js from running and crashing with "invalid-api-key"
+jest.mock('@/lib/firebase', () => ({
+  auth: {},
+  db: {},
+  storage: {},
+}));
+
+// 3. MOCK FIREBASE SERVICES
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -30,7 +38,7 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// 3. IMPORT REDUCER AND TYPES
+// 4. IMPORT REDUCER AND TYPES
 import authReducer, {
   setToken,
   clearToken,
@@ -62,9 +70,8 @@ describe('authSlice', () => {
 
   let mockFirebaseUser: any;
 
-  // --- FIX IS HERE ---
   // Retrieve the mocks dynamically using requireMock.
-  // This guarantees we get the jest.fn() objects defined in step 1.
+  // We use 'as any' to avoid TypeScript errors on the mock properties.
   const {
       createUserWithEmailAndPasswordAPI,
       signInWithEmailAndPasswordAPI,
@@ -79,7 +86,6 @@ describe('authSlice', () => {
   const mockSignOut = signOutAPI as jest.MockedFunction<any>;
   const mockGetUserData = getUserDataAPI as jest.MockedFunction<any>;
   const mockResetPassword = resetPasswordAPI as jest.MockedFunction<any>;
-  // -------------------
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -89,7 +95,7 @@ describe('authSlice', () => {
       email: 'test@example.com',
       displayName: 'Test User',
       emailVerified: true,
-      getIdToken: jest.fn<any>().mockResolvedValue('test-token'), // simplified typing
+      getIdToken: jest.fn<any>().mockResolvedValue('test-token'),
     };
 
     store = configureStore({

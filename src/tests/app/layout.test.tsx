@@ -1,6 +1,14 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 
-// Mock Firebase before any imports that use it
+// 1. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This stops src/lib/firebase.js from running getAuth() with an invalid key
+jest.mock('@/lib/firebase', () => ({
+  auth: {},
+  db: {},
+  storage: {},
+}));
+
+// 2. Mock Firebase SDKs
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -49,7 +57,6 @@ jest.mock('next/font/local', () => ({
 }));
 
 // Mock ReduxProvider to include test ID
-// Using a factory function that returns a simple wrapper for testing
 jest.mock('@/lib/redux-provider', () => ({
   __esModule: true,
   default: ({ children }: any) => (
@@ -75,10 +82,8 @@ describe('RootLayout', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Suppress the expected console error about html/body nesting in test environment
-    // This is expected when testing Next.js layouts that return html/body tags
     originalError = console.error;
     console.error = jest.fn((...args) => {
-      // Ignore the specific React DOM nesting warning for html/body tags in tests
       const errorMessage = args.join(' ');
       if (errorMessage.includes('cannot be a child of') || 
           (errorMessage.includes('<html>') && errorMessage.includes('<div>')) ||

@@ -10,12 +10,19 @@ jest.mock('@/features/auth/authSlice', () => {
   return {
     __esModule: true,
     ...actual,
-    // We replace the real action creator with a Jest spy
     getUserData: jest.fn(() => ({ type: 'auth/getUserData/pending' })),
   };
 });
 
-// 2. MOCK FIREBASE
+// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This prevents "Firebase: Error (auth/invalid-api-key)"
+jest.mock('@/lib/firebase', () => ({
+  auth: {},
+  db: {},
+  storage: {},
+}));
+
+// 3. MOCK FIREBASE SERVICES
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -41,7 +48,7 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// 3. IMPORTS
+// 4. IMPORTS
 import { AuthInitializer } from '@/components/authentication/authInitializer';
 import authReducer from '@/features/auth/authSlice';
 
@@ -49,7 +56,6 @@ describe('AuthInitializer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Reset document.cookie before each test
     Object.defineProperty(document, 'cookie', {
       writable: true,
       value: '',
@@ -178,7 +184,7 @@ describe('AuthInitializer', () => {
       expect(state.auth.loading).toBe(false);
     });
     
-    // FIX APPLIED HERE: Added 'as any'
+    // Use 'as any' to avoid TypeScript errors on the mock property
     const { getUserData } = jest.requireMock('@/features/auth/authSlice') as any;
 
     expect(getUserData).not.toHaveBeenCalled();
