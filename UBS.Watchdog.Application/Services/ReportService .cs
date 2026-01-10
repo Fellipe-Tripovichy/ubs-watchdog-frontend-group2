@@ -8,7 +8,8 @@ using UBS.Watchdog.Application.DTOs.Cliente;
 using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Repositories;
 using UBS.Watchdog.Infrastructure.Repositories.Alertas;
-using UBS.Watchdog.Infrastructure.Repositories.Transações;
+using UBS.Watchdog.Infrastructure.Repositories.Clientes;
+using UBS.Watchdog.Infrastructure.Repositories.Transacoes;
 
 namespace UBS.Watchdog.Application.Services
 {

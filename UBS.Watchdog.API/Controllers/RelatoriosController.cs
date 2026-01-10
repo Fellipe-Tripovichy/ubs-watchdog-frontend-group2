@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UBS.Watchdog.Application.Services;
 
+namespace UBS.Watchdog.API.Controllers;
 
 [ApiController]
 [Route("api/relatorios")]
