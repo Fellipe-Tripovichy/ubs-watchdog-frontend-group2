@@ -1,33 +1,23 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-// 1. MOCK THE API MODULE
-jest.mock('@/features/auth/authAPI', () => ({
+// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
+jest.mock('firebase/auth', () => ({
   __esModule: true,
-  createUserWithEmailAndPasswordAPI: jest.fn(),
-  signInWithEmailAndPasswordAPI: jest.fn(),
-  signOutAPI: jest.fn(),
-  getUserDataAPI: jest.fn(),
-  resetPasswordAPI: jest.fn(),
+  getAuth: jest.fn(),
+  createUserWithEmailAndPassword: jest.fn(),
+  signInWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+  updateProfile: jest.fn(),
+  sendEmailVerification: jest.fn(),
+  onAuthStateChanged: jest.fn(),
+  sendPasswordResetEmail: jest.fn(),
 }));
 
-// 2. MOCK YOUR LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This prevents src/lib/firebase.js from running and crashing with "invalid-api-key"
-jest.mock('@/lib/firebase', () => ({
-  auth: {},
-  db: {},
-  storage: {},
-}));
-
-// 3. MOCK FIREBASE SERVICES
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
   getApp: jest.fn(),
-}));
-
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -36,6 +26,26 @@ jest.mock('firebase/firestore', () => ({
 
 jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
+}));
+
+// 2. MOCK YOUR LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This prevents src/lib/firebase.js from running and crashing with "invalid-api-key"
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: { email: 'test@example.com', uid: '123' }
+  },
+  db: {},
+  storage: {},
+}));
+
+// 3. MOCK THE API MODULE
+jest.mock('@/features/auth/authAPI', () => ({
+  __esModule: true,
+  createUserWithEmailAndPasswordAPI: jest.fn(),
+  signInWithEmailAndPasswordAPI: jest.fn(),
+  signOutAPI: jest.fn(),
+  getUserDataAPI: jest.fn(),
+  resetPasswordAPI: jest.fn(),
 }));
 
 // 4. IMPORT REDUCER AND TYPES

@@ -4,33 +4,10 @@ import { configureStore } from '@reduxjs/toolkit';
 import { UserData } from '@/features/auth/authSlice';
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// 1. MOCK THE SLICE
-jest.mock('@/features/auth/authSlice', () => {
-  const actual = jest.requireActual('@/features/auth/authSlice') as any;
-  return {
-    __esModule: true,
-    ...actual,
-    getUserData: jest.fn(() => ({ type: 'auth/getUserData/pending' })),
-  };
-});
-
-// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This prevents "Firebase: Error (auth/invalid-api-key)"
-jest.mock('@/lib/firebase', () => ({
-  auth: {},
-  db: {},
-  storage: {},
-}));
-
-// 3. MOCK FIREBASE SERVICES
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(),
-  getApps: jest.fn(() => []),
-  getApp: jest.fn(),
-}));
-
+// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
 jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
+  __esModule: true,
+  getAuth: jest.fn(),
   createUserWithEmailAndPassword: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
   signOut: jest.fn(),
@@ -40,6 +17,12 @@ jest.mock('firebase/auth', () => ({
   sendPasswordResetEmail: jest.fn(),
 }));
 
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(),
+}));
+
 jest.mock('firebase/firestore', () => ({
   getFirestore: jest.fn(() => ({})),
 }));
@@ -47,6 +30,36 @@ jest.mock('firebase/firestore', () => ({
 jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
+
+// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This prevents "Firebase: Error (auth/invalid-api-key)"
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: { email: 'test@example.com', uid: '123' }
+  },
+  db: {},
+  storage: {},
+}));
+
+// 3. MOCK THE API MODULE
+jest.mock('@/features/auth/authAPI', () => ({
+  __esModule: true,
+  createUserWithEmailAndPasswordAPI: jest.fn(),
+  signInWithEmailAndPasswordAPI: jest.fn(),
+  signOutAPI: jest.fn(),
+  getUserDataAPI: jest.fn(),
+  resetPasswordAPI: jest.fn(),
+}));
+
+// 4. MOCK THE SLICE
+jest.mock('@/features/auth/authSlice', () => {
+  const actual = jest.requireActual('@/features/auth/authSlice') as any;
+  return {
+    __esModule: true,
+    ...actual,
+    getUserData: jest.fn(() => ({ type: 'auth/getUserData/pending' })),
+  };
+});
 
 // 4. IMPORTS
 import { AuthInitializer } from '@/components/authentication/authInitializer';

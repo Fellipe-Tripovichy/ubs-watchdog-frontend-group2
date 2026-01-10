@@ -1,22 +1,9 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 
-// 1. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
-// This stops src/lib/firebase.js from running getAuth() with an invalid key
-jest.mock('@/lib/firebase', () => ({
-  auth: {},
-  db: {},
-  storage: {},
-}));
-
-// 2. Mock Firebase SDKs
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(),
-  getApps: jest.fn(() => []),
-  getApp: jest.fn(),
-}));
-
+// 1. MOCK FIREBASE SERVICES FIRST (before @/lib/firebase)
 jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
+  __esModule: true,
+  getAuth: jest.fn(),
   createUserWithEmailAndPassword: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
   signOut: jest.fn(),
@@ -24,6 +11,12 @@ jest.mock('firebase/auth', () => ({
   sendEmailVerification: jest.fn(),
   onAuthStateChanged: jest.fn(),
   sendPasswordResetEmail: jest.fn(),
+}));
+
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -34,8 +27,19 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// Mock authAPI
+// 2. MOCK LOCAL FIREBASE CONFIG (CRITICAL FIX)
+// This stops src/lib/firebase.js from running getAuth() with an invalid key
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: { email: 'test@example.com', uid: '123' }
+  },
+  db: {},
+  storage: {},
+}));
+
+// 3. Mock authAPI
 jest.mock('@/features/auth/authAPI', () => ({
+  __esModule: true,
   signOutAPI: jest.fn(),
   createUserWithEmailAndPasswordAPI: jest.fn(),
   signInWithEmailAndPasswordAPI: jest.fn(),
