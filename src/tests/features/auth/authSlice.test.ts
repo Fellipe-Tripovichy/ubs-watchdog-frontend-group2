@@ -10,40 +10,33 @@ jest.mock('@/lib/firebase', () => ({
   storage: {},
 }));
 
-// 2. MOCK FIREBASE LIBRARIES
-jest.mock('firebase/app', () => ({
-  __esModule: true,
-  initializeApp: jest.fn(),
-  getApps: jest.fn(() => []),
-  getApp: jest.fn(),
-}));
+// 2. MOCK THE API MODULE
+// Create mock functions with default implementations to ensure real functions are NEVER called
+jest.mock('@/features/auth/authAPI', () => {
+  const mockCreateUserWithEmailAndPasswordAPI = jest.fn() as jest.MockedFunction<any>;
+  const mockSignInWithEmailAndPasswordAPI = jest.fn() as jest.MockedFunction<any>;
+  const mockSignOutAPI = jest.fn() as jest.MockedFunction<any>;
+  const mockGetUserDataAPI = jest.fn() as jest.MockedFunction<any>;
+  const mockResetPasswordAPI = jest.fn() as jest.MockedFunction<any>;
 
-jest.mock('firebase/auth', () => ({
-  __esModule: true,
-  getAuth: jest.fn(() => ({})),
-}));
+  // Set default implementations to prevent real functions from being called
+  mockCreateUserWithEmailAndPasswordAPI.mockResolvedValue(null);
+  mockSignInWithEmailAndPasswordAPI.mockResolvedValue(null);
+  mockSignOutAPI.mockResolvedValue(false);
+  mockGetUserDataAPI.mockResolvedValue(null);
+  mockResetPasswordAPI.mockResolvedValue(false);
 
-jest.mock('firebase/firestore', () => ({
-  __esModule: true,
-  getFirestore: jest.fn(() => ({})),
-}));
+  return {
+    __esModule: true,
+    createUserWithEmailAndPasswordAPI: mockCreateUserWithEmailAndPasswordAPI,
+    signInWithEmailAndPasswordAPI: mockSignInWithEmailAndPasswordAPI,
+    signOutAPI: mockSignOutAPI,
+    getUserDataAPI: mockGetUserDataAPI,
+    resetPasswordAPI: mockResetPasswordAPI,
+  };
+});
 
-jest.mock('firebase/storage', () => ({
-  __esModule: true,
-  getStorage: jest.fn(() => ({})),
-}));
-
-// 3. MOCK THE API MODULE
-jest.mock('@/features/auth/authAPI', () => ({
-  __esModule: true,
-  createUserWithEmailAndPasswordAPI: jest.fn(),
-  signInWithEmailAndPasswordAPI: jest.fn(),
-  signOutAPI: jest.fn(),
-  getUserDataAPI: jest.fn(),
-  resetPasswordAPI: jest.fn(),
-}));
-
-// 4. IMPORTS
+// 3. IMPORTS
 import authReducer, {
   setToken,
   clearToken,
