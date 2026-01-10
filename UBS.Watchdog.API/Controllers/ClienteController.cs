@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UBS.Watchdog.Application.DTOs.Cliente;
+using UBS.Watchdog.Domain.Enums;
 
 
 namespace UBS.Watchdog.API.Controllers;
@@ -16,15 +17,48 @@ public class ClienteController : ControllerBase
         _clienteService = clienteService;
     }
 
-    [HttpPost]
+    [HttpPost (Name = "CriarCliente")]
     public async Task<IActionResult> Create([FromBody] ClienteRequest request)
     {
-        return null;
+        return Created("", await _clienteService.CriarAsync(request));
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = "ObterCliente")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        return null;
+        var cliente = await _clienteService.ObterPorIdAsync(id);
+        if (cliente == null) return NotFound($"Cliente com ID '{id}' não existe.");
+        return Ok(cliente);
+    }
+
+    [HttpGet(Name = "ObterTodosClientes")]
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(await _clienteService.ListarTodosAsync());
+    }
+
+    [HttpGet("{pais:string}", Name = "ObterClientesDeUmPaís")]
+    public async Task<IActionResult> GetByPais(string pais)
+    {
+        return Ok(await _clienteService.ListarPorPaisAsync(pais));
+    }
+
+    [HttpGet("{NivelRisco", Name =  "ObterTodosPorNivelRisco")]
+    public async Task<IActionResult> GetByNivelRisco(string nivelRisco)
+    {
+        NivelRisco nivelRiscoValido;
+        if (NivelRisco.TryParse(nivelRisco, out nivelRiscoValido) == false)
+        {
+            return BadRequest("Nível de risco inválido. As opções aceitas são: 'Baixo', 'Médio' e 'Alto'.");
+        }
+        return Ok(await _clienteService.ListarPorNivelRiscoAsync(nivelRiscoValido));
+    }
+
+    [HttpDelete("{id:guid}", Name = "RemoverCliente")]
+    public async Task<IActionResult> DeleteById(Guid id)
+    {
+        if (_clienteService.ObterPorIdAsync(id) == null) return NotFound($"Cliente com ID '{id}' não existe.");
+        await _clienteService.DeletarAsync(id);
+        return NoContent();
     }
 }
