@@ -1,25 +1,21 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import type { RootState } from '@/lib/store';
 import { UserData } from '@/features/auth/authSlice';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// 1. Define the action spy GLOBALLY so it can be used in the mock factory
-const mockGetUserData = jest.fn(() => ({ type: 'auth/getUserData/pending' }));
-
-// 2. Mock the authSlice to intercept the getUserData action creator
+// 1. MOCK THE SLICE
 jest.mock('@/features/auth/authSlice', () => {
-  // Cast to 'any' to fix the spread error
   const actual = jest.requireActual('@/features/auth/authSlice') as any;
   return {
     __esModule: true,
     ...actual,
-    getUserData: mockGetUserData,
+    // We replace the real action creator with a Jest spy
+    getUserData: jest.fn(() => ({ type: 'auth/getUserData/pending' })),
   };
 });
 
-// 3. Mock Firebase (Required to prevent runtime errors during imports)
+// 2. MOCK FIREBASE
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -45,9 +41,9 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// Import component and slice AFTER mocks
+// 3. IMPORTS
 import { AuthInitializer } from '@/components/authentication/authInitializer';
-import authReducer, { setToken } from '@/features/auth/authSlice';
+import authReducer from '@/features/auth/authSlice';
 
 describe('AuthInitializer', () => {
   beforeEach(() => {
@@ -182,8 +178,9 @@ describe('AuthInitializer', () => {
       expect(state.auth.loading).toBe(false);
     });
     
-    // FIX: Check action spy
-    expect(mockGetUserData).not.toHaveBeenCalled();
-  });
+    // FIX APPLIED HERE: Added 'as any'
+    const { getUserData } = jest.requireMock('@/features/auth/authSlice') as any;
 
+    expect(getUserData).not.toHaveBeenCalled();
+  });
 });

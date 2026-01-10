@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from '@/components/ui/popover';
 
