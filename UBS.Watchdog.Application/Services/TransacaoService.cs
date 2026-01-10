@@ -19,7 +19,10 @@ namespace UBS.Watchdog.Application.Services
         Task<TransacaoResponse> RegistrarAsync(TransacaoRequest request);
         Task<TransacaoResponse?> ObterPorIdAsync(Guid transacaoId);
         Task<List<TransacaoResponse>> ListarTodasAsync();
-        Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId);
+        Task<List<TransacaoResponse>> ListarPorClienteIdAsync(
+            Guid clienteId,
+            DateTime? dataInicio = null,
+            DateTime? dataFim = null);
     }
     public class TransacaoService : ITransacaoService
     {
@@ -92,7 +95,7 @@ namespace UBS.Watchdog.Application.Services
             return TransacaoMappings.toResponse(transacaoCompleta);
         }
 
-        public async Task<List<TransacaoResponse>> ListarPorClienteAsync(Guid clienteId,DateTime? dataInicio = null,DateTime? dataFim = null)
+        public async Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId, DateTime? dataInicio = null, DateTime? dataFim = null)
         {
             _logger.LogInformation(
                 "Listando transações do cliente {ClienteId}. Período: {DataInicio} a {DataFim}",

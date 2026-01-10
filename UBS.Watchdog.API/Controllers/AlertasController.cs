@@ -1,20 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UBS.Watchdog.Application.Services;
 using UBS.Watchdog.Application.DTOs.Alerta;
 using UBS.Watchdog.Domain.Enums;
 
 namespace UBS.Watchdog.API.Controllers;
 
 [ApiController]
-[Route("api/{controller}")]
-public class AlertaController : ControllerBase
+[Route("api/alertas")]
+public class AlertasController : ControllerBase
 {
-    //TODO: passar AlertaService
-    private readonly AlertaService _alertaService;
 
-    public AlertaController(AlertaService alertaService)
+    private readonly IAlertaService _alertaService;
+
+    public AlertasController(IAlertaService alertaService)
     {
         _alertaService = alertaService;
     }
+
+    #region HttpGet
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -26,7 +29,7 @@ public class AlertaController : ControllerBase
     public async Task<IActionResult> GetByID(Guid id)
     {
         var alerta = await _alertaService.ObterPorIdAsync(id);
-        if (alerta == null) return NotFound($"Transação com ID '{id}' não existe.");
+        if (alerta == null) { return NotFound($"Alerta com ID '{id}' não existe."); }
         return Ok(alerta);
     }
     
@@ -36,19 +39,26 @@ public class AlertaController : ControllerBase
         return Ok(await _alertaService.ListarPorClienteAsync(clienteId));
     }
 
-    [HttpGet ("status/{status:StatusAlerta}")]
-    public async Task<IActionResult> GetAllByStatus(StatusAlerta status)
+    [HttpGet ("status/{status}")]
+    public async Task<IActionResult> GetAllByStatus([FromRoute] StatusAlerta status)
     {
         return Ok(await _alertaService.ListarPorStatusAsync(status));
     }
 
     [HttpGet("filtro")]
-    public async Task<IActionResult> GetByFiltro(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId)
+    public async Task<IActionResult> GetByFiltro(
+        [FromQuery] StatusAlerta? status,
+        [FromQuery] SeveridadeAlerta? severidade,
+        [FromQuery] Guid? clienteId)
     {
         return Ok(await _alertaService.ListarComFiltrosAsync(status, severidade, clienteId));
     }
 
-    [HttpPatch("iniciar-analise/{id:guid}")]
+    #endregion
+
+    #region HttpPatch
+
+    [HttpPatch("{id:guid}/iniciar-analise")]
     public async Task<IActionResult> StartAnalysis(Guid id)
     {
         return Ok(await _alertaService.IniciarAnaliseAsync(id));
@@ -59,4 +69,6 @@ public class AlertaController : ControllerBase
     { 
         return Ok(await _alertaService.ResolverAsync(id, request));
     }
+
+    #endregion
 }
