@@ -12,18 +12,35 @@ using UBS.Watchdog.Infrastructure.Repositories.Transacoes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO: CONFIGURAR SERILOG
-//Log.Logger = new LoggerConfiguration()
-//	.MinimumLevel.Information()
-//	.MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
-//	.Enrich.FromLogContext()
-//	.WriteTo.Console()
-//	.WriteTo.File("logs/financial-compliance-.log", rollingInterval: RollingInterval.Day)
-//	.CreateLogger();
+#region SERILOG
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/financial-compliance-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-//builder.Host.UseSerilog();
+builder.Host.UseSerilog();
+#endregion
 
-// Add services to the container.
+#region CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:5174"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+#endregion
+
 #region Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -40,7 +57,9 @@ builder.Services.AddSwaggerGen(c =>
 		}
 	});
 });
+#endregion
 
+#region DI
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<ITransacaoRepository, TransacaoRepository>();
 builder.Services.AddScoped<IAlertaRepository, AlertaRepository>();
@@ -78,24 +97,74 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 #endregion
 
-
 var app = builder.Build();
+
+#region Auto Migration
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        Log.Information("Verificando migrations pendentes...");
+
+        var pendingMigrations = context.Database.GetPendingMigrations();
+        if (pendingMigrations.Any())
+        {
+            Log.Information("Aplicando {Count} migrations pendentes", pendingMigrations.Count());
+            context.Database.Migrate();
+            Log.Information("Migrations aplicadas com sucesso!");
+        }
+        else
+        {
+            Log.Information("Nenhuma migration pendente");
+        }
+
+        // TODO: Seed data
+        // await DbSeeder.SeedAsync(context);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Erro ao aplicar migrations");
+        throw;
+    }
+}
+#endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
-	// Executando migração automaticamente
-	//using var scope =  app.Services.CreateScope();
-	//var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-	//dbContext.Database.Migrate();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "UBS Watchdog API V1");
+        c.RoutePrefix = string.Empty;
+    });
 }
 
+app.UseSerilogRequestLogging();
+
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+Log.Information("Iniciando UBS Watchdog API...");
+Log.Information("Environment: {Environment}", app.Environment.EnvironmentName);
+Log.Information("Swagger: http://localhost:5433");
+
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Aplicação falhou ao iniciar");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

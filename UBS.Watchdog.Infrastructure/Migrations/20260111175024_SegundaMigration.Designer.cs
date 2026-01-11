@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UBS.Watchdog.Infrastructure.Data;
@@ -11,10 +12,13 @@ using UBS.Watchdog.Infrastructure.Data;
 namespace UBS.Watchdog.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260111175024_SegundaMigration")]
+    partial class SegundaMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
+#pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.22")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
@@ -183,6 +187,7 @@ namespace UBS.Watchdog.Infrastructure.Migrations
                 {
                     b.Navigation("Alertas");
                 });
+#pragma warning restore 612, 618
         }
     }
 }

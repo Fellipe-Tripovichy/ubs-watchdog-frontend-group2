@@ -22,7 +22,7 @@ namespace UBS.Watchdog.Infrastructure.Data
 		{
 			base.OnModelCreating(modelBuilder);
 			modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-			Console.WriteLine("CONFIGURATIONS APLICADAS");
+			Console.WriteLine("Configurations Aplicadas");
 		}
 	}
 }

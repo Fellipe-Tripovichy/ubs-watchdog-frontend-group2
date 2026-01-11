@@ -15,19 +15,29 @@ RUN dotnet restore "UBS.Watchdog.API/UBS.Watchdog.API.csproj"
 COPY . .
 
 # Build com restore
-RUN dotnet build "UBS.Watchdog.sln" -c Release
+WORKDIR "/src/UBS.Watchdog.API"
+RUN dotnet build "UBS.Watchdog.API.csproj" -c Release -o /app/build
 
 # Build e publish
-RUN dotnet publish "./UBS.Watchdog.API/UBS.Watchdog.API.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/publish \
-    --no-build
+FROM build AS publish
+RUN dotnet publish "UBS.Watchdog.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Build runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish .
 
-# Expondo porta
-EXPOSE 5432
+# porta
+EXPOSE 5433
+
+# Copiar arquivos publicados do stage anterior
+COPY --from=publish /app/publish .
+
+# Criar diretório de logs
+RUN mkdir -p /app/logs
+
+# Definir variáveis de ambiente
+ENV ASPNETCORE_URLS=http://+:5433
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+# Ponto de entrada
 ENTRYPOINT ["dotnet", "UBS.Watchdog.API.dll"]
