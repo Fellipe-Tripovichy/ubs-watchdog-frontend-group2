@@ -197,4 +197,214 @@ describe('IconButton', () => {
     const button = container.querySelector('[data-slot="button"]') as HTMLButtonElement;
     expect(button.type).toBe('submit');
   });
+
+  describe('asChild edge cases', () => {
+    it('should throw error when asChild is true but children is a string', () => {
+      // Suppress console.error for expected error
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <IconButton icon="menu" asChild>
+            Invalid string child
+          </IconButton>
+        );
+      }).toThrow('IconButton with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should throw error when asChild is true but children is a number', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <IconButton icon="menu" asChild>
+            {123}
+          </IconButton>
+        );
+      }).toThrow('IconButton with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should throw error when asChild is true but children is null', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <IconButton icon="menu" asChild>
+            {null}
+          </IconButton>
+        );
+      }).toThrow('IconButton with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle asChild when icon is invalid (iconElement is null)', () => {
+      const { container } = render(
+        <IconButton icon="nonexistent-icon-name-xyz" asChild>
+          <a href="/test">Link</a>
+        </IconButton>
+      );
+      
+      const link = container.querySelector('a[href="/test"]') || container.querySelector('a');
+      expect(link).toBeInTheDocument();
+      // Icon should not be rendered when icon name is invalid (line 103: newChildren = existingChildren)
+      const svg = container.querySelector('svg');
+      expect(svg).not.toBeInTheDocument();
+    });
+
+    it('should handle asChild when icon is empty string (iconElement is null)', () => {
+      const { container } = render(
+        <IconButton icon="" asChild>
+          <a href="/test">Link</a>
+        </IconButton>
+      );
+      
+      const link = container.querySelector('a[href="/test"]') || container.querySelector('a');
+      expect(link).toBeInTheDocument();
+      // Icon should not be rendered when icon name is empty (line 103: newChildren = existingChildren)
+      const svg = container.querySelector('svg');
+      expect(svg).not.toBeInTheDocument();
+    });
+
+    it('should handle asChild with children elements and assign keys when needed', () => {
+      // Test the code path where children elements are processed
+      // This exercises the map function (line 92-97), including the key assignment check (line 93-94)
+      // Note: React.Children.toArray normalizes keys, so the null key check may not be hit in practice
+      // but this test ensures the code path is exercised
+      const { container } = render(
+        <IconButton icon="menu" asChild>
+          <div>
+            <span>Child 1</span>
+            <span>Child 2</span>
+          </div>
+        </IconButton>
+      );
+      
+      // The component should render without errors
+      const div = container.querySelector('div');
+      expect(div).toBeInTheDocument();
+      
+      // Icon should be rendered
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      
+      // Children should be present
+      const spans = container.querySelectorAll('span');
+      expect(spans.length).toBeGreaterThanOrEqual(2);
+      
+      // Verify that the icon was added to the children
+      const allSvgElements = container.querySelectorAll('svg');
+      expect(allSvgElements.length).toBeGreaterThan(0);
+    });
+
+    it('should handle asChild with children that might have null keys after processing', () => {
+      // Attempt to test the key assignment path (line 94) by creating elements
+      // React.Children.toArray may normalize keys, but we test the code path anyway
+      const TestComponent = () => {
+        // Create children elements that might have null/undefined keys
+        const child1 = React.createElement('span', null, 'Test 1');
+        const child2 = React.createElement('span', null, 'Test 2');
+        
+        return (
+          <IconButton icon="menu" asChild>
+            <div>
+              {child1}
+              {child2}
+            </div>
+          </IconButton>
+        );
+      };
+      
+      const { container } = render(<TestComponent />);
+      
+      const div = container.querySelector('div');
+      expect(div).toBeInTheDocument();
+      
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      
+      const spans = container.querySelectorAll('span');
+      expect(spans.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should handle asChild with existing children and icon', () => {
+      const { container } = render(
+        <IconButton icon="menu" asChild>
+          <a href="/test">
+            <span>Existing child</span>
+          </a>
+        </IconButton>
+      );
+      
+      const link = container.querySelector('a[href="/test"]');
+      expect(link).toBeInTheDocument();
+      
+      // Both existing child and icon should be present
+      const span = container.querySelector('span');
+      expect(span).toBeInTheDocument();
+      expect(span?.textContent).toBe('Existing child');
+      
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+    });
+
+    it('should handle asChild with child element that has existing children and invalid icon', () => {
+      const { container } = render(
+        <IconButton icon="invalid-icon-xyz" asChild>
+          <div>
+            <span>Child content</span>
+          </div>
+        </IconButton>
+      );
+      
+      const div = container.querySelector('div');
+      expect(div).toBeInTheDocument();
+      
+      // Existing children should be preserved when icon is invalid
+      const span = container.querySelector('span');
+      expect(span).toBeInTheDocument();
+      expect(span?.textContent).toBe('Child content');
+      
+      // No icon should be rendered
+      const svg = container.querySelector('svg');
+      expect(svg).not.toBeInTheDocument();
+    });
+
+    it('should handle asChild with empty child element', () => {
+      const { container } = render(
+        <IconButton icon="menu" asChild>
+          <div />
+        </IconButton>
+      );
+      
+      const div = container.querySelector('div');
+      expect(div).toBeInTheDocument();
+      
+      // Icon should still be rendered
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+    });
+  });
+
+  describe('getIconSize edge cases', () => {
+    it('should handle null size prop', () => {
+      const { container } = render(<IconButton icon="menu" size={null as any} />);
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      // When size is null, it should default to "size-6"
+      expect(svg).toHaveClass('size-6');
+    });
+
+    it('should handle undefined size prop', () => {
+      const { container } = render(<IconButton icon="menu" size={undefined} />);
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      // When size is undefined, it should default to "size-6"
+      expect(svg).toHaveClass('size-6');
+    });
+  });
 });

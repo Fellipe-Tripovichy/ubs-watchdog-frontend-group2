@@ -143,6 +143,34 @@ describe('Auth API Tests', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should reject with error when onAuthStateChanged triggers error callback', async () => {
+      const mockError = new Error('Authentication error');
+      const mockOnAuthStateChanged = onAuthStateChanged as jest.Mock;
+      let unsubscribeFunction: jest.Mock | null = null;
+
+      mockOnAuthStateChanged.mockImplementation((auth: any, successCallback: any, errorCallback: any) => {
+        // Create unsubscribe function that can be verified
+        const mockUnsubscribe = jest.fn();
+        unsubscribeFunction = mockUnsubscribe;
+
+        // Simulate error callback being triggered asynchronously (lines 46-47)
+        // The error callback will call unsubscribe() which is the function we return
+        Promise.resolve().then(() => {
+          if (errorCallback) {
+            errorCallback(mockError);
+          }
+        });
+
+        return mockUnsubscribe;
+      });
+
+      // Wait for the error callback to be triggered and promise to reject
+      await expect(getUserDataAPI()).rejects.toEqual(mockError);
+      
+      // Verify unsubscribe is called in the error callback (line 46)
+      expect(unsubscribeFunction).toHaveBeenCalled();
+    });
   });
 
   describe('resetPasswordAPI', () => {

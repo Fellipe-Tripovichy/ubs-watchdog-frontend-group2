@@ -13,7 +13,15 @@ jest.mock('next/link', () => {
 });
 
 // Import after mocks are set up
-import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { 
+  Breadcrumb, 
+  BreadcrumbList, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbPage, 
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis 
+} from '@/components/ui/breadcrumb';
 import { usePathname } from 'next/navigation';
 
 // Get reference to the mocked function
@@ -231,5 +239,171 @@ describe('Breadcrumb', () => {
     render(<Breadcrumb />);
     // Should still render Home
     expect(screen.getByText('Home')).toBeInTheDocument();
+  });
+});
+
+describe('BreadcrumbEllipsis', () => {
+  it('should render', () => {
+    const { container } = render(<BreadcrumbEllipsis />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toBeInTheDocument();
+  });
+
+  it('should have data-slot attribute', () => {
+    const { container } = render(<BreadcrumbEllipsis />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toBeInTheDocument();
+  });
+
+  it('should apply default classes', () => {
+    const { container } = render(<BreadcrumbEllipsis />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toHaveClass('flex', 'size-9', 'items-center', 'justify-center');
+  });
+
+  it('should render MoreHorizontal icon', () => {
+    const { container } = render(<BreadcrumbEllipsis />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    const svg = ellipsis?.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+  });
+
+  it('should render "More" text for screen readers', () => {
+    render(<BreadcrumbEllipsis />);
+    const moreText = screen.getByText('More');
+    expect(moreText).toBeInTheDocument();
+    expect(moreText).toHaveClass('sr-only');
+  });
+
+  it('should apply custom className', () => {
+    const { container } = render(<BreadcrumbEllipsis className="custom-class" />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toHaveClass('custom-class');
+  });
+
+  it('should pass through additional props', () => {
+    const { container } = render(<BreadcrumbEllipsis data-testid="custom-ellipsis" id="ellipsis-id" />);
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toHaveAttribute('data-testid', 'custom-ellipsis');
+    expect(ellipsis).toHaveAttribute('id', 'ellipsis-id');
+  });
+
+  it('should always render default content even when children are provided', () => {
+    // BreadcrumbEllipsis doesn't use children prop, so it always renders the default MoreHorizontal icon
+    const { container } = render(
+      <BreadcrumbEllipsis>
+        <span>Custom Ellipsis</span>
+      </BreadcrumbEllipsis>
+    );
+    const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
+    expect(ellipsis).toBeInTheDocument();
+    // Should always render default MoreHorizontal icon
+    const svg = ellipsis?.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    // Should always render "More" text
+    expect(screen.getByText('More')).toBeInTheDocument();
+  });
+});
+
+describe('Exported breadcrumb components - independent usage', () => {
+  it('should render BreadcrumbList independently', () => {
+    const { container } = render(
+      <BreadcrumbList>
+        <BreadcrumbItem>Test</BreadcrumbItem>
+      </BreadcrumbList>
+    );
+    const list = container.querySelector('[data-slot="breadcrumb-list"]');
+    expect(list).toBeInTheDocument();
+    expect(list?.tagName).toBe('OL');
+  });
+
+  it('should render BreadcrumbItem independently', () => {
+    const { container } = render(<BreadcrumbItem>Test Item</BreadcrumbItem>);
+    const item = container.querySelector('[data-slot="breadcrumb-item"]');
+    expect(item).toBeInTheDocument();
+    expect(item?.tagName).toBe('LI');
+  });
+
+  it('should render BreadcrumbLink independently', () => {
+    const { container } = render(
+      <BreadcrumbLink href="/test">
+        <a href="/test">Link</a>
+      </BreadcrumbLink>
+    );
+    const link = container.querySelector('[data-slot="breadcrumb-link"]');
+    expect(link).toBeInTheDocument();
+    expect(link?.tagName).toBe('DIV');
+  });
+
+  it('should render BreadcrumbLink without href prop', () => {
+    const { container } = render(
+      <BreadcrumbLink>
+        <span>Link without href</span>
+      </BreadcrumbLink>
+    );
+    const link = container.querySelector('[data-slot="breadcrumb-link"]');
+    expect(link).toBeInTheDocument();
+  });
+
+  it('should render BreadcrumbPage independently', () => {
+    const { container } = render(<BreadcrumbPage>Current Page</BreadcrumbPage>);
+    const page = container.querySelector('[data-slot="breadcrumb-page"]');
+    expect(page).toBeInTheDocument();
+    expect(page?.tagName).toBe('SPAN');
+    expect(page).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('should render BreadcrumbSeparator independently', () => {
+    const { container } = render(<BreadcrumbSeparator />);
+    const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
+    expect(separator).toBeInTheDocument();
+    expect(separator?.tagName).toBe('LI');
+    expect(separator).toHaveAttribute('aria-hidden', 'true');
+    const svg = separator?.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+  });
+
+  it('should render BreadcrumbSeparator with custom children', () => {
+    const { container } = render(
+      <BreadcrumbSeparator>
+        <span>Custom Separator</span>
+      </BreadcrumbSeparator>
+    );
+    const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
+    expect(separator).toBeInTheDocument();
+    expect(screen.getByText('Custom Separator')).toBeInTheDocument();
+    // Should not render default ChevronRight when children are provided
+    const svg = separator?.querySelector('svg');
+    expect(svg).not.toBeInTheDocument();
+  });
+
+  it('should apply custom className to BreadcrumbList', () => {
+    const { container } = render(<BreadcrumbList className="custom-list-class">Test</BreadcrumbList>);
+    const list = container.querySelector('[data-slot="breadcrumb-list"]');
+    expect(list).toHaveClass('custom-list-class');
+  });
+
+  it('should apply custom className to BreadcrumbItem', () => {
+    const { container } = render(<BreadcrumbItem className="custom-item-class">Test</BreadcrumbItem>);
+    const item = container.querySelector('[data-slot="breadcrumb-item"]');
+    expect(item).toHaveClass('custom-item-class');
+  });
+
+  it('should apply custom className to BreadcrumbLink', () => {
+    const { container } = render(<BreadcrumbLink className="custom-link-class">Test</BreadcrumbLink>);
+    const link = container.querySelector('[data-slot="breadcrumb-link"]');
+    expect(link).toHaveClass('custom-link-class');
+  });
+
+  it('should apply custom className to BreadcrumbPage', () => {
+    const { container } = render(<BreadcrumbPage className="custom-page-class">Test</BreadcrumbPage>);
+    const page = container.querySelector('[data-slot="breadcrumb-page"]');
+    expect(page).toHaveClass('custom-page-class');
+  });
+
+  it('should apply custom className to BreadcrumbSeparator', () => {
+    const { container } = render(<BreadcrumbSeparator className="custom-separator-class" />);
+    const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
+    expect(separator).toHaveClass('custom-separator-class');
   });
 });

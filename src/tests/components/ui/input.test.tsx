@@ -288,4 +288,161 @@ describe('Input', () => {
     
     expect(validationRule).toHaveBeenCalledWith('test');
   });
+
+  it('should clear pending timeout when validationRule changes', async () => {
+    const validationRule1 = jest.fn(() => false);
+    const { rerender } = render(<Input validationRule={validationRule1} />);
+    const input = screen.getByRole('textbox');
+    
+    // Make field touched and give it a value
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.blur(input);
+    
+    // Wait for initial validation to complete
+    await waitFor(() => {
+      expect(validationRule1).toHaveBeenCalled();
+    });
+    
+    // Clear timers
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    
+    // Trigger a change to create a pending timeout
+    fireEvent.change(input, { target: { value: 'test2' } });
+    
+    // Verify timeout was created (validationRule1 should not have been called with new value yet)
+    expect(validationRule1).not.toHaveBeenCalledWith('test2');
+    
+    // Change validationRule - this should clear the timeout (line 100) and validate if touched (line 104)
+    const validationRule2 = jest.fn(() => true);
+    rerender(<Input validationRule={validationRule2} />);
+    
+    // Since field is touched and has value, validationRule2 should be called (line 104)
+    await waitFor(() => {
+      expect(validationRule2).toHaveBeenCalledWith('test2');
+    });
+  });
+
+  it('should clear pending timeout when errorMessage changes', async () => {
+    const validationRule = jest.fn(() => false);
+    const { rerender } = render(<Input validationRule={validationRule} errorMessage="Error 1" />);
+    const input = screen.getByRole('textbox');
+    
+    // Make field touched and give it a value
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.blur(input);
+    
+    // Wait for initial validation
+    await waitFor(() => {
+      expect(screen.getByText('Error 1')).toBeInTheDocument();
+    });
+    
+    // Clear timers
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+    
+    // Change the value to create a new pending timeout
+    fireEvent.change(input, { target: { value: 'test2' } });
+    
+    // Change errorMessage - this should clear timeout (line 100) and validate if touched (line 104)
+    rerender(<Input validationRule={validationRule} errorMessage="Error 2" />);
+    
+    // Since field is touched and has value, should validate with new errorMessage (line 104)
+    await waitFor(() => {
+      expect(screen.getByText('Error 2')).toBeInTheDocument();
+    });
+  });
+
+  it('should validate when touched and has value on validationRule change', async () => {
+    const validationRule1 = jest.fn(() => true);
+    const { rerender } = render(<Input validationRule={validationRule1} />);
+    const input = screen.getByRole('textbox');
+    
+    // Make the field touched and give it a value
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.blur(input);
+    
+    // Change validationRule - should trigger validation (line 104)
+    const validationRule2 = jest.fn(() => false);
+    rerender(<Input validationRule={validationRule2} />);
+    
+    await waitFor(() => {
+      expect(validationRule2).toHaveBeenCalledWith('test');
+      expect(screen.getByText('Invalid input')).toBeInTheDocument();
+    });
+  });
+
+  it('should validate when touched and has value on errorMessage change', async () => {
+    const validationRule = jest.fn(() => false);
+    const { rerender } = render(<Input validationRule={validationRule} errorMessage="Error 1" />);
+    const input = screen.getByRole('textbox');
+    
+    // Make the field touched and give it a value
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.blur(input);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Error 1')).toBeInTheDocument();
+    });
+    
+    // Change errorMessage - should trigger validation with new message (line 104)
+    rerender(<Input validationRule={validationRule} errorMessage="Error 2" />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Error 2')).toBeInTheDocument();
+    });
+  });
+
+  it('should not validate when not touched on validationRule change', () => {
+    const validationRule1 = jest.fn(() => true);
+    const { rerender } = render(<Input validationRule={validationRule1} />);
+    const input = screen.getByRole('textbox');
+    
+    // Set value but don't blur (not touched)
+    fireEvent.change(input, { target: { value: 'test' } });
+    
+    // Change validationRule - should not validate because not touched
+    const validationRule2 = jest.fn(() => false);
+    rerender(<Input validationRule={validationRule2} />);
+    
+    // Should not show error because field is not touched
+    expect(screen.queryByText('Invalid input')).not.toBeInTheDocument();
+  });
+
+  it('should not validate when empty on validationRule change', () => {
+    const validationRule1 = jest.fn(() => true);
+    const { rerender } = render(<Input validationRule={validationRule1} />);
+    const input = screen.getByRole('textbox');
+    
+    // Blur empty field (touched but empty)
+    fireEvent.blur(input);
+    
+    // Change validationRule - should not validate because inputValue is empty (line 104 condition)
+    const validationRule2 = jest.fn(() => false);
+    rerender(<Input validationRule={validationRule2} />);
+    
+    // Should not show error because inputValue is empty
+    expect(screen.queryByText('Invalid input')).not.toBeInTheDocument();
+  });
+
+  it('should validate when touched and has value after validationRule and errorMessage both change', async () => {
+    const validationRule1 = jest.fn(() => true);
+    const { rerender } = render(<Input validationRule={validationRule1} errorMessage="Error 1" />);
+    const input = screen.getByRole('textbox');
+    
+    // Make the field touched and give it a value
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.blur(input);
+    
+    // Change both validationRule and errorMessage - should trigger validation (line 104)
+    const validationRule2 = jest.fn(() => false);
+    rerender(<Input validationRule={validationRule2} errorMessage="Error 2" />);
+    
+    await waitFor(() => {
+      expect(validationRule2).toHaveBeenCalledWith('test');
+      expect(screen.getByText('Error 2')).toBeInTheDocument();
+    });
+  });
 });
