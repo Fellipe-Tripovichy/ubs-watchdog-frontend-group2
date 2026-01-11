@@ -29,22 +29,30 @@ namespace UBS.Watchdog.Application.Services
     {
         public async Task<ClienteResponse> CriarAsync(ClienteRequest request) 
         {
-            //TODO:LOG
+            _logger.LogInformation(
+                "Criando cliente: Nome={Nome}, Pais={Pais}, NivelRisco={NivelRisco}",
+                request.Nome,
+                request.Pais,
+                request.NivelRisco);
+
             var cliente = Cliente.Criar(request.Nome,request.Pais,request.NivelRisco);
             await clienteRepository.AddAsync(cliente);
 
-            //TODO:LOG
+            _logger.LogInformation("Cliente criado com sucesso: ClienteId={ClienteId}", cliente.Id);
+
             return ClienteMappings.ToResponse(cliente);
         }
 
         public async Task<ClienteResponse?> ObterPorIdAsync(Guid clienteId) 
         {
-            //TODO:LOG
+            _logger.LogInformation("Buscando cliente por ID: ClienteID={ClienteId}", clienteId.ToString());
+
             var cliente = await clienteRepository.GetByIdAsync(clienteId);
 
             if (cliente == null) 
             {
-                //TODO:LOG
+                _logger.LogWarning("Cliente não encontrado: ClienteId={ClienteId}", clienteId.ToString());
+
                 return null;
             }
 
@@ -53,17 +61,23 @@ namespace UBS.Watchdog.Application.Services
 
         public async Task<List<ClienteResponse>> ListarTodosAsync() 
         {
+            _logger.LogInformation("Listando todos os clientes");
+
             var clientes = await clienteRepository.GetAllAsync();
             return ClienteMappings.ToResponseList(clientes);
         }
 
         public async Task<List<ClienteResponse>> ListarPorPaisAsync(string pais)
         {
+            _logger.LogInformation("Listando clientes por país: Pais={Pais}", pais);
+
             var clientes = await clienteRepository.GetByPaisAsync(pais);
             return ClienteMappings.ToResponseList(clientes);
         }
         public async Task<List<ClienteResponse>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco)
         {
+            _logger.LogInformation("Listando clientes por nível de risco: NivelRisco={NivelRisco}", nivelRisco);
+
             var clientes = await clienteRepository.GetByNivelRiscoAsync(nivelRisco);
             return ClienteMappings.ToResponseList(clientes);
         }
@@ -71,6 +85,8 @@ namespace UBS.Watchdog.Application.Services
         public async Task DeletarAsync(Guid id)
         {
             await clienteRepository.DeleteAsync(id);
+
+            _logger.LogInformation("Cliente removido com sucesso: ClienteId={ClienteId}", id);
         }
 
         public async Task<ClienteResponse> AtualizarStatusKycAsync(Guid id, AtualizarStatusKycRequest request)
