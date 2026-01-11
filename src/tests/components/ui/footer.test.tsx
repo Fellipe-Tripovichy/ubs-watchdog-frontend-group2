@@ -1,4 +1,3 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Footer } from '@/components/ui/footer';
 
@@ -41,7 +40,7 @@ describe('Footer', () => {
 
   it('should render Breadcrumb component', () => {
     render(<Footer />);
-    expect(screen.getByRole('navigation', { name: 'breadcrumb' })).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
   it('should render "Voltar ao topo" button', () => {

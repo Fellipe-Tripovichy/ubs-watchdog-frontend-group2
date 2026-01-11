@@ -1,4 +1,3 @@
-import { describe, it, expect, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { LinkButton } from '@/components/ui/linkButton';
 
@@ -140,5 +139,62 @@ describe('LinkButton', () => {
     const { container } = render(<LinkButton icon="chevron-left" iconLeft>Click me</LinkButton>);
     const svg = container.querySelector('svg');
     expect(svg).toHaveClass('mr-2');
+  });
+
+  it('should render iconLeft with small size (size-3)', () => {
+    const { container } = render(<LinkButton icon="chevron-left" iconLeft size="small">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveClass('mr-2', 'size-3');
+  });
+
+  it('should render iconLeft with default size (size-4)', () => {
+    const { container } = render(<LinkButton icon="chevron-left" iconLeft size="default">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveClass('mr-2', 'size-4');
+  });
+
+  it('should handle icon name using pascalCase fallback (line 19 second branch)', () => {
+    // Test an icon name that would use the pascalCaseName fallback
+    // Single word icons like "Menu" would use pascalCaseName instead of normalizedName
+    const { container } = render(<LinkButton icon="menu">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+  });
+
+  it('should handle invalid icon name and return null (line 21)', () => {
+    // Test with an invalid icon name that doesn't exist in lucide-react
+    const { container } = render(<LinkButton icon="nonexistent-icon-xyz">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeInTheDocument();
+    // Button should still render without icon
+    const button = container.querySelector('[data-slot="button"]');
+    expect(button).toBeInTheDocument();
+  });
+
+  it('should handle empty icon name', () => {
+    const { container } = render(<LinkButton icon="">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeInTheDocument();
+  });
+
+  it('should apply pb-[2px] class when icon is present', () => {
+    const { container } = render(<LinkButton icon="chevron-right">Click me</LinkButton>);
+    const contentDiv = container.querySelector('.pb-\\[2px\\]');
+    expect(contentDiv).toBeInTheDocument();
+  });
+
+  it('should not apply pb-[2px] class when icon is not present', () => {
+    const { container } = render(<LinkButton>Click me</LinkButton>);
+    const contentDiv = container.querySelector('.pb-\\[2px\\]');
+    expect(contentDiv).not.toBeInTheDocument();
+  });
+
+  it('should handle icon with single word name (pascalCase path)', () => {
+    // Single word icons use the pascalCaseName fallback (line 19)
+    const { container } = render(<LinkButton icon="x">Click me</LinkButton>);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
   });
 });

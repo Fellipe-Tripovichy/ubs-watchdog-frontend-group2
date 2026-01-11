@@ -1,4 +1,3 @@
-import { describe, it, expect, jest } from '@jest/globals';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Button } from '@/components/ui/button';
 
@@ -217,6 +216,166 @@ describe('Button', () => {
     expect(link).toBeInTheDocument();
   });
 
+  describe('asChild edge cases', () => {
+    it('should throw error when asChild is true but children is a string', () => {
+      // Suppress console.error for expected error
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <Button asChild>
+            Invalid string child
+          </Button>
+        );
+      }).toThrow('Button with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should throw error when asChild is true but children is a number', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <Button asChild>
+            {123}
+          </Button>
+        );
+      }).toThrow('Button with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should throw error when asChild is true but children is null', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <Button asChild>
+            {null}
+          </Button>
+        );
+      }).toThrow('Button with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should throw error when asChild is true but children is an array', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      expect(() => {
+        render(
+          <Button asChild>
+            <span>Child 1</span>
+            <span>Child 2</span>
+          </Button>
+        );
+      }).toThrow('Button with asChild requires a single React element as a child');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle mouse events when asChild is true', () => {
+      const { container } = render(
+        <Button asChild showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]') as HTMLElement;
+      expect(link).toBeInTheDocument();
+      
+      // Test mouse enter event (line 63)
+      fireEvent.mouseEnter(link);
+      // Component should not crash and should handle the event
+      expect(link).toBeInTheDocument();
+      
+      // Test mouse leave event (line 64)
+      fireEvent.mouseLeave(link);
+      expect(link).toBeInTheDocument();
+    });
+
+    it('should apply variant when asChild is true', () => {
+      const { container } = render(
+        <Button asChild variant="destructive" showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('data-variant', 'destructive');
+      expect(link).toHaveClass('bg-destructive', 'text-white');
+    });
+
+    it('should apply size when asChild is true', () => {
+      const { container } = render(
+        <Button asChild size="small" showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('data-size', 'small');
+      expect(link).toHaveClass('py-2', 'px-3', 'text-xs');
+    });
+
+    it('should apply className when asChild is true', () => {
+      const { container } = render(
+        <Button asChild className="custom-class" showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveClass('custom-class');
+    });
+
+    it('should apply all variants when asChild is true', () => {
+      const variants = ['default', 'destructive', 'secondary', 'link'] as const;
+      
+      variants.forEach(variant => {
+        const { container } = render(
+          <Button asChild variant={variant} showArrow={false}>
+            <a href="/test">Link</a>
+          </Button>
+        );
+        
+        const link = container.querySelector('a[href="/test"]');
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute('data-variant', variant);
+      });
+    });
+
+    it('should pass through additional props when asChild is true', () => {
+      const { container } = render(
+        <Button asChild data-testid="custom-button" id="button-id" showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]');
+      expect(link).toBeInTheDocument();
+      // Props should be merged by Slot component
+      expect(link).toHaveAttribute('data-testid', 'custom-button');
+    });
+
+    it('should handle onClick when asChild is true', () => {
+      const handleClick = jest.fn();
+      const { container } = render(
+        <Button asChild onClick={handleClick} showArrow={false}>
+          <a href="/test">Link</a>
+        </Button>
+      );
+      
+      const link = container.querySelector('a[href="/test"]') as HTMLElement;
+      fireEvent.click(link);
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('should apply margin to children wrapper when not secondary variant or not hovered', () => {
     const { container } = render(<Button variant="default">Click me</Button>);
     const childrenWrapper = container.querySelector('.ml-\\[1px\\]');
@@ -235,6 +394,48 @@ describe('Button', () => {
     // After hover, margin should be removed for secondary variant
     const updatedWrapper = container.querySelector('div');
     expect(updatedWrapper).not.toHaveClass('ml-[1px]');
+  });
+
+  it('should keep margin on children wrapper for default variant on hover', () => {
+    const { container } = render(<Button variant="default">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    const childrenWrapper = container.querySelector('div');
+    
+    expect(childrenWrapper).toHaveClass('ml-[1px]');
+    
+    fireEvent.mouseEnter(button);
+    
+    // Margin should remain for non-secondary variants even on hover
+    const updatedWrapper = container.querySelector('div');
+    expect(updatedWrapper).toHaveClass('ml-[1px]');
+  });
+
+  it('should keep margin on children wrapper for destructive variant on hover', () => {
+    const { container } = render(<Button variant="destructive">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    const childrenWrapper = container.querySelector('div');
+    
+    expect(childrenWrapper).toHaveClass('ml-[1px]');
+    
+    fireEvent.mouseEnter(button);
+    
+    // Margin should remain for non-secondary variants even on hover
+    const updatedWrapper = container.querySelector('div');
+    expect(updatedWrapper).toHaveClass('ml-[1px]');
+  });
+
+  it('should keep margin on children wrapper for link variant on hover', () => {
+    const { container } = render(<Button variant="link">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    const childrenWrapper = container.querySelector('div');
+    
+    expect(childrenWrapper).toHaveClass('ml-[1px]');
+    
+    fireEvent.mouseEnter(button);
+    
+    // Margin should remain for non-secondary variants even on hover
+    const updatedWrapper = container.querySelector('div');
+    expect(updatedWrapper).toHaveClass('ml-[1px]');
   });
 
   it('should handle multiple hover state changes', () => {
@@ -264,5 +465,119 @@ describe('Button', () => {
     const { container } = render(<Button>Click me</Button>);
     const arrowContainer = container.querySelector('.relative.inline-flex.items-center.ml-2');
     expect(arrowContainer).toBeInTheDocument();
+  });
+
+  it('should handle mouseLeave event to reset hover state', () => {
+    const { container } = render(<Button>Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    
+    // Initially ChevronRight should be visible
+    let svgs = container.querySelectorAll('svg');
+    let chevron = Array.from(svgs).find(svg => 
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
+    );
+    expect(chevron).toBeInTheDocument();
+    
+    // On hover, ArrowRight should be visible
+    fireEvent.mouseEnter(button);
+    svgs = container.querySelectorAll('svg');
+    let arrow = Array.from(svgs).find(svg => 
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1') &&
+      !svg.classList.contains('opacity-0')
+    );
+    expect(arrow).toBeInTheDocument();
+    
+    // On mouse leave, should reset to initial state
+    fireEvent.mouseLeave(button);
+    svgs = container.querySelectorAll('svg');
+    chevron = Array.from(svgs).find(svg => 
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
+    );
+    expect(chevron).toBeInTheDocument();
+  });
+
+  it('should apply correct arrow classes for default variant on hover', () => {
+    const { container } = render(<Button variant="default">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    
+    fireEvent.mouseEnter(button);
+    
+    const svgs = container.querySelectorAll('svg');
+    svgs.forEach(svg => {
+      expect(svg).toHaveClass('text-primary-foreground');
+    });
+    
+    // ArrowRight should be visible and translated on hover
+    const arrowRight = Array.from(svgs).find(svg => 
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
+    );
+    expect(arrowRight).toBeInTheDocument();
+  });
+
+  it('should apply correct arrow classes for non-default variants on hover', () => {
+    const { container } = render(<Button variant="secondary">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    
+    fireEvent.mouseEnter(button);
+    
+    const svgs = container.querySelectorAll('svg');
+    svgs.forEach(svg => {
+      expect(svg).toHaveClass('text-primary');
+    });
+  });
+
+  it('should handle arrow animation for destructive variant', () => {
+    const { container } = render(<Button variant="destructive">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBe(2);
+    
+    fireEvent.mouseEnter(button);
+    
+    const arrowAfterHover = Array.from(container.querySelectorAll('svg')).find(svg =>
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
+    );
+    expect(arrowAfterHover).toBeInTheDocument();
+  });
+
+  it('should handle arrow animation for link variant', () => {
+    const { container } = render(<Button variant="link">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]') as HTMLElement;
+    
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBe(2);
+    
+    fireEvent.mouseEnter(button);
+    
+    const arrowAfterHover = Array.from(container.querySelectorAll('svg')).find(svg =>
+      svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
+    );
+    expect(arrowAfterHover).toBeInTheDocument();
+  });
+
+  it('should not render arrow container when showArrow is false', () => {
+    const { container } = render(<Button showArrow={false}>Click me</Button>);
+    const arrowContainer = container.querySelector('.relative.inline-flex.items-center.ml-2');
+    expect(arrowContainer).not.toBeInTheDocument();
+  });
+
+  it('should handle aria-label prop', () => {
+    const { container } = render(<Button aria-label="Submit form">Click me</Button>);
+    const button = container.querySelector('[data-slot="button"]');
+    expect(button).toHaveAttribute('aria-label', 'Submit form');
+  });
+
+  it('should handle aria-label when asChild is true', () => {
+    const { container } = render(
+      <Button asChild aria-label="Navigation link" showArrow={false}>
+        <a href="/test">Link</a>
+      </Button>
+    );
+    
+    const link = container.querySelector('a[href="/test"]');
+    expect(link).toBeInTheDocument();
+    // Props should be merged by Slot component
+    expect(link).toHaveAttribute('aria-label', 'Navigation link');
   });
 });
