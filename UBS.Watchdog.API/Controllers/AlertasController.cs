@@ -7,51 +7,68 @@ namespace UBS.Watchdog.API.Controllers;
 
 [ApiController]
 [Route("api/alertas")]
-public class AlertasController : ControllerBase
+public class AlertasController(IAlertaService alertaService, ILogger<AlertasController> logger) : ControllerBase
 {
-
-    private readonly IAlertaService _alertaService;
-
-    public AlertasController(IAlertaService alertaService)
-    {
-        _alertaService = alertaService;
-    }
-
     #region HttpGet
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<List<AlertaResponse>>> ListarTodos()
     {
-        return Ok(await _alertaService.ListarTodosAsync());
+        logger.LogInformation("GET /api/alertas - Listando todos os alertas");
+
+        var alertas = await alertaService.ListarTodosAsync();
+        return Ok(alertas);
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetByID(Guid id)
+    public async Task<ActionResult<AlertaResponse>> ObterPorId(Guid id)
     {
-        var alerta = await _alertaService.ObterPorIdAsync(id);
-        if (alerta == null) { return NotFound($"Alerta com ID '{id}' não existe."); }
+        logger.LogInformation("GET /api/alertas/{Id}", id);
+        var alerta = await alertaService.ObterPorIdAsync(id);
+
+        if (alerta == null)
+        {
+            logger.LogWarning("Alerta {Id} não encontrado", id);
+            return NotFound(new { message = $"Alerta {id} não encontrado" });
+        }
+
         return Ok(alerta);
     }
     
     [HttpGet("cliente/{clienteId:guid}")]
-    public async Task<IActionResult> GetByCliente(Guid clienteId)
+    public async Task<ActionResult<List<AlertaResponse>>> ListarPorCliente(Guid clienteId)
     {
-        return Ok(await _alertaService.ListarPorClienteAsync(clienteId));
+        logger.LogInformation("GET /api/alertas/cliente/{ClienteId}", clienteId);
+
+        var alertas = await alertaService.ListarPorClienteAsync(clienteId);
+
+        return Ok(alertas);
     }
 
     [HttpGet ("status/{status}")]
-    public async Task<IActionResult> GetAllByStatus([FromRoute] StatusAlerta status)
+    public async Task<ActionResult<List<AlertaResponse>>> ListarPorStatus(StatusAlerta status)
     {
-        return Ok(await _alertaService.ListarPorStatusAsync(status));
+        logger.LogInformation("GET /api/alertas/status/{Status}", status);
+
+        var alertas = await alertaService.ListarPorStatusAsync(status);
+        return Ok(alertas);
     }
 
-    [HttpGet("filtro")]
-    public async Task<IActionResult> GetByFiltro(
-        [FromQuery] StatusAlerta? status,
-        [FromQuery] SeveridadeAlerta? severidade,
-        [FromQuery] Guid? clienteId)
+    [HttpGet("filtrar")]
+    public async Task<ActionResult<List<AlertaResponse>>> ListarComFiltros(
+        [FromQuery] StatusAlerta? status = null,
+        [FromQuery] SeveridadeAlerta? severidade = null,
+        [FromQuery] Guid? clienteId = null)
     {
-        return Ok(await _alertaService.ListarComFiltrosAsync(status, severidade, clienteId));
+        logger.LogInformation(
+            "GET /api/alertas/filtrar?status={Status}&severidade={Severidade}&clienteId={ClienteId}",
+            status,
+            severidade,
+            clienteId);
+
+        var alertas = await alertaService.ListarComFiltrosAsync(status, severidade, clienteId);
+
+        return Ok(alertas);
     }
 
     #endregion
@@ -59,16 +76,63 @@ public class AlertasController : ControllerBase
     #region HttpPatch
 
     [HttpPatch("{id:guid}/iniciar-analise")]
-    public async Task<IActionResult> StartAnalysis(Guid id)
+    public async Task<IActionResult> IniciarAnalise(Guid id)
     {
-        return Ok(await _alertaService.IniciarAnaliseAsync(id));
+        logger.LogInformation("PATCH /api/alertas/{Id}/iniciar-analise", id);
+
+        try
+        {
+            var alerta = await alertaService.IniciarAnaliseAsync(id);
+            logger.LogInformation("Alerta {Id} movido para Em Análise", id);
+
+            return Ok(alerta);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Alerta não encontrado: {Id}", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Erro ao iniciar análise do alerta {Id}", id);
+            return BadRequest(new { message = ex.Message });
+        }
     }
     
-    [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> ResolveAlerta(Guid id, [FromBody] ResolverAlertaRequest request)
-    { 
-        return Ok(await _alertaService.ResolverAsync(id, request));
-    }
+    [HttpPatch("{id:guid}/resolver")]
+    public async Task<IActionResult> Resolver(Guid id, [FromBody] ResolverAlertaRequest request)
+    {
+        logger.LogInformation("PATCH /api/alertas/{Id}/resolver", id);
 
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var alerta = await alertaService.ResolverAsync(id, request);
+
+            logger.LogInformation(
+                "Alerta {Id} resolvido por {ResolvidoPor}",
+                id,
+                request.ResolvidoPor);
+
+            return Ok(alerta);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Alerta não encontrado: {Id}", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Erro ao resolver alerta {Id}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogWarning(ex, "Dados inválidos ao resolver alerta {Id}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
     #endregion
 }
