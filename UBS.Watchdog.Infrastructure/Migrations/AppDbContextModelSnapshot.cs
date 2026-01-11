@@ -15,6 +15,7 @@ namespace UBS.Watchdog.Infrastructure.Migrations
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
+#pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.22")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
@@ -183,6 +184,7 @@ namespace UBS.Watchdog.Infrastructure.Migrations
                 {
                     b.Navigation("Alertas");
                 });
+#pragma warning restore 612, 618
         }
     }
 }

@@ -121,7 +121,7 @@ using (var scope = app.Services.CreateScope())
         }
 
         // TODO: Seed data
-        // await DbSeeder.SeedAsync(context);
+        await DbSeeder.SeedAsync(context);
     }
     catch (Exception ex)
     {
@@ -138,7 +138,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "UBS Watchdog API V1");
-        c.RoutePrefix = string.Empty;
+        c.RoutePrefix = "swagger";
     });
 }
 

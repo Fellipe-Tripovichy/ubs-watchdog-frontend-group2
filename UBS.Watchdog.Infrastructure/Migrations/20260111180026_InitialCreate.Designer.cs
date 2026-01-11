@@ -12,8 +12,8 @@ using UBS.Watchdog.Infrastructure.Data;
 namespace UBS.Watchdog.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251224015401_PrimeiraMigration")]
-    partial class PrimeiraMigration
+    [Migration("20260111180026_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

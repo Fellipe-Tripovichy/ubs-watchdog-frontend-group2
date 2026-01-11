@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace UBS.Watchdog.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class PrimeiraMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

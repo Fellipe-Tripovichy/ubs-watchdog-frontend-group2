@@ -12,7 +12,7 @@ services:
     shm_size: 128mb
     restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "psql -U docker_user -d ubs_watchdog"]
       interval: 20s
