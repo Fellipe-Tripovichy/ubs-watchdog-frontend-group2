@@ -87,9 +87,9 @@ if (app.Environment.IsDevelopment())
 	app.UseSwagger();
 	app.UseSwaggerUI();
 	// Executando migração automaticamente
-	using var scope =  app.Services.CreateScope();
-	var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-	dbContext.Database.Migrate();
+	//using var scope =  app.Services.CreateScope();
+	//var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+	//dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

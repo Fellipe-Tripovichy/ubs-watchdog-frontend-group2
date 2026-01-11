@@ -8,22 +8,31 @@ namespace UBS.Watchdog.API.Controllers;
 
 [ApiController]
 [Route("api/clientes")]
-public class ClientesController : ControllerBase
+public class ClientesController(IClienteService clienteService, ILogger<ClientesController> logger) : ControllerBase
 {
-    private readonly IClienteService _clienteService;
-
-    public ClientesController(IClienteService clienteService)
-    {
-        _clienteService = clienteService;
-    }
-    
     #region API HttpPost
-
     [HttpPost]
-    public async Task<IActionResult> Criar([FromBody] ClienteRequest request)
+    public async Task<ActionResult<ClienteResponse>> Criar([FromBody] ClienteRequest request)
     {
-        var cliente = await _clienteService.CriarAsync(request);
-        return CreatedAtAction(nameof(ObterPorId), new { id = cliente.Id }, cliente);
+        logger.LogInformation("POST /api/clientes - Criando cliente: {Nome}", request.Nome);
+
+        if (!ModelState.IsValid)
+        {
+            logger.LogWarning("Dados inválidos ao criar cliente");
+            return BadRequest(ModelState);
+        }
+        try
+        {
+            var cliente = await clienteService.CriarAsync(request);
+
+            logger.LogInformation("Cliente criado com sucesso: {Id}", cliente.Id);
+            return CreatedAtAction(nameof(ObterPorId), new { id = cliente.Id }, cliente);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao criar cliente");
+            return StatusCode(500, new { message = $"Erro ao criar cliente: {ex.Message}" });
+        }
     }
 
     #endregion
@@ -33,9 +42,14 @@ public class ClientesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
-        var cliente = await _clienteService.ObterPorIdAsync(id);
+        logger.LogInformation("GET /api/clientes/{Id} - Buscando cliente", id);
+        var cliente = await clienteService.ObterPorIdAsync(id);
 
-        if (cliente is null) { return NotFound(); }
+        if (cliente is null)
+        {
+            logger.LogWarning("Cliente {Id} não encontrado", id);
+            return NotFound(new { message = $"Cliente {id} não encontrado" });
+        }
 
         return Ok(cliente);
     }
@@ -43,21 +57,24 @@ public class ClientesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ListarTodos()
     {
-        var clientes = await _clienteService.ListarTodosAsync();
+        logger.LogInformation("GET /api/clientes - Listando todos os clientes");
+        var clientes = await clienteService.ListarTodosAsync();
         return Ok(clientes);
     }
 
     [HttpGet("pais/{pais}")]
     public async Task<IActionResult> ListarPorPais(string pais)
     {
-        var clientes = await _clienteService.ListarPorPaisAsync(pais);
+        logger.LogInformation("GET /api/clientes/pais/{Pais}", pais);
+        var clientes = await clienteService.ListarPorPaisAsync(pais);
         return Ok(clientes);
     }
 
     [HttpGet("nivel-risco/{nivel}")]
     public async Task<IActionResult> ListarPorNivelRisco(NivelRisco nivel)
     {
-        var clientes = await _clienteService.ListarPorNivelRiscoAsync(nivel);
+        logger.LogInformation("GET /api/clientes/nivel-risco/{NivelRisco}", nivel);
+        var clientes = await clienteService.ListarPorNivelRiscoAsync(nivel);
         return Ok(clientes);
     }
 
@@ -65,17 +82,55 @@ public class ClientesController : ControllerBase
 
     #region HttpPatch
 
-    // [HttpPatch("{id:guid}/kyc")]
-    // public async Task<IActionResult> AtualizarKyc(Guid id, AtualizarKycRequest request)
-    // {
-    //     return null;
-    // }
+    [HttpPatch("{id:guid}/kyc")]
+    public async Task<ActionResult<ClienteResponse>> AtualizarStatusKyc(
+        Guid id,
+        [FromBody] AtualizarStatusKycRequest request)
+    {
+        logger.LogInformation("PATCH /api/clientes/{Id}/kyc - Atualizando status KYC", id);
 
-    // [HttpPatch("{id:guid}/nivel-risco")] 
-    // public async Task<IActionResult> AtualizarNivelRisco(Guid id, AtualizarNivelRisco nivel)
-    // {
-    //     return null;
-    // }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var cliente = await clienteService.AtualizarStatusKycAsync(id, request);
+
+            logger.LogInformation("Status KYC atualizado: {Id} -> {Status}", id, request.NovoStatus);
+
+            return Ok(cliente);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Cliente não encontrado ao atualizar KYC: {Id}", id);
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpPatch("{id:guid}/nivel-risco")]
+    public async Task<ActionResult<ClienteResponse>> AtualizarNivelRisco(
+        Guid id,
+        [FromBody] AtualizarNivelRiscoRequest request)
+    {
+        logger.LogInformation("PATCH /api/clientes/{Id}/nivel-risco", id);
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var cliente = await clienteService.AtualizarNivelRiscoAsync(id, request);
+
+            logger.LogInformation("Nível de risco atualizado: {Id} -> {Nivel}", id, request.NovoNivel);
+
+            return Ok(cliente);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Cliente não encontrado ao atualizar nível de risco: {Id}", id);
+            return NotFound(new { message = ex.Message });
+        }
+    }
 
     #endregion
 
@@ -84,9 +139,20 @@ public class ClientesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Deletar(Guid id)
     {
-        await _clienteService.DeletarAsync(id);
-        return NoContent();
-    }
+        logger.LogInformation("DELETE /api/clientes/{Id}", id);
 
+        try
+        {
+            await clienteService.DeletarAsync(id);
+            logger.LogInformation("Cliente deletado: {Id}", id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Cliente não encontrado ao deletar: {Id}", id);
+            return NotFound(new { message = ex.Message });
+        }
+
+    }
     #endregion
 }

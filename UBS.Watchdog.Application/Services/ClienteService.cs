@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,13 +19,13 @@ namespace UBS.Watchdog.Application.Services
         Task<List<ClienteResponse>> ListarTodosAsync();
         Task<List<ClienteResponse>> ListarPorPaisAsync(string pais);
         Task<List<ClienteResponse>> ListarPorNivelRiscoAsync(NivelRisco nivelRisco);
-        //Task<ClienteResponse> AtualizarStatusKycAsync(Guid id, AtualizarStatusKycRequest request);
-        //Task<ClienteResponse> AtualizarNivelRiscoAsync(Guid id, AtualizarNivelRiscoRequest request);
+        Task<ClienteResponse> AtualizarStatusKycAsync(Guid id, AtualizarStatusKycRequest request);
+        Task<ClienteResponse> AtualizarNivelRiscoAsync(Guid id, AtualizarNivelRiscoRequest request);
         Task DeletarAsync(Guid id);
     }
 
 
-    public class ClienteService(IClienteRepository clienteRepository) : IClienteService
+    public class ClienteService(IClienteRepository clienteRepository, ILogger<ClienteService> _logger) : IClienteService
     {
         public async Task<ClienteResponse> CriarAsync(ClienteRequest request) 
         {
@@ -70,6 +71,42 @@ namespace UBS.Watchdog.Application.Services
         public async Task DeletarAsync(Guid id)
         {
             await clienteRepository.DeleteAsync(id);
+        }
+
+        public async Task<ClienteResponse> AtualizarStatusKycAsync(Guid id, AtualizarStatusKycRequest request)
+        {
+            _logger.LogInformation("Atualizando status KYC do cliente: {ClienteId}", id);
+
+            var cliente = await clienteRepository.GetByIdAsync(id);
+
+            if (cliente == null)
+                throw new KeyNotFoundException($"Cliente {id} não encontrado");
+
+            cliente.AtualizarStatusKyc(request.NovoStatus);
+
+            await clienteRepository.UpdateAsync(cliente);
+
+            _logger.LogInformation("Status KYC atualizado: {ClienteId} -> {NovoStatus}", id, request.NovoStatus);
+
+            return Mappings.ClienteMappings.ToResponse(cliente);
+        }
+
+        public async Task<ClienteResponse> AtualizarNivelRiscoAsync(Guid id, AtualizarNivelRiscoRequest request)
+        {
+            _logger.LogInformation("Atualizando nível de risco do cliente: {ClienteId}", id);
+
+            var cliente = await clienteRepository.GetByIdAsync(id);
+
+            if (cliente == null)
+                throw new KeyNotFoundException($"Cliente {id} não encontrado");
+
+            cliente.AtualizarNivelRisco(request.NovoNivel);
+
+            await clienteRepository.UpdateAsync(cliente);
+
+            _logger.LogInformation("Nível de risco atualizado: {ClienteId} -> {NovoNivel}", id, request.NovoNivel);
+
+            return Mappings.ClienteMappings.ToResponse(cliente);
         }
     }
 }
