@@ -20,7 +20,8 @@ namespace UBS.Watchdog.Application.Mappings
                 Valor = transacao.Valor,
                 Moeda = transacao.Moeda,
                 Contraparte = transacao.Contraparte,
-                DataHora = transacao.DataHora
+                DataHora = transacao.DataHora,
+                QuantidadeAlertas = transacao.Alertas?.Count ?? 0
             };
         }
         public static List<TransacaoResponse> toResponseList(List<Transacao> transacoes)
