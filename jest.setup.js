@@ -26,6 +26,13 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
   configurable: true,
 });
 
+// Mock ResizeObserver for Radix UI components (Tooltip, Popover, etc.)
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 // jest.setup.js
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(() => ({
