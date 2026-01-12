@@ -1,101 +1,247 @@
-import { describe, it, expect } from '@jest/globals';
-import { render, screen } from '@testing-library/react';
-import ReportsPage from '@/app/reports/page';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import ReportsPage from "@/app/reports/page"; // Adjust path if needed
 
-describe('ReportsPage', () => {
-  it('should render', () => {
+// Import named exports for mocking
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { selectToken } from "@/features/auth/authSlice";
+import {
+  fetchAllReports,
+  selectAllReports,
+  selectAllReportsLoading,
+  selectReportsError,
+} from "@/features/reports/reportsSlice";
+
+// --- Top-Level Mocks ---
+
+// 1. Mock Next.js Navigation
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(),
+}));
+
+// 2. Mock Next.js Link
+jest.mock("next/link", () => {
+  return ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  );
+});
+
+// 3. Mock Redux Hooks
+jest.mock("@/lib/hooks", () => ({
+  useAppDispatch: jest.fn(),
+  useAppSelector: jest.fn().mockImplementation((selector) => selector()),
+}));
+
+// 4. Mock Redux Slices
+jest.mock("@/features/auth/authSlice", () => ({
+  selectToken: jest.fn(),
+}));
+
+jest.mock("@/features/reports/reportsSlice", () => ({
+  fetchAllReports: jest.fn(),
+  selectAllReports: jest.fn(),
+  selectAllReportsLoading: jest.fn(),
+  selectReportsError: jest.fn(),
+}));
+
+// 5. Mock UI Components
+// We mock DataTable and CardTable to verify data is passed to them correctly
+// without testing the table logic itself.
+jest.mock("@/components/table/dataTable", () => ({
+  DataTable: ({ data }: any) => (
+    <div data-testid="data-table">
+      {data.map((item: any) => (
+        <div key={item.client.id} data-testid="table-row">
+          {item.client.name}
+        </div>
+      ))}
+    </div>
+  ),
+}));
+
+jest.mock("@/components/table/cardTable", () => ({
+  CardTable: ({ data }: any) => (
+    <div data-testid="card-table">
+      {data.map((item: any) => (
+        <div key={item.client.id} data-testid="card-row">
+          Mobile Card: {item.client.name}
+        </div>
+      ))}
+    </div>
+  ),
+}));
+
+jest.mock("@/components/ui/datePickerInput", () => ({
+  DatePickerInput: ({ label, onChange, value }: any) => (
+    <label>
+      {label}
+      <input
+        type="date"
+        data-testid={`datepicker-${label}`}
+        // Append time to prevent timezone shifting (UTC midnight -> Previous Day Local)
+        onChange={(e) => onChange(new Date(e.target.value + "T12:00:00"))}
+        value={value ? new Date(value).toISOString().split("T")[0] : ""}
+      />
+    </label>
+  ),
+}));
+
+// Mock Icons/Spinner
+jest.mock("@/components/ui/spinner", () => ({
+  Spinner: () => <div data-testid="spinner">Loading...</div>,
+}));
+
+// --- Mock Data ---
+
+const mockReportsList = [
+  {
+    client: { id: "c1", name: "Client Alpha", country: "US" },
+    totalMoved: 50000,
+    alertCount: 2,
+    riskLevel: "High",
+  },
+  {
+    client: { id: "c2", name: "Client Beta", country: "BR" },
+    totalMoved: 12000,
+    alertCount: 0,
+    riskLevel: "Low",
+  },
+];
+
+// --- Tests ---
+
+describe("ReportsPage (All Reports)", () => {
+  const mockDispatch = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Setup Default Redux Mocks
+    (useAppDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
+    (selectToken as jest.Mock).mockReturnValue("fake-token");
+
+    // Default: Not loading, no error, empty data (to start specific tests clean)
+    (selectAllReportsLoading as jest.Mock).mockReturnValue(false);
+    (selectReportsError as jest.Mock).mockReturnValue(null);
+    (selectAllReports as jest.Mock).mockReturnValue([]);
+    
+    // Mock Thunk Return
+    (fetchAllReports as unknown as jest.Mock).mockReturnValue({ type: "reports/fetchAll/pending" });
+  });
+
+  it("fetches reports on mount with default date range", () => {
+    // Default range logic in component is StartOfMonth -> Today
     render(<ReportsPage />);
-    expect(screen.getByText('Relatórios')).toBeInTheDocument();
+
+    expect(mockDispatch).toHaveBeenCalled();
+    expect(fetchAllReports).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: "fake-token",
+        // We check existence of dates, exact string match depends on current date
+        startDate: expect.any(String), 
+        endDate: expect.any(String),
+      })
+    );
   });
 
-  it('should render title', () => {
+  it("renders the loading spinner when loading", () => {
+    (selectAllReportsLoading as jest.Mock).mockReturnValue(true);
+
     render(<ReportsPage />);
-    const title = screen.getByText('Relatórios');
-    expect(title).toBeInTheDocument();
-    expect(title.tagName).toBe('H1');
+
+    expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    // Should not show empty state or table
+    expect(screen.queryByText(/Nenhum relatório encontrado/i)).not.toBeInTheDocument();
   });
 
-  it('should apply correct classes to title', () => {
+  it("renders an error message if the fetch fails", () => {
+    (selectReportsError as jest.Mock).mockReturnValue("Falha ao carregar dados");
+
     render(<ReportsPage />);
-    const title = screen.getByText('Relatórios');
-    expect(title).toHaveClass('text-[28px]', 'md:text-[40px]', 'font-regular', 'text-foreground');
+
+    expect(screen.getByText("Falha ao carregar dados")).toBeInTheDocument();
   });
 
-  it('should render description paragraph', () => {
+  it("renders the empty state when data is empty and not loading", () => {
+    (selectAllReportsLoading as jest.Mock).mockReturnValue(false);
+    (selectAllReports as jest.Mock).mockReturnValue([]);
+
     render(<ReportsPage />);
-    expect(screen.getByText(/Análise de relatórios estratégicos para tomada de decisão ágil/)).toBeInTheDocument();
+
+    expect(screen.getByText(/Nenhum relatório encontrado/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("data-table")).not.toBeInTheDocument();
   });
 
-  it('should apply correct classes to description', () => {
+  describe("When data is available", () => {
+    beforeEach(() => {
+      (selectAllReportsLoading as jest.Mock).mockReturnValue(false);
+      (selectAllReports as jest.Mock).mockReturnValue(mockReportsList);
+    });
+
+    it("renders the table (desktop) and card list (mobile)", () => {
+      render(<ReportsPage />);
+
+      // Check Desktop Table mock
+      expect(screen.getByTestId("data-table")).toBeInTheDocument();
+      expect(screen.getByText("Client Alpha")).toBeInTheDocument();
+      expect(screen.getByText("Client Beta")).toBeInTheDocument();
+
+      // Check Mobile Card mock (Note: hidden via CSS class 'md:hidden' but rendered in DOM)
+      expect(screen.getByTestId("card-table")).toBeInTheDocument();
+      expect(screen.getByText("Mobile Card: Client Alpha")).toBeInTheDocument();
+    });
+
+    it("renders the page title and banner image", () => {
+      render(<ReportsPage />);
+      
+      expect(screen.getByRole("heading", { name: /Relatórios/i })).toBeInTheDocument();
+      expect(screen.getByAltText("UBS Watchdog")).toBeInTheDocument();
+    });
+  });
+
+  it("updates filters and refetches data", async () => {
     render(<ReportsPage />);
-    const description = screen.getByText(/Análise de relatórios estratégicos para tomada de decisão ágil/);
-    expect(description).toHaveClass('text-[16px]', 'text-muted-foreground', 'mt-6');
+    
+    // Reset previous calls from mount
+    mockDispatch.mockClear();
+
+    const startDateInput = screen.getByTestId("datepicker-Data inicial");
+
+    // Change Date
+    fireEvent.change(startDateInput, { target: { value: "2023-11-01" } });
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalled();
+      expect(fetchAllReports).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startDate: expect.stringContaining("2023-11-01"),
+        })
+      );
+    });
   });
 
-  it('should render "Funcionalidades" heading', () => {
+  it("resets filters when 'Redefinir período' is clicked", async () => {
     render(<ReportsPage />);
-    const heading = screen.getByText('Funcionalidades');
-    expect(heading).toBeInTheDocument();
-    expect(heading.tagName).toBe('H2');
-  });
+    
+    const resetButton = screen.getByText(/Redefinir período/i);
+    const startDateInput = screen.getByTestId("datepicker-Data inicial");
 
-  it('should apply correct classes to "Funcionalidades" heading', () => {
-    render(<ReportsPage />);
-    const heading = screen.getByText('Funcionalidades');
-    expect(heading).toHaveClass('text-[24px]', 'font-regular', 'text-secondary-foreground', 'mb-4');
-  });
+    // 1. Change date manually first to something specific
+    fireEvent.change(startDateInput, { target: { value: "2020-01-01" } });
+    
+    mockDispatch.mockClear();
 
-  it('should render all feature list items', () => {
-    render(<ReportsPage />);
-    expect(screen.getByText('Geração de relatórios personalizados')).toBeInTheDocument();
-    expect(screen.getByText('Visualização de métricas e KPIs')).toBeInTheDocument();
-    expect(screen.getByText('Exportação em múltiplos formatos')).toBeInTheDocument();
-    expect(screen.getByText('Análise histórica de dados')).toBeInTheDocument();
-  });
+    // 2. Click Reset
+    fireEvent.click(resetButton);
 
-  it('should render features as list items', () => {
-    render(<ReportsPage />);
-    const listItems = screen.getAllByRole('listitem');
-    expect(listItems.length).toBe(4);
-  });
-
-  it('should apply correct classes to features list', () => {
-    const { container } = render(<ReportsPage />);
-    const list = container.querySelector('ul');
-    expect(list).toHaveClass('list-disc', 'list-inside', 'space-y-2', 'text-muted-foreground');
-  });
-
-  it('should apply correct classes to features section', () => {
-    const { container } = render(<ReportsPage />);
-    const featuresSection = container.querySelector('.bg-secondary');
-    expect(featuresSection).toBeInTheDocument();
-    expect(featuresSection).toHaveClass('p-8', 'rounded-md');
-  });
-
-  it('should apply correct classes to main container', () => {
-    const { container } = render(<ReportsPage />);
-    const mainContainer = container.firstChild as HTMLElement;
-    expect(mainContainer).toHaveClass('flex', 'flex-col', 'items-start', 'w-full');
-  });
-
-  it('should apply correct classes to content wrapper', () => {
-    const { container } = render(<ReportsPage />);
-    const contentWrapper = container.querySelector('.max-w-\\[1554px\\]');
-    expect(contentWrapper).toBeInTheDocument();
-    expect(contentWrapper).toHaveClass('w-full', 'mx-auto', 'px-4', 'md:px-8', 'py-10');
-  });
-
-  it('should render decorative line under title', () => {
-    const { container } = render(<ReportsPage />);
-    const decorativeLine = container.querySelector('.h-1.w-20.bg-primary');
-    expect(decorativeLine).toBeInTheDocument();
-  });
-
-  it('should have correct structure with title, description, and features', () => {
-    render(<ReportsPage />);
-    expect(screen.getByText('Relatórios')).toBeInTheDocument();
-    expect(screen.getByText(/Análise de relatórios estratégicos/)).toBeInTheDocument();
-    expect(screen.getByText('Funcionalidades')).toBeInTheDocument();
-    expect(screen.getByText('Geração de relatórios personalizados')).toBeInTheDocument();
+    // 3. Expect dispatch called with current month (default logic)
+    // We verify it was called with a date different from 2020-01-01
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalled();
+      const calls = (fetchAllReports as unknown as jest.Mock).mock.calls;
+      const lastCallArgs = calls[calls.length - 1][0];
+      
+      expect(lastCallArgs.startDate).not.toContain("2020-01-01");
+    });
   });
 });

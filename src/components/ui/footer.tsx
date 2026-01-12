@@ -36,9 +36,9 @@ export function Footer() {
                         <div className="flex flex-col gap-4">
                             <Link className="flex items-center gap-4" href="/">
                                 <img src="/UBS_Logo.png" alt="UBS Logo" className="w-auto h-8" />
-                                <p className="text-muted-foreground text-sm">Brasil</p>
+                                <p className="text-muted-foreground text-caption">Brasil</p>
                             </Link>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-caption text-muted-foreground">
                                 © {currentYear} UBS. Todos os direitos reservados.
                             </p>
                         </div>
@@ -50,7 +50,7 @@ export function Footer() {
                                             {link.label}
                                         </LinkButton>
                                     </Link>
-                                    {index < footerLinks.length - 1 && <p className="text-muted-foreground text-sm">|</p>}
+                                    {index < footerLinks.length - 1 && <p className="text-muted-foreground text-caption">|</p>}
                                 </div>
                             ))}
                         </div>

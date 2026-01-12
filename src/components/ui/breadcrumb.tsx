@@ -7,7 +7,6 @@ import { ChevronRight, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LinkButton } from "./linkButton"
 
-// Map path segments to readable labels
 const pathLabelMap: Record<string, string> = {
   "": "Home",
   "transactions": "Transações",
@@ -20,7 +19,6 @@ function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
   const pathname = usePathname()
   const pathSegments = pathname.split("/").filter(Boolean)
   
-  // Build breadcrumb items
   const breadcrumbItems = [
     { href: "/", label: pathLabelMap[""] || "Home" },
     ...pathSegments.map((segment, index) => {
@@ -34,7 +32,7 @@ function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <p className="text-muted-foreground font-semibold text-sm flex">Você está aqui:</p>
+      <p className="text-muted-foreground font-semibold text-sm">Você está aqui:</p>
       <nav aria-label="breadcrumb" data-slot="breadcrumb" className="flex items-center" {...props}>
         <BreadcrumbList>
           {breadcrumbItems.map((item, index) => {
@@ -69,7 +67,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
     <ol
       data-slot="breadcrumb-list"
       className={cn(
-        "text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5",
+        "text-muted-foreground flex flex-wrap items-center gap-1.5 text-caption break-words sm:gap-2.5",
         className
       )}
       {...props}
@@ -144,7 +142,7 @@ function BreadcrumbEllipsis({
       className={cn("flex size-9 items-center justify-center", className)}
       {...props}
     >
-      <MoreHorizontal className="size-4" aria-hidden="true" />
+      <MoreHorizontal aria-hidden="true" />
       <span className="sr-only">More</span>
     </span>
   )
