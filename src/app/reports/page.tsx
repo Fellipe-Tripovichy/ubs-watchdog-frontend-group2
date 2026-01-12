@@ -32,6 +32,28 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+function createPaginationItem(
+  pageNumber: number,
+  currentPage: number,
+  onPageChange: (page: number) => void
+): React.ReactNode {
+  return (
+    <PaginationItem key={pageNumber}>
+      <PaginationLink
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          onPageChange(pageNumber);
+        }}
+        isActive={currentPage === pageNumber}
+        className="cursor-pointer"
+      >
+        {pageNumber}
+      </PaginationLink>
+    </PaginationItem>
+  );
+}
+
 function renderPaginationItems(
   currentPage: number,
   totalPages: number,
@@ -41,38 +63,10 @@ function renderPaginationItems(
 
   if (totalPages <= 7) {
     for (let i = 1; i <= totalPages; i++) {
-      items.push(
-        <PaginationItem key={i}>
-          <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              onPageChange(i);
-            }}
-            isActive={currentPage === i}
-            className="cursor-pointer"
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
+      items.push(createPaginationItem(i, currentPage, onPageChange));
     }
   } else {
-    items.push(
-      <PaginationItem key={1}>
-        <PaginationLink
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onPageChange(1);
-          }}
-          isActive={currentPage === 1}
-          className="cursor-pointer"
-        >
-          1
-        </PaginationLink>
-      </PaginationItem>
-    );
+    items.push(createPaginationItem(1, currentPage, onPageChange));
 
     if (currentPage > 3) {
       items.push(
@@ -87,21 +81,7 @@ function renderPaginationItems(
 
     for (let i = startPage; i <= endPage; i++) {
       if (i !== 1 && i !== totalPages) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onPageChange(i);
-              }}
-              isActive={currentPage === i}
-              className="cursor-pointer"
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
+        items.push(createPaginationItem(i, currentPage, onPageChange));
       }
     }
 
@@ -113,21 +93,7 @@ function renderPaginationItems(
       );
     }
 
-    items.push(
-      <PaginationItem key={totalPages}>
-        <PaginationLink
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onPageChange(totalPages);
-          }}
-          isActive={currentPage === totalPages}
-          className="cursor-pointer"
-        >
-          {totalPages}
-        </PaginationLink>
-      </PaginationItem>
-    );
+    items.push(createPaginationItem(totalPages, currentPage, onPageChange));
   }
 
   return items;

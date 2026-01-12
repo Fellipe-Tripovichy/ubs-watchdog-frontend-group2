@@ -78,6 +78,14 @@ function IconButton({
     />
   )
 
+  const commonProps = {
+    "data-slot": "button",
+    "data-variant": variant,
+    "data-size": size,
+    className: cn(buttonVariants({ variant, size, className })),
+    ...props,
+  }
+
   if (asChild) {
     if (!React.isValidElement(children)) {
       throw new Error('IconButton with asChild requires a single React element as a child')
@@ -104,26 +112,14 @@ function IconButton({
     }
     
     return (
-      <Comp
-        data-slot="button"
-        data-variant={variant}
-        data-size={size}
-        className={cn(buttonVariants({ variant, size, className }))}
-        {...props}
-      >
+      <Comp {...commonProps}>
         {React.cloneElement(childElement, {}, newChildren)}
       </Comp>
     )
   }
 
   return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    >
+    <Comp {...commonProps}>
       {iconElement}
     </Comp>
   )

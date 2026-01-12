@@ -59,6 +59,15 @@ function LinkButton({
 
   const IconComponent = icon ? getIcon(icon) : null;
 
+  const iconElement = IconComponent ? (
+    <IconComponent
+      className={cn(
+        iconLeft ? "mr-2" : "ml-2",
+        size === "small" ? "size-3" : "size-4"
+      )}
+    />
+  ) : null;
+
   return (
     <Comp
       data-slot="button"
@@ -68,19 +77,11 @@ function LinkButton({
       {...props}
     >
       <div className="flex items-center">
-        {iconLeft && IconComponent && (
-          <IconComponent
-            className={cn("mr-2", size === "small" ? "size-3" : "size-4")}
-          />
-        )}
+        {iconLeft && iconElement}
         <div className={cn(IconComponent && "pb-[2px]")}>
           <p className="text-button">{children}</p>
         </div>
-        {!iconLeft && IconComponent && (
-          <IconComponent
-            className={cn("ml-2", size === "small" ? "size-3" : "size-4")}
-          />
-        )}
+        {!iconLeft && iconElement}
       </div>
     </Comp>
   )

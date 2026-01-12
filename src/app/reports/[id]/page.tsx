@@ -43,17 +43,21 @@ function getSeverityPieColor(severity: AlertSeverity): string {
     return getColorByStatus(statusMap[severity]).base;
 }
 
+function createBadgeStyle<T extends string>(statusMap: Record<T, string>, value: T) {
+    const colors = getColorByStatus(statusMap[value]);
+    return {
+        backgroundColor: colors.light,
+        color: colors.foreground,
+    };
+}
+
 function getBadgeStyleByRisk(risk: "Baixo" | "Médio" | "Alto") {
     const statusMap: Record<"Baixo" | "Médio" | "Alto", string> = {
         Baixo: "low",
         Médio: "medium",
         Alto: "high",
     };
-    const colors = getColorByStatus(statusMap[risk]);
-    return {
-        backgroundColor: colors.light,
-        color: colors.foreground,
-    };
+    return createBadgeStyle(statusMap, risk);
 }
 
 function getBadgeStyleByKyc(kyc: "Aprovado" | "Pendente" | "Reprovado") {
@@ -62,11 +66,7 @@ function getBadgeStyleByKyc(kyc: "Aprovado" | "Pendente" | "Reprovado") {
         Pendente: "pending",
         Reprovado: "rejected",
     };
-    const colors = getColorByStatus(statusMap[kyc]);
-    return {
-        backgroundColor: colors.light,
-        color: colors.foreground,
-    };
+    return createBadgeStyle(statusMap, kyc);
 }
 
 function getBadgeStyleBySeverity(sev: AlertSeverity) {
@@ -76,11 +76,7 @@ function getBadgeStyleBySeverity(sev: AlertSeverity) {
         Média: "medium",
         Baixa: "low",
     };
-    const colors = getColorByStatus(statusMap[sev]);
-    return {
-        backgroundColor: colors.light,
-        color: colors.foreground,
-    };
+    return createBadgeStyle(statusMap, sev);
 }
 
 function getBadgeStyleByStatus(status: "Novo" | "Em Análise" | "Resolvido") {
@@ -89,11 +85,7 @@ function getBadgeStyleByStatus(status: "Novo" | "Em Análise" | "Resolvido") {
         "Em Análise": "in-review",
         Novo: "new",
     };
-    const colors = getColorByStatus(statusMap[status]);
-    return {
-        backgroundColor: colors.light,
-        color: colors.foreground,
-    };
+    return createBadgeStyle(statusMap, status);
 }
 
 function PlainField({
