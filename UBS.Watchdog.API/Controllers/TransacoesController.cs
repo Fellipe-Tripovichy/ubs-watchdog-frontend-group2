@@ -45,7 +45,7 @@ public class TransacoesController(ITransacaoService _transacaoService, ILogger<T
 
             return CreatedAtAction(
                 nameof(ObterPorId),
-                new { id = transacao.Id },
+                new { transacaoId = transacao.Id },
                 transacao
             );
         }

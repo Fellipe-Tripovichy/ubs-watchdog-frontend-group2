@@ -39,7 +39,10 @@ public class ClienteRepository(AppDbContext context) : IClienteRepository
 
     public async Task<List<Cliente>> GetByPaisAsync(string pais)
     {
-        return await context.Clientes.Where(c => c.Pais.Equals(pais,StringComparison.OrdinalIgnoreCase))
+        pais = pais.ToLower();
+
+        return await context.Clientes
+            .Where(c => c.Pais.ToLower() == pais)
             .ToListAsync();
     }
 

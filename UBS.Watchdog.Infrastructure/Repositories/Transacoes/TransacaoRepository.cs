@@ -49,6 +49,9 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 
         public async Task<List<Transacao>> GetByClienteEPeriodoAsync(Guid clienteId, DateTime dataInicio, DateTime dataFim)
         {
+
+            dataInicio = DateTime.SpecifyKind(dataInicio, DateTimeKind.Utc);
+            dataFim = DateTime.SpecifyKind(dataFim, DateTimeKind.Utc);
             return await context.Transacoes
                 .Where(t => t.ClienteId == clienteId
                     && t.DataHora >= dataInicio

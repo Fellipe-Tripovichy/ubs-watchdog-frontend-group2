@@ -62,7 +62,7 @@ namespace UBS.Watchdog.Application.Compliance
                     somaConsiderandoAtual,
                     limiteDiario);
 
-                var alerta = new Alerta(
+                var alerta = Alerta.Criar(
                     clienteId: transacao.ClienteId,
                     transacaoId: transacao.Id,
                     nomeRegra: NomeRegra,

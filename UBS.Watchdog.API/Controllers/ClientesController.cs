@@ -152,7 +152,6 @@ public class ClientesController(IClienteService clienteService, ILogger<Clientes
             logger.LogWarning(ex, "Cliente não encontrado ao deletar: {Id}", id);
             return NotFound(new { message = ex.Message });
         }
-
     }
     #endregion
 }

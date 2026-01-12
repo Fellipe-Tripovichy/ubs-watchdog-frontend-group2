@@ -24,13 +24,22 @@ namespace UBS.Watchdog.Infrastructure.Data.Configurations
 						.HasConversion<string>()
 				.HasMaxLength(10);
 
-			builder.Property(t => t.Contraparte);
-
 			builder.Property(t => t.DataHora)
 				.IsRequired()
 						.HasConversion<DateTime>();
 
-			builder.HasOne(t => t.Cliente)
+            builder.OwnsOne(t => t.Contraparte, contraparte =>
+            {
+                contraparte.Property(c => c.Nome)
+                    .HasColumnName("ContraparteNome")
+                    .HasMaxLength(200);
+
+                contraparte.Property(c => c.Pais)
+                    .HasColumnName("ContrapartePais")
+                    .HasMaxLength(100);
+            });
+
+            builder.HasOne(t => t.Cliente)
 				.WithMany(c => c.Transacoes)
 				.HasForeignKey(t => t.ClienteId)
 				.OnDelete(DeleteBehavior.Restrict);

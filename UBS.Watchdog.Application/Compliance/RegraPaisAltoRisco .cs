@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +21,9 @@ namespace UBS.Watchdog.Application.Compliance
         public string NomeRegra => "Transferência para País de Alto Risco";
 
         public RegraPaisAltoRisco(
-        IClienteRepository clienteRepository,
-        IConfiguration configuration,
-        ILogger<RegraPaisAltoRisco> logger)
+            IClienteRepository clienteRepository,
+            IConfiguration configuration,
+            ILogger<RegraPaisAltoRisco> logger)
         {
             _clienteRepository = clienteRepository;
             _configuration = configuration;
@@ -31,54 +32,92 @@ namespace UBS.Watchdog.Application.Compliance
 
         public async Task<Alerta?> ValidarAsync(Transacao transacao)
         {
-            // Só valida se for uma transferência
             if (transacao.Tipo != TipoTransacao.Transferencia)
             {
                 _logger.LogDebug("Transação {TransacaoId} não é transferência, pulando regra", transacao.Id);
                 return null;
             }
-            
-            // Buscar lista de países de alto risco do appsettings.json
+
+            if (transacao.Contraparte == null)
+            {
+                _logger.LogWarning("Transferência {TransacaoId} sem contraparte definida", transacao.Id);
+                return null;
+            }
+
             var paisesAltoRisco = _configuration
                 .GetSection("Compliance:PaisesAltoRisco")
                 .Get<List<string>>() ?? new List<string>();
 
-            _logger.LogInformation(
-                "Validando transferência para possível país de alto risco. Contraparte: {Contraparte}",
-                transacao.Contraparte);
-
-            // Verificar se a contraparte contém algum país de alto risco
-            if (!string.IsNullOrEmpty(transacao.Contraparte))
+            if (!paisesAltoRisco.Any())
             {
-                foreach (var pais in paisesAltoRisco)
+                _logger.LogWarning("Lista de países de alto risco está vazia no appsettings.json");
+                return null;
+            }
+
+            _logger.LogInformation(
+                "Validando transferência para: {ContraparteNome} ({ContrapartePais})",
+                transacao.Contraparte.Nome,
+                transacao.Contraparte.Pais);
+
+            // Normalizar o país da contraparte para comparação (remover acentos)
+            var paisContraparteNormalizado = RemoverAcentos(transacao.Contraparte.Pais.ToLowerInvariant());
+
+            _logger.LogDebug("País da contraparte normalizado: {PaisNormalizado}", paisContraparteNormalizado);
+
+            foreach (var pais in paisesAltoRisco)
+            {
+                var paisRiscoNormalizado = RemoverAcentos(pais.ToLowerInvariant());
+
+                _logger.LogDebug("Verificando país de risco: '{Pais}' (normalizado: '{PaisNormalizado}')", pais, paisRiscoNormalizado);
+
+                if (paisContraparteNormalizado == paisRiscoNormalizado ||
+                    paisContraparteNormalizado.Contains(paisRiscoNormalizado))
                 {
-                    if (transacao.Contraparte.Contains(pais, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogWarning(
-                            "Transferência para país de alto risco detectada! Cliente {ClienteId} -> {Pais}",
-                            transacao.ClienteId,
-                            pais);
+                    _logger.LogWarning(
+                        "⚠️ Transferência para país de alto risco detectada! Cliente {ClienteId} -> {Pais}",
+                        transacao.ClienteId,
+                        transacao.Contraparte.Pais);
 
-                        // Buscar dados do cliente para enriquecer o alerta
-                        var cliente = await _clienteRepository.GetByIdAsync(transacao.ClienteId);
+                    var cliente = await _clienteRepository.GetByIdAsync(transacao.ClienteId);
 
-                        var alerta = new Alerta(
-                            clienteId: transacao.ClienteId,
-                            transacaoId: transacao.Id,
-                            nomeRegra: NomeRegra,
-                            descricao: $"Transferência de {transacao.Valor:C} para '{transacao.Contraparte}' " +
-                                       $"(país de alto risco: {pais}). Cliente: {cliente?.Nome ?? "N/A"}",
-                            severidade: SeveridadeAlerta.Critica
-                        );
+                    var alerta = Alerta.Criar(
+                        clienteId: transacao.ClienteId,
+                        transacaoId: transacao.Id,
+                        nomeRegra: NomeRegra,
+                        descricao: $"Transferência de {transacao.Valor:C} {transacao.Moeda} para '{transacao.Contraparte.Nome}' " +
+                                   $"em {transacao.Contraparte.Pais} (país de alto risco). Cliente: {cliente?.Nome ?? "N/A"}",
+                        severidade: SeveridadeAlerta.Critica
+                    );
 
-                        return alerta;
-                    }
+                    return alerta;
                 }
             }
 
-            _logger.LogInformation("País ok para transação {TransacaoId}", transacao.Id);
+            _logger.LogInformation("✅ País seguro para transação {TransacaoId}", transacao.Id);
             return null;
+        }
+
+        /// <summary>
+        /// Remove acentos de uma string para facilitar comparação
+        /// </summary>
+        private static string RemoverAcentos(string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto))
+                return texto;
+
+            var textoNormalizado = texto.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in textoNormalizado)
+            {
+                var categoriaUnicode = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (categoriaUnicode != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 }
-

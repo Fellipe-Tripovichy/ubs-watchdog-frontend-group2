@@ -19,7 +19,7 @@ namespace UBS.Watchdog.Application.Mappings
                 Tipo = transacao.Tipo,
                 Valor = transacao.Valor,
                 Moeda = transacao.Moeda,
-                Contraparte = transacao.Contraparte,
+                Contraparte = transacao.Contraparte?.ToString(),
                 DataHora = transacao.DataHora,
                 QuantidadeAlertas = transacao.Alertas?.Count ?? 0
             };

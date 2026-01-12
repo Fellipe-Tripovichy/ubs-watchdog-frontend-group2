@@ -8,6 +8,7 @@ using UBS.Watchdog.Application.DTOs.Transacao;
 using UBS.Watchdog.Application.Mappings;
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
+using UBS.Watchdog.Domain.ValueObjects;
 using UBS.Watchdog.Infrastructure.Repositories;
 using UBS.Watchdog.Infrastructure.Repositories.Clientes;
 using UBS.Watchdog.Infrastructure.Repositories.Transacoes;
@@ -49,31 +50,41 @@ namespace UBS.Watchdog.Application.Services
         {
 
             _logger.LogInformation(
-                "Registrando transação: Cliente {ClienteId}, Tipo {Tipo}, Valor {Valor}",
-                request.ClienteId,
-                request.Tipo,
-                request.Valor);
-
-
+    "Registrando transação: Cliente {ClienteId}, Tipo {Tipo}, Valor {Valor}",
+    request.ClienteId,
+    request.Tipo,
+    request.Valor);
 
             var cliente = await _clienteRepository.GetByIdAsync(request.ClienteId);
             if (cliente == null)
             {
                 _logger.LogWarning("Cliente não encontrado: {ClienteId}", request.ClienteId);
-                throw new Exception("Cliente não encontrado");
+                throw new KeyNotFoundException($"Cliente {request.ClienteId} não encontrado");
             }
 
-            var transacao = Transacao.Criar(
+            Contraparte? contraparte = null;
+            if (request.Contraparte != null)
+            {
+                contraparte = new Contraparte(
+                    request.Contraparte.Nome,
+                    request.Contraparte.Pais
+                );
+            }
+
+            var transacao =  Transacao.Criar(
                 request.ClienteId,
                 request.Tipo,
                 request.Valor,
                 request.Moeda,
-                request.Contraparte);
+                request.Contraparte?.Nome,
+                request.Contraparte?.Pais
+            );
 
             await _transacaoRepository.AddAsync(transacao);
 
-            // executa as regras de compliance APÓS salvar a transação
-            // porque as regras precisam calcular soma do dia incluindo esta transação
+            _logger.LogInformation("Transação registrada: {TransacaoId}", transacao.Id);
+
+            // Executar regras de compliance
             try
             {
                 var alertas = await _complianceService.ValidarTransacaoAsync(transacao);
@@ -81,19 +92,23 @@ namespace UBS.Watchdog.Application.Services
                 if (alertas.Any())
                 {
                     _logger.LogWarning(
-                        $"Transação {transacao.Id} gerou {alertas.Count} alerta(s) de compliance");
+                        "Transação {TransacaoId} gerou {TotalAlertas} alerta(s) de compliance",
+                        transacao.Id,
+                        alertas.Count);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(
                     ex,
-                    "Erro ao validar compliance para transação {TransacaoId}. Transação foi salva mas alertas podem não ter sido gerados.",
+                    "Erro ao validar compliance para transação {TransacaoId}",
                     transacao.Id);
             }
 
+            // Buscar transação completa
             var transacaoCompleta = await _transacaoRepository.GetByIdAsync(transacao.Id);
-            return TransacaoMappings.toResponse(transacaoCompleta);
+
+            return Mappings.TransacaoMappings.toResponse(transacaoCompleta!);
         }
 
         public async Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId, DateTime? dataInicio = null, DateTime? dataFim = null)

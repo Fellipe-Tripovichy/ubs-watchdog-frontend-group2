@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Sinks;
+using System.Text.Json.Serialization;
 using UBS.Watchdog.Application.Compliance;
 using UBS.Watchdog.Application.Services;
 using UBS.Watchdog.Infrastructure.Data;
@@ -42,7 +43,12 @@ builder.Services.AddCors(options =>
 #endregion
 
 #region Services
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
