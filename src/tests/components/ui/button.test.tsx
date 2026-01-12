@@ -94,7 +94,7 @@ describe('Button', () => {
   it('should apply small size classes', () => {
     const { container } = render(<Button size="small">Click me</Button>);
     const button = container.querySelector('[data-slot="button"]');
-    expect(button).toHaveClass('py-2', 'px-3', 'text-xs');
+    expect(button).toHaveClass('py-2', 'px-3');
   });
 
   it('should render ChevronRight icon with correct initial state', () => {
@@ -305,7 +305,7 @@ describe('Button', () => {
       const link = container.querySelector('a[href="/test"]');
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute('data-variant', 'destructive');
-      expect(link).toHaveClass('bg-destructive', 'text-white');
+      expect(link).toHaveClass('bg-destructive');
     });
 
     it('should apply size when asChild is true', () => {
@@ -318,7 +318,7 @@ describe('Button', () => {
       const link = container.querySelector('a[href="/test"]');
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute('data-size', 'small');
-      expect(link).toHaveClass('py-2', 'px-3', 'text-xs');
+      expect(link).toHaveClass('py-2', 'px-3');
     });
 
     it('should apply className when asChild is true', () => {

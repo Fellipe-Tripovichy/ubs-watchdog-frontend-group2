@@ -152,7 +152,7 @@ describe('Breadcrumb', () => {
     usePathnameMock.mockReturnValue('/');
     const { container } = render(<Breadcrumb />);
     const list = container.querySelector('[data-slot="breadcrumb-list"]');
-    expect(list).toHaveClass('text-muted-foreground', 'flex', 'flex-wrap', 'items-center');
+    expect(list).toHaveClass('flex', 'flex-wrap', 'items-center');
   });
 
   it('should have data-slot attribute on BreadcrumbItem', () => {

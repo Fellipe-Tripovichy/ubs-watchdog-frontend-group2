@@ -19,6 +19,13 @@ global.fetch = global.fetch || jest.fn(() =>
   })
 );
 
+// Mock scrollIntoView for Radix UI components (Select, etc.)
+Object.defineProperty(Element.prototype, 'scrollIntoView', {
+  value: jest.fn(),
+  writable: true,
+  configurable: true,
+});
+
 // jest.setup.js
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(() => ({

@@ -400,8 +400,7 @@ describe('Drawer', () => {
       </Drawer>
     );
     const description = baseElement.querySelector('[data-slot="drawer-description"]');
-    expect(description).toHaveClass('text-muted-foreground');
-    expect(description).toHaveClass('text-sm');
+    expect(description).toHaveClass('text-caption');
   });
 
   it('should merge custom className with default classes in DrawerDescription', () => {

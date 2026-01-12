@@ -47,7 +47,7 @@ export function NavigationBar() {
             <div className="flex items-center justify-between w-full px-4 md:px-8 py-6 max-w-[1554px] mx-auto">
                 <Link className="flex items-center gap-4" href="/">
                     <img src="/UBS_Logo.png" alt="UBS Logo" className="w-auto h-8" />
-                    <p className="text-muted-foreground text-sm">Brasil</p>
+                    <p className="text-muted-foreground text-caption">Brasil</p>
                 </Link>
                 <div>
                     <div className="flex items-center gap-4 block lg:hidden">
@@ -85,8 +85,8 @@ export function NavigationBar() {
                                                     <p className="font-bold text-muted-foreground">{user?.displayName?.charAt(0)}</p>
                                                 </div>
                                                 <div className="flex flex-col items-start justify-center">
-                                                    <p className="text-foreground text-sm font-bold">{user?.displayName}</p>
-                                                    <p className="text-muted-foreground text-sm">{user?.email}</p>
+                                                    <p className="text-foreground text-caption font-bold">{user?.displayName}</p>
+                                                    <p className="text-muted-foreground text-caption">{user?.email}</p>
                                                 </div>
                                             </div>
                                         }
@@ -126,8 +126,8 @@ export function NavigationBar() {
                                             <p className="font-bold text-muted-foreground">{user?.displayName?.charAt(0)}</p>
                                         </div>
                                         <div className="flex flex-col items-start justify-center">
-                                            <p className="text-foreground text-sm font-bold">{user?.displayName}</p>
-                                            <p className="text-muted-foreground text-sm">{user?.email}</p>
+                                            <p className="text-foreground text-caption font-bold">{user?.displayName}</p>
+                                            <p className="text-muted-foreground text-caption">{user?.email}</p>
                                         </div>
                                         <IconButton icon={isOpen ? "chevron-up" : "chevron-down"} variant="secondary" />
                                     </div>

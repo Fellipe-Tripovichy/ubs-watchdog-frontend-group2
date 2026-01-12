@@ -15,7 +15,7 @@ export type Transaction = {
   amount: number;
   currency: "BRL" | "USD" | "EUR";
   counterparty: string;
-  dateTime: string; // ISO
+  dateTime: string;
 };
 
 export type AlertSeverity = "Baixa" | "Média" | "Alta" | "Crítica";
@@ -28,8 +28,8 @@ export type Alert = {
   rule: string;
   severity: AlertSeverity;
   status: AlertStatus;
-  dataCriacao: string; // ISO
-  dataResolucao: string | null; // ISO ou null
+  dataCriacao: string;
+  dataResolucao: string | null;
 };
 
 export type ClientReport = {
@@ -55,8 +55,8 @@ const clients: Client[] = [
   },
 ];
 
-const reports: Record<string, ClientReport> = {
-  "C-1023": {
+const reports: ClientReport[] = [
+  {
     client: clients[0],
     transactions: [
       {
@@ -148,7 +148,7 @@ const reports: Record<string, ClientReport> = {
     ],
   },
 
-  "C-2041": {
+  {
     client: clients[1],
     transactions: [
       {
@@ -213,12 +213,67 @@ const reports: Record<string, ClientReport> = {
       },
     ],
   },
-};
+];
 
-export function listMockClients(): Client[] {
-  return clients;
+export function getMockClientReport(
+  clientId: string,
+  startDate?: string,
+  endDate?: string
+): ClientReport {
+  const baseReport = reports.find(report => report.client.id === clientId) ?? reports[0];
+
+  if (!startDate || !endDate) {
+    return baseReport;
+  }
+
+  const periodStart = new Date(`${startDate}T00:00:00`);
+  const periodEnd = new Date(`${endDate}T23:59:59`);
+
+  const filteredTransactions = baseReport.transactions.filter((transaction) => {
+    const transactionDate = new Date(transaction.dateTime);
+    return transactionDate >= periodStart && transactionDate <= periodEnd;
+  });
+
+  const filteredAlerts = baseReport.alerts.filter((alert) => {
+    const created = new Date(alert.dataCriacao);
+    const resolved = alert.dataResolucao ? new Date(alert.dataResolucao) : null;
+    return created <= periodEnd && (resolved === null || resolved >= periodStart);
+  });
+
+  return {
+    client: baseReport.client,
+    transactions: filteredTransactions,
+    alerts: filteredAlerts,
+  };
 }
 
-export function getMockClientReport(clientId: string): ClientReport {
-  return reports[clientId] ?? reports["C-1023"];
+export function getMockAllReports(
+  startDate?: string,
+  endDate?: string
+): ClientReport[] {
+  if (!startDate || !endDate) {
+    return reports;
+  }
+
+  const periodStart = new Date(`${startDate}T00:00:00`);
+  const periodEnd = new Date(`${endDate}T23:59:59`);
+
+  return reports.map((report) => {
+    const filteredTransactions = report.transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.dateTime);
+      return transactionDate >= periodStart && transactionDate <= periodEnd;
+    });
+
+    const filteredAlerts = report.alerts.filter((alert) => {
+      const created = new Date(alert.dataCriacao);
+      const resolved = alert.dataResolucao ? new Date(alert.dataResolucao) : null;
+      return created <= periodEnd && (resolved === null || resolved >= periodStart);
+    });
+
+    return {
+      client: report.client,
+      transactions: filteredTransactions,
+      alerts: filteredAlerts,
+    };
+  });
 }

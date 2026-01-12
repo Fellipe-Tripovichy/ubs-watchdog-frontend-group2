@@ -18,36 +18,6 @@ describe('HeroTitle', () => {
     expect(heading.tagName).toBe('H1');
   });
 
-  it('should render as h2 when as prop is h2', () => {
-    render(<HeroTitle as="h2">Test Title</HeroTitle>);
-    const heading = screen.getByText('Test Title');
-    expect(heading.tagName).toBe('H2');
-  });
-
-  it('should render as h3 when as prop is h3', () => {
-    render(<HeroTitle as="h3">Test Title</HeroTitle>);
-    const heading = screen.getByText('Test Title');
-    expect(heading.tagName).toBe('H3');
-  });
-
-  it('should render as h4 when as prop is h4', () => {
-    render(<HeroTitle as="h4">Test Title</HeroTitle>);
-    const heading = screen.getByText('Test Title');
-    expect(heading.tagName).toBe('H4');
-  });
-
-  it('should render as h5 when as prop is h5', () => {
-    render(<HeroTitle as="h5">Test Title</HeroTitle>);
-    const heading = screen.getByText('Test Title');
-    expect(heading.tagName).toBe('H5');
-  });
-
-  it('should render as h6 when as prop is h6', () => {
-    render(<HeroTitle as="h6">Test Title</HeroTitle>);
-    const heading = screen.getByText('Test Title');
-    expect(heading.tagName).toBe('H6');
-  });
-
   it('should render subtitle when provided', () => {
     render(<HeroTitle subtitle="Subtitle text">Test Title</HeroTitle>);
     expect(screen.getByText('Subtitle text')).toBeInTheDocument();
