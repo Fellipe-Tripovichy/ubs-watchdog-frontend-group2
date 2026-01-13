@@ -17,7 +17,7 @@ namespace UBS.Watchdog.Application.Services
         Task<AlertaResponse?> ObterPorIdAsync(Guid id);
         Task<List<AlertaResponse>> ListarPorClienteAsync(Guid clienteId);
         Task<List<AlertaResponse>> ListarPorStatusAsync(StatusAlerta status);
-        Task<List<AlertaResponse>> ListarComFiltrosAsync(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId);
+        Task<List<AlertaResponse>> ListarComFiltrosAsync(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId, DateTime? dataCriacaoInicio, DateTime? dataCriacaoFim);
         Task<AlertaResponse> IniciarAnaliseAsync(Guid id);
         Task<AlertaResponse> ResolverAsync(Guid id, ResolverAlertaRequest request);
     }
@@ -76,15 +76,19 @@ namespace UBS.Watchdog.Application.Services
         public async Task<List<AlertaResponse>> ListarComFiltrosAsync(
                 StatusAlerta? status,
                 SeveridadeAlerta? severidade,
-                Guid? clienteId)
+                Guid? clienteId,
+                DateTime? dataCriacaoInicio,
+                DateTime? dataCriacaoFim)
         {
             _logger.LogInformation(
-                "Listando alertas com filtros: Status={Status}, Severidade={Severidade}, ClienteId={ClienteId}",
+                "Listando alertas com filtros: Status={Status}, Severidade={Severidade}, ClienteId={ClienteId}, DataCriacaoInicio={dataCriacaoInicio}, DataCriacaoFim{dataCriacaoFim}",
                 status,
                 severidade,
-                clienteId);
+                clienteId,
+                dataCriacaoInicio,
+                dataCriacaoFim);
 
-            var alertas = await _alertaRepository.GetByFiltrosAsync(status, severidade, clienteId);
+            var alertas = await _alertaRepository.GetByFiltrosAsync(status, severidade, clienteId, dataCriacaoInicio, dataCriacaoFim);
 
             return AlertaMappings.ToResponseList(alertas);
         }

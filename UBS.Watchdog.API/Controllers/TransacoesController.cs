@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UBS.Watchdog.Application.Services;
-using UBS.Watchdog.Application.DTOs.Transacao;
 using Microsoft.Extensions.Logging;
+using UBS.Watchdog.Application.DTOs.Transacao;
+using UBS.Watchdog.Application.Services;
+using UBS.Watchdog.Domain.Enums;
 
 namespace UBS.Watchdog.API.Controllers;
 
@@ -86,6 +87,24 @@ public class TransacoesController(ITransacaoService _transacaoService, ILogger<T
         }
 
         return Ok(transacao);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ListarComFiltros(
+        [FromQuery] Guid? clienteId = null,
+        [FromQuery] DateTime? dataInicio = null,
+        [FromQuery] DateTime? dataFim = null,
+        [FromQuery] string? moeda = null,
+        [FromQuery] TipoTransacao? tipo = null)
+    {
+        var transacoes = await _transacaoService.ListarComFiltrosAsync(
+            clienteId,
+            dataInicio,
+            dataFim,
+            moeda,
+            tipo);
+
+        return Ok(transacoes);
     }
 
     [HttpGet("clientes/{clienteId:guid}")]

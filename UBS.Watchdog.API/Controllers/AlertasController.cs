@@ -34,7 +34,7 @@ public class AlertasController(IAlertaService alertaService, ILogger<AlertasCont
 
         return Ok(alerta);
     }
-    
+
     [HttpGet("cliente/{clienteId:guid}")]
     public async Task<ActionResult<List<AlertaResponse>>> ListarPorCliente(Guid clienteId)
     {
@@ -58,15 +58,19 @@ public class AlertasController(IAlertaService alertaService, ILogger<AlertasCont
     public async Task<ActionResult<List<AlertaResponse>>> ListarComFiltros(
         [FromQuery] StatusAlerta? status = null,
         [FromQuery] SeveridadeAlerta? severidade = null,
-        [FromQuery] Guid? clienteId = null)
+        [FromQuery] Guid? clienteId = null,
+        [FromQuery] DateTime? dataCriacaoInicio = null,
+        [FromQuery] DateTime? dataCriacaoFim = null)
     {
         logger.LogInformation(
-            "GET /api/alertas/filtrar?status={Status}&severidade={Severidade}&clienteId={ClienteId}",
+            "GET /api/alertas/filtrar?status={Status}&severidade={Severidade}&clienteId={ClienteId}&dataCriacaoInicio={dataCriacaoInicio}&dataCriacaoFim={dataCriacaoFim}",
             status,
             severidade,
-            clienteId);
+            clienteId,
+            dataCriacaoInicio,
+            dataCriacaoFim);
 
-        var alertas = await alertaService.ListarComFiltrosAsync(status, severidade, clienteId);
+        var alertas = await alertaService.ListarComFiltrosAsync(status, severidade, clienteId, dataCriacaoInicio, dataCriacaoFim);
 
         return Ok(alertas);
     }
