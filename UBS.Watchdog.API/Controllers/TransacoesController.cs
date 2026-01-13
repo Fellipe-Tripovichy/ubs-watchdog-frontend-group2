@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Serilog.Core;
+using System.Net.NetworkInformation;
 using UBS.Watchdog.Application.DTOs.Transacao;
 using UBS.Watchdog.Application.Services;
 using UBS.Watchdog.Domain.Enums;
@@ -97,6 +99,14 @@ public class TransacoesController(ITransacaoService _transacaoService, ILogger<T
         [FromQuery] string? moeda = null,
         [FromQuery] TipoTransacao? tipo = null)
     {
+        _logger.LogInformation(
+            "GET /api/transacoes/filtrar?clienteID={clienteId}&dataInicio={dataInicio}&dataFim={dataFim}&moeda={moeda}&tipo={tipo}",
+            clienteId,
+            dataInicio,
+            dataFim,
+            moeda,
+            tipo);
+
         var transacoes = await _transacaoService.ListarComFiltrosAsync(
             clienteId,
             dataInicio,
