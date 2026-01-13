@@ -91,7 +91,7 @@ public class TransacoesController(ITransacaoService _transacaoService, ILogger<T
         return Ok(transacao);
     }
 
-    [HttpGet]
+    [HttpGet("filtrar")]
     public async Task<IActionResult> ListarComFiltros(
         [FromQuery] Guid? clienteId = null,
         [FromQuery] DateTime? dataInicio = null,

@@ -60,7 +60,8 @@ public class AlertasController(IAlertaService alertaService, ILogger<AlertasCont
         [FromQuery] SeveridadeAlerta? severidade = null,
         [FromQuery] Guid? clienteId = null,
         [FromQuery] DateTime? dataCriacaoInicio = null,
-        [FromQuery] DateTime? dataCriacaoFim = null)
+        [FromQuery] DateTime? dataCriacaoFim = null,
+        [FromQuery] DateTime? dataResolucao = null)
     {
         logger.LogInformation(
             "GET /api/alertas/filtrar?status={Status}&severidade={Severidade}&clienteId={ClienteId}&dataCriacaoInicio={dataCriacaoInicio}&dataCriacaoFim={dataCriacaoFim}",
@@ -70,7 +71,7 @@ public class AlertasController(IAlertaService alertaService, ILogger<AlertasCont
             dataCriacaoInicio,
             dataCriacaoFim);
 
-        var alertas = await alertaService.ListarComFiltrosAsync(status, severidade, clienteId, dataCriacaoInicio, dataCriacaoFim);
+        var alertas = await alertaService.ListarComFiltrosAsync(status, severidade, clienteId, dataCriacaoInicio, dataCriacaoFim, dataResolucao);
 
         return Ok(alertas);
     }

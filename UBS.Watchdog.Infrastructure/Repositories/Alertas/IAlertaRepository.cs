@@ -21,7 +21,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
         Task<List<Alerta>> GetByTransacaoIdAsync(Guid transacaoId);
         Task<List<Alerta>> GetByStatusAsync(StatusAlerta status);
         Task<List<Alerta>> GetBySeveridadeAsync(SeveridadeAlerta severidade);
-        Task<List<Alerta>> GetByFiltrosAsync(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId, DateTime? dataCriacaoInicio, DateTime? dataCriacaoFim);
+        Task<List<Alerta>> GetByFiltrosAsync(StatusAlerta? status, SeveridadeAlerta? severidade, Guid? clienteId, DateTime? dataCriacaoInicio, DateTime? dataCriacaoFim, DateTime? dataResolucao);
         #endregion
     }
 }

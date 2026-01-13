@@ -79,7 +79,10 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
         public async Task<List<Alerta>> GetByFiltrosAsync(
             StatusAlerta? status,
             SeveridadeAlerta? severidade,
-            Guid? clienteId)
+            Guid? clienteId,
+            DateTime? dataCriacaoInicio,
+            DateTime? dataCriacaoFim,
+            DateTime? dataResolucao)
         {
             var query = context.Alertas
                 .Include(a => a.Cliente)
@@ -87,13 +90,34 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
                 .AsQueryable();
 
             if (status.HasValue)
+            {
                 query = query.Where(a => a.Status == status.Value);
+            }
 
             if (severidade.HasValue)
+            {
                 query = query.Where(a => a.Severidade == severidade.Value);
+            }
 
             if (clienteId.HasValue)
+            {
                 query = query.Where(a => a.ClienteId == clienteId.Value);
+            }
+
+            if (dataCriacaoInicio.HasValue)
+            {
+                query = query.Where(a => a.DataCriacao >= dataCriacaoInicio.Value);
+            }
+
+            if (dataCriacaoFim.HasValue)
+            {
+                query = query.Where(a => a.DataCriacao <= dataCriacaoFim.Value);
+            }
+
+            if (dataResolucao.HasValue)
+            {
+                query = query.Where(a => a.DataResolucao == dataResolucao.Value);
+            }
 
             return await query
                 .OrderByDescending(a => a.DataCriacao)
