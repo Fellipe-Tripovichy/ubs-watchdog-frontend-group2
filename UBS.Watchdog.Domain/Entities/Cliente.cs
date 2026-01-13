@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Transactions;
 using UBS.Watchdog.Domain.Enums;
 
@@ -24,6 +25,8 @@ public class Cliente
 		Alertas = new List<Alerta>();
 	}
 
+
+
 	public Cliente(string nome, string pais, NivelRisco nivelRisco)
 	{
 		if (string.IsNullOrWhiteSpace(nome))
@@ -42,7 +45,14 @@ public class Cliente
 		Transacoes = new List<Transacao>();
 		Alertas = new List<Alerta>();
 	}
-	public void AtualizarStatusKyc(StatusKyc novoStatus)
+
+    public static Cliente Criar(string nome, string pais, string nivelRisco)
+    {
+        Enum.TryParse<NivelRisco>(nivelRisco, true, out var nivel);
+
+        return new Cliente(nome, pais, nivel);
+    }
+    public void AtualizarStatusKyc(StatusKyc novoStatus)
 	{
 		StatusKyc = novoStatus;
 	}
