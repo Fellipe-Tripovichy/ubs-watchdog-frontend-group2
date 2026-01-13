@@ -16,11 +16,11 @@ COPY . .
 
 # Build com restore
 WORKDIR "/src/UBS.Watchdog.API"
-RUN dotnet build "UBS.Watchdog.API.csproj" -c Release -o /app/build
+RUN dotnet build "UBS.Watchdog.API/UBS.Watchdog.API.csproj" -c Release -o /app/build
 
 # Build e publish
 FROM build AS publish
-RUN dotnet publish "UBS.Watchdog.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "UBS.Watchdog.API/UBS.Watchdog.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Build runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
