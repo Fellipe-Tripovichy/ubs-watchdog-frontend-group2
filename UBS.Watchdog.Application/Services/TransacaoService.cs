@@ -25,6 +25,12 @@ namespace UBS.Watchdog.Application.Services
             Guid clienteId,
             DateTime? dataInicio = null,
             DateTime? dataFim = null);
+        Task<List<TransacaoResponse>> ListarComFiltrosAsync(
+            Guid? clienteId,
+            DateTime? dataInicio,
+            DateTime? dataFim,
+            string? moeda,
+            TipoTransacao? tipo);
     }
     public class TransacaoService : ITransacaoService
     {
@@ -50,10 +56,10 @@ namespace UBS.Watchdog.Application.Services
         {
 
             _logger.LogInformation(
-    "Registrando transação: Cliente {ClienteId}, Tipo {Tipo}, Valor {Valor}",
-    request.ClienteId,
-    request.Tipo,
-    request.Valor);
+                "Registrando transação: Cliente {ClienteId}, Tipo {Tipo}, Valor {Valor}",
+                request.ClienteId,
+                request.Tipo,
+                request.Valor);
 
             var cliente = await _clienteRepository.GetByIdAsync(request.ClienteId);
             if (cliente == null)
@@ -160,5 +166,63 @@ namespace UBS.Watchdog.Application.Services
 
             return TransacaoMappings.toResponse(transacao);
         }
+
+        public async Task<List<TransacaoResponse>> ListarComFiltrosAsync(
+            Guid? clienteId,
+            DateTime? dataInicio,
+            DateTime? dataFim,
+            string? moeda,
+            TipoTransacao? tipo)
+        {
+            _logger.LogInformation(
+                "Listando transações com filtros: ClienteId={ClienteId}, PeriodoInicio={DataInicio}, PeriodoFim={DataFim}, Moeda={Moeda}, Tipo={Tipo}",
+                clienteId,
+                dataInicio,
+                dataFim,
+                moeda,
+                tipo);
+
+            var transacoes = await _transacaoRepository.GetAllAsync();
+
+            _logger.LogInformation(
+                "Total de transações antes dos filtros: {Total}",
+                transacoes.Count);
+
+            if (clienteId.HasValue)
+            {
+                transacoes = transacoes
+                    .Where(t => t.ClienteId == clienteId.Value)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(moeda))
+            {
+                transacoes = transacoes
+                    .Where(t => t.Moeda.Equals(moeda))
+                    .ToList();
+            }
+
+            if (tipo.HasValue)
+            {
+                transacoes = transacoes
+                    .Where(t => t.Tipo == tipo.Value)
+                    .ToList();
+            }
+
+            if (dataInicio.HasValue && dataFim.HasValue)
+            {
+                transacoes = transacoes
+                    .Where(t => t.DataHora >= dataInicio.Value &&
+                                t.DataHora <= dataFim.Value)
+                    .ToList();
+            }
+
+            _logger.LogInformation(
+                "Total de transações após aplicação dos filtros: {Total}",
+                transacoes.Count);
+
+            return TransacaoMappings.toResponseList(transacoes);
+        }
+
     }
 }

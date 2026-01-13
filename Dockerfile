@@ -4,23 +4,15 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR "./"
 
 # Copiando projetos
-COPY ["UBS.Watchdog.API/UBS.Watchdog.API.csproj", "UBS.Watchdog.API/"]
-COPY ["UBS.Watchdog.Application/UBS.Watchdog.Application.csproj", "UBS.Watchdog.Application/"]
-COPY ["UBS.Watchdog.Domain/UBS.Watchdog.Domain.csproj", "UBS.Watchdog.Domain/"]
-COPY ["UBS.Watchdog.Infrastructure/UBS.Watchdog.Infrastructure.csproj", "UBS.Watchdog.Infrastructure/"]
+COPY . .
 # Restaurando projetos
 RUN dotnet restore "UBS.Watchdog.API/UBS.Watchdog.API.csproj"
 
-# Copiando código
-COPY . .
-
 # Build com restore
-WORKDIR "/src/UBS.Watchdog.API"
-RUN dotnet build "UBS.Watchdog.API.csproj" -c Release -o /app/build
+RUN dotnet build "UBS.Watchdog.API/UBS.Watchdog.API.csproj" -c Release -o /app/build
 
 # Build e publish
-FROM build AS publish
-RUN dotnet publish "UBS.Watchdog.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "UBS.Watchdog.API/UBS.Watchdog.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Build runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
@@ -30,7 +22,7 @@ WORKDIR /app
 EXPOSE 5433
 
 # Copiar arquivos publicados do stage anterior
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
 # Criar diretório de logs
 RUN mkdir -p /app/logs
