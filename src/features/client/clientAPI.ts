@@ -26,7 +26,7 @@ export const getClientsAPI = async (params: GetClientsParams): Promise<Client[] 
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/clientes`, {
+        const response = await fetch(`/api/clientes`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -54,7 +54,7 @@ export const getClientByIdAPI = async (params: GetClientByIdParams): Promise<Cli
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/clientes/${clientId}`, {
+        const response = await fetch(`/api/clientes/${clientId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

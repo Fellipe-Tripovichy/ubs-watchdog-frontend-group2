@@ -54,7 +54,7 @@ export const createTransactionAPI = async (params: CreateTransactionParams): Pro
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/transacoes`, {
+        const response = await fetch(`/api/transacoes`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -103,7 +103,7 @@ export const getTransactionsAPI = async (params: GetTransactionsParams): Promise
         }
         
         const queryString = queryParams.toString();
-        const url = `${apiUrl}/api/transacoes/filtrar${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/transacoes/filtrar${queryString ? `?${queryString}` : ''}`;
         
         const response = await fetch(url, {
             method: 'GET',
@@ -133,7 +133,7 @@ export const getTransactionByIdAPI = async (params: GetTransactionByIdParams): P
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/transacoes/${transacaoId}`, {
+        const response = await fetch(`/api/transacoes/${transacaoId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -178,7 +178,7 @@ export const getClientTransactionsAPI = async (params: GetClientTransactionsPara
         }
         
         const queryString = queryParams.toString();
-        const url = `${apiUrl}/api/transacoes/clientes/${clientId}${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/transacoes/clientes/${clientId}${queryString ? `?${queryString}` : ''}`;
         
         const response = await fetch(url, {
             method: 'GET',
