@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
 import {
   Command,
   CommandInput,
@@ -9,18 +8,14 @@ import {
   CommandItem,
 } from '@/components/ui/command';
 
-// Mock cmdk
 jest.mock('cmdk', () => {
-  const React = require('react');
   
-  // Create Command component with nested sub-components
   const CommandComponent = ({ className, children, ...props }: any) => (
     <div data-testid="command-root" className={className} {...props}>
       {children}
     </div>
   );
   
-  // Attach sub-components as properties of Command
   CommandComponent.Input = ({ className, ...props }: any) => (
     <input
       data-testid="command-input"
@@ -195,7 +190,7 @@ describe('CommandInput', () => {
   it('should handle value prop', () => {
     render(
       <Command>
-        <CommandInput value="test value" onChange={() => {}} />
+        <CommandInput value="test value" />
       </Command>
     );
     const input = screen.getByTestId('command-input') as HTMLInputElement;
@@ -206,8 +201,8 @@ describe('CommandInput', () => {
     const handleChange = jest.fn();
     render(
       <Command>
-        <CommandInput onChange={handleChange} />
-      </Command>
+        <CommandInput {...({ onChange: handleChange } as any)} />
+      </Command>  
     );
     const input = screen.getByTestId('command-input');
     fireEvent.change(input, { target: { value: 'test' } });

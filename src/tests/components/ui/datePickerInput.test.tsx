@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { DatePickerInput } from '@/components/ui/datePickerInput';
 
-// Mock Input component
 jest.mock('@/components/ui/input', () => ({
   Input: ({ value, placeholder, className, onChange, onKeyDown, ...props }: any) => (
     <input
@@ -19,7 +18,6 @@ jest.mock('@/components/ui/input', () => ({
   ),
 }));
 
-// Mock Button component
 jest.mock('@/components/ui/button', () => ({
   Button: ({ children, className, onClick, ...props }: any) => (
     <button
@@ -33,10 +31,8 @@ jest.mock('@/components/ui/button', () => ({
   ),
 }));
 
-// Mock Calendar component
 jest.mock('@/components/ui/calendar', () => ({
   Calendar: ({ selected, month, onMonthChange, onSelect, disabled, ...props }: any) => {
-    // Serialize disabled array properly, handling Date objects
     const serializeDisabled = (disabledArray: any[]) => {
       if (!disabledArray || !Array.isArray(disabledArray)) return '[]';
       return JSON.stringify(
@@ -83,7 +79,6 @@ jest.mock('@/components/ui/calendar', () => ({
   },
 }));
 
-// Mock Popover components
 jest.mock('@/components/ui/popover', () => ({
   Popover: ({ open, onOpenChange, children }: any) => (
     <div data-testid="popover" data-open={open}>
@@ -103,7 +98,6 @@ jest.mock('@/components/ui/popover', () => ({
   ),
 }));
 
-// Mock CalendarIcon
 jest.mock('lucide-react', () => ({
   CalendarIcon: ({ className, ...props }: any) => (
     <svg data-testid="calendar-icon" className={className} {...props}>
@@ -120,17 +114,17 @@ describe('DatePickerInput', () => {
   });
 
   it('should render', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     expect(screen.getByText('Test Label')).toBeInTheDocument();
   });
 
   it('should render label', () => {
-    render(<DatePickerInput label="Date Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Date Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     expect(screen.getByText('Date Label')).toBeInTheDocument();
   });
 
   it('should render input with default placeholder', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
     expect(input).toHaveAttribute('placeholder', 'dd/mm/aaaa');
   });
@@ -142,6 +136,7 @@ describe('DatePickerInput', () => {
         value={undefined}
         onChange={mockOnChange}
         placeholder="Select date"
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
@@ -149,32 +144,32 @@ describe('DatePickerInput', () => {
   });
 
   it('should render input with empty value when value is undefined', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('');
   });
 
   it('should format and display date value in pt-BR format', () => {
     const date = new Date(2024, 0, 15);
-    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('15/01/2024');
   });
 
   it('should update input value when prop value changes', () => {
     const { rerender } = render(
-      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
     );
     const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('');
 
     const newDate = new Date(2024, 5, 20);
-    rerender(<DatePickerInput label="Test Label" value={newDate} onChange={mockOnChange} />);
+    rerender(<DatePickerInput label="Test Label" value={newDate} onChange={mockOnChange} disabled={false} />);
     expect(input.value).toBe('20/06/2024');
   });
 
   it('should parse valid date string and call onChange', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
     fireEvent.change(input, { target: { value: '15/01/2024' } });
@@ -188,7 +183,7 @@ describe('DatePickerInput', () => {
   });
 
   it('should not call onChange for invalid date format', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
     fireEvent.change(input, { target: { value: 'invalid' } });
@@ -197,17 +192,17 @@ describe('DatePickerInput', () => {
   });
 
   it('should not call onChange for invalid date values', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
-    fireEvent.change(input, { target: { value: '32/01/2024' } }); // Invalid day
+    fireEvent.change(input, { target: { value: '32/01/2024' } });
 
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
   it('should call onChange with undefined when input is cleared', () => {
     const date = new Date(2024, 0, 15);
-    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
     fireEvent.change(input, { target: { value: '' } });
@@ -217,7 +212,7 @@ describe('DatePickerInput', () => {
 
   it('should call onChange with undefined when input is whitespace only', () => {
     const date = new Date(2024, 0, 15);
-    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={date} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
     fireEvent.change(input, { target: { value: '   ' } });
@@ -234,15 +229,13 @@ describe('DatePickerInput', () => {
         value={initialDate}
         onChange={mockOnChange}
         minDate={minDate}
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
 
-    // Try to set a date before minDate
     fireEvent.change(input, { target: { value: '15/01/2024' } });
 
-    // onChange should not be called for dates before minDate
-    // The input value changes but onChange is prevented
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
@@ -255,19 +248,18 @@ describe('DatePickerInput', () => {
         value={initialDate}
         onChange={mockOnChange}
         maxDate={maxDate}
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
 
-    // Try to set a date after maxDate
     fireEvent.change(input, { target: { value: '15/01/2024' } });
 
-    // onChange should not be called for dates after maxDate
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
   it('should open popover when ArrowDown key is pressed', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
     const popover = screen.getByTestId('popover');
 
@@ -279,7 +271,7 @@ describe('DatePickerInput', () => {
   });
 
   it('should prevent default when ArrowDown key is pressed', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
     const popover = screen.getByTestId('popover');
 
@@ -293,12 +285,11 @@ describe('DatePickerInput', () => {
 
     fireEvent.keyDown(input, event);
 
-    // Verify popover opens (which indicates preventDefault was called)
     expect(popover).toHaveAttribute('data-open', 'true');
   });
 
   it('should not open popover for other keys', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
     const popover = screen.getByTestId('popover');
 
@@ -308,24 +299,23 @@ describe('DatePickerInput', () => {
   });
 
   it('should render calendar icon button', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const calendarIcon = screen.getByTestId('calendar-icon');
     expect(calendarIcon).toBeInTheDocument();
   });
 
   it('should render screen reader text for calendar button', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const srText = screen.getByText('Selecionar data');
     expect(srText).toHaveClass('sr-only');
   });
 
   it('should render Calendar component in PopoverContent', () => {
     const { baseElement } = render(
-      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
     );
     const input = screen.getByRole('textbox');
 
-    // Open popover
     fireEvent.keyDown(input, { key: 'ArrowDown' });
 
     const calendar = baseElement.querySelector('[data-slot="popover-content"] [data-slot="calendar"]');
@@ -335,7 +325,7 @@ describe('DatePickerInput', () => {
   it('should pass selected date to Calendar', () => {
     const date = new Date(2024, 0, 15);
     const { baseElement } = render(
-      <DatePickerInput label="Test Label" value={date} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={date} onChange={mockOnChange} disabled={false} />
     );
     const input = screen.getByRole('textbox');
 
@@ -348,7 +338,7 @@ describe('DatePickerInput', () => {
   it('should pass month to Calendar', () => {
     const date = new Date(2024, 0, 15);
     const { baseElement } = render(
-      <DatePickerInput label="Test Label" value={date} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={date} onChange={mockOnChange} disabled={false} />
     );
     const input = screen.getByRole('textbox');
 
@@ -366,6 +356,7 @@ describe('DatePickerInput', () => {
         value={undefined}
         onChange={mockOnChange}
         minDate={minDate}
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
@@ -377,7 +368,6 @@ describe('DatePickerInput', () => {
     const disabled = JSON.parse(disabledStr);
     expect(disabled).toHaveLength(1);
     expect(disabled[0]).toHaveProperty('before');
-    // Verify the date is correctly serialized
     expect(new Date(disabled[0].before).getTime()).toBe(minDate.getTime());
   });
 
@@ -389,6 +379,7 @@ describe('DatePickerInput', () => {
         value={undefined}
         onChange={mockOnChange}
         maxDate={maxDate}
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
@@ -400,7 +391,6 @@ describe('DatePickerInput', () => {
     const disabled = JSON.parse(disabledStr);
     expect(disabled).toHaveLength(1);
     expect(disabled[0]).toHaveProperty('after');
-    // Verify the date is correctly serialized
     expect(new Date(disabled[0].after).getTime()).toBe(maxDate.getTime());
   });
 
@@ -414,6 +404,7 @@ describe('DatePickerInput', () => {
         onChange={mockOnChange}
         minDate={minDate}
         maxDate={maxDate}
+        disabled={false}
       />
     );
     const input = screen.getByRole('textbox');
@@ -429,10 +420,9 @@ describe('DatePickerInput', () => {
   });
 
   it('should call onChange and close popover when date is selected from Calendar', async () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
 
-    // Open popover
     fireEvent.keyDown(input, { key: 'ArrowDown' });
 
     await waitFor(() => {
@@ -447,7 +437,6 @@ describe('DatePickerInput', () => {
     const selectedDate = mockOnChange.mock.calls[0][0];
     expect(selectedDate).toBeInstanceOf(Date);
 
-    // Popover should close
     const popover = screen.getByTestId('popover');
     await waitFor(() => {
       expect(popover).toHaveAttribute('data-open', 'false');
@@ -455,11 +444,10 @@ describe('DatePickerInput', () => {
   });
 
   it('should update input text when date is selected from Calendar', async () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
     const popoverInput = screen.getByRole('textbox');
 
-    // Open popover
     fireEvent.keyDown(popoverInput, { key: 'ArrowDown' });
 
     await waitFor(() => {
@@ -470,7 +458,6 @@ describe('DatePickerInput', () => {
     const selectButton = screen.getByTestId('calendar-select-date');
     fireEvent.click(selectButton);
 
-    // Input should be updated with formatted date
     await waitFor(() => {
       expect(input.value).toBeTruthy();
     });
@@ -478,11 +465,10 @@ describe('DatePickerInput', () => {
 
   it('should update month state when Calendar month changes', async () => {
     const { baseElement } = render(
-      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
     );
     const input = screen.getByRole('textbox');
 
-    // Open popover
     fireEvent.keyDown(input, { key: 'ArrowDown' });
 
     await waitFor(() => {
@@ -493,7 +479,6 @@ describe('DatePickerInput', () => {
     const changeMonthButton = screen.getByTestId('calendar-change-month');
     fireEvent.click(changeMonthButton);
 
-    // Month state should be updated (this is internal state, but we can verify Calendar received it)
     await waitFor(() => {
       const calendar = baseElement.querySelector('[data-slot="popover-content"] [data-slot="calendar"]');
       expect(calendar).toBeInTheDocument();
@@ -501,28 +486,28 @@ describe('DatePickerInput', () => {
   });
 
   it('should apply correct classes to input', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const input = screen.getByRole('textbox');
     expect(input).toHaveClass('pr-10');
   });
 
   it('should apply correct classes to wrapper div', () => {
     const { container } = render(
-      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
     );
     const wrapper = container.querySelector('.flex.flex-col.gap-2.w-full');
     expect(wrapper).toBeInTheDocument();
   });
 
   it('should apply correct classes to label', () => {
-    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+    render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
     const label = screen.getByText('Test Label');
     expect(label).toHaveClass('text-sm', 'font-medium', 'text-muted-foreground');
   });
 
   it('should apply correct classes to relative wrapper', () => {
     const { container } = render(
-      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+      <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
     );
     const relativeWrapper = container.querySelector('.relative.w-full');
     expect(relativeWrapper).toBeInTheDocument();
@@ -530,7 +515,7 @@ describe('DatePickerInput', () => {
 
   describe('Date Parsing', () => {
     it('should parse date with leading zeros', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '05/03/2024' } });
@@ -543,17 +528,16 @@ describe('DatePickerInput', () => {
     });
 
     it('should parse date without leading zeros', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '5/3/2024' } });
 
-      // This should fail to parse because format requires dd/mm/yyyy with leading zeros
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
     it('should handle leap year dates', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '29/02/2024' } });
@@ -566,16 +550,16 @@ describe('DatePickerInput', () => {
     });
 
     it('should reject invalid leap year dates', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
-      fireEvent.change(input, { target: { value: '29/02/2023' } }); // 2023 is not a leap year
+      fireEvent.change(input, { target: { value: '29/02/2023' } });
 
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
     it('should handle edge case dates', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '31/12/2024' } });
@@ -589,33 +573,32 @@ describe('DatePickerInput', () => {
 
   describe('Edge Cases', () => {
     it('should handle undefined value prop', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox') as HTMLInputElement;
       expect(input.value).toBe('');
     });
 
     it('should handle null-like values gracefully', () => {
       const { rerender } = render(
-        <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />
+        <DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />
       );
       const input = screen.getByRole('textbox') as HTMLInputElement;
 
-      rerender(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      rerender(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       expect(input.value).toBe('');
     });
 
     it('should handle input with extra whitespace', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '  15/01/2024  ' } });
 
-      // Should parse trimmed value
       expect(mockOnChange).toHaveBeenCalled();
     });
 
     it('should not call onChange for partial date input', () => {
-      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} />);
+      render(<DatePickerInput label="Test Label" value={undefined} onChange={mockOnChange} disabled={false} />);
       const input = screen.getByRole('textbox');
 
       fireEvent.change(input, { target: { value: '15/01' } });

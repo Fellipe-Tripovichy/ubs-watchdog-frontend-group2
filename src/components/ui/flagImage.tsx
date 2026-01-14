@@ -124,6 +124,7 @@ export type FlagFormat = "png" | "svg" | "jpg" | "webp";
 export type FlagSize = string | number | "w20" | "w40" | "w80" | "w160" | "w320" | "w640";
 
 function getFlagSize(size: FlagSize): number {
+  if (typeof size === "number") return size;
   if (size === "w20") return 20;
   if (size === "w40") return 40;
   if (size === "w80") return 80;
@@ -155,7 +156,7 @@ export function getFlagUrl(
   
   const formatLower = format.toLowerCase() as FlagFormat;
   
-  return `https://flagcdn.com/${sizePrefix}/${countryCode}.${formatLower}`;
+  return `https://flagcdn.com/${sizePrefix}${countryCode}.${formatLower}`;
 }
 
 export interface FlagImageProps {
@@ -196,6 +197,7 @@ export function FlagImage({
       onError={() => setHasError(true)}
       width={getFlagSize(size)}
       height="auto"
+      className={className}
       {...props}
     />
   );

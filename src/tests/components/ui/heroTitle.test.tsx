@@ -95,12 +95,9 @@ describe('HeroTitle', () => {
   });
 
   it('should render with empty subtitle string', () => {
-    const { container } = render(<HeroTitle subtitle="">Test Title</HeroTitle>);
-    // Empty string is falsy, so subtitle should not render
-    // Check that there's no subtitle div element
+    const { container } = render(<HeroTitle subtitle="">Test Title</HeroTitle>);    
     const subtitle = container.querySelector('div.text-\\[20px\\]');
     expect(subtitle).not.toBeInTheDocument();
-    // Title should still render
     expect(screen.getByText('Test Title')).toBeInTheDocument();
   });
 

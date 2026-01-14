@@ -37,26 +37,19 @@ describe("Table Components", () => {
       </Table>
     );
 
-    // Verify main structure elements exist
     expect(screen.getByRole("table")).toBeInTheDocument();
     
-    // FIX: thead, tbody, and tfoot all share the "rowgroup" role.
-    // We check that 3 rowgroups exist.
     const rowGroups = screen.getAllByRole("rowgroup");
     expect(rowGroups).toHaveLength(3);
 
-    // Note: 'caption' does not always have a default aria-role in jsdom, so we check text
     expect(screen.getByText("Test Caption")).toBeInTheDocument();
 
-    // Verify Headers
     expect(screen.getByText("Header 1")).toBeInTheDocument();
     expect(screen.getByText("Header 2")).toBeInTheDocument();
 
-    // Verify Body Cells
     expect(screen.getByText("Cell 1")).toBeInTheDocument();
     expect(screen.getByText("Cell 2")).toBeInTheDocument();
 
-    // Verify Footer Cells
     expect(screen.getByText("Footer 1")).toBeInTheDocument();
   });
 
@@ -66,19 +59,17 @@ describe("Table Components", () => {
       const wrapper = container.firstChild as HTMLElement;
       const table = screen.getByRole("table");
 
-      // Check wrapper
       expect(wrapper).toHaveClass("relative w-full overflow-x-auto");
       expect(wrapper).toHaveAttribute("data-slot", "table-container");
 
-      // Check table
       expect(table).toHaveClass("w-full caption-bottom text-caption");
     });
 
     it("merges custom classNames", () => {
       render(<Table className="custom-class" />);
       const table = screen.getByRole("table");
-      expect(table).toHaveClass("w-full"); // Default
-      expect(table).toHaveClass("custom-class"); // Custom
+      expect(table).toHaveClass("w-full");
+      expect(table).toHaveClass("custom-class");
     });
 
     it("passes standard props", () => {
@@ -185,9 +176,6 @@ describe("Table Components", () => {
       const caption = screen.getByText("Description").closest("caption");
       expect(caption).toBeInTheDocument();
       
-      // FIX: 'text-muted-foreground' is likely removed by tailwind-merge because 
-      // 'text-caption' conflicts with it (both set text color).
-      // We check for the classes that persist.
       expect(caption).toHaveClass("mt-4 text-caption custom-caption");
     });
   });

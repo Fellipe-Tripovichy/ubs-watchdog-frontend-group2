@@ -75,15 +75,12 @@ describe("DataTable", () => {
   it("handles empty data gracefully", () => {
     render(<DataTable columns={columns} data={[]} />);
     
-    // Headers should still exist
-    expect(screen.getByText("ID")).toBeInTheDocument();
+    // When data is empty, component shows Empty state instead of table
+    expect(screen.getByText("Nenhum dado disponível")).toBeInTheDocument();
+    expect(screen.getByText("Não há dados para exibir no momento. Refaça sua busca ou entre em contato com o suporte.")).toBeInTheDocument();
     
-    // Body should be empty (no data rows)
-    // We check that the number of rows in the body is 0
-    const rowGroups = screen.getAllByRole("rowgroup");
-    // Usually [thead, tbody]. We look into tbody.
-    const tbody = rowGroups[1]; 
-    expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
+    // Table headers should not be present when showing empty state
+    expect(screen.queryByText("ID")).not.toBeInTheDocument();
     
     // Pagination should not render
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();

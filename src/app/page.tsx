@@ -50,7 +50,7 @@ export default async function Home() {
                 <CardButton icon="/services-transaction.jpg" title="Realização de transações" description="Monitoração de transações financeiras em tempo real" />
               </Link>
               <Link href="/compliance">
-                <CardButton icon="/services-compliance.jpg" title="Monitoramento de conformidade" description="Monitoração de transações financeiras em tempo real" />
+                <CardButton icon="/services-compliance.jpg" title="Monitoramento de Compliance" description="Monitoração de transações financeiras em tempo real" />
               </Link>
               <Link href="/report">
                 <CardButton icon="/services-report.jpg" title="Análise de relatórios" description="Monitoração de transações financeiras em tempo real" />

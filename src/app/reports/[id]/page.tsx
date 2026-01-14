@@ -110,13 +110,11 @@ export default function ReportsPage() {
         return id ? id.toUpperCase() : "C-1023";
     }, [params?.id]);
 
-    const [startDate, setStartDate] = React.useState<string>(
-        startOfCurrentMonthISO()
-    );
+    const [startDate, setStartDate] = React.useState<string | null>(null);
 
-    const [endDate, setEndDate] = React.useState<string>(todayISO());
+    const [endDate, setEndDate] = React.useState<string | null>(null);
 
-    const [showFilters, setShowFilters] = React.useState(false);
+    const [showFilters, setShowFilters] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         if (!startDate) return;
@@ -129,8 +127,7 @@ export default function ReportsPage() {
             setEndDate(todayISO() >= startDate ? todayISO() : startDate);
     }, [startDate, endDate]);
 
-    const isValidRange =
-        Boolean(startDate) && Boolean(endDate) && endDate >= startDate;
+    const isValidRange = (startDate && endDate) ? (endDate >= startDate) : true;
 
     React.useEffect(() => {
         if (!clientId || !token || !isValidRange) return;
@@ -303,7 +300,7 @@ export default function ReportsPage() {
                                         <DatePickerInput
                                             disabled={isLoadingReport}
                                             label="Data inicial"
-                                            value={isoToDate(startDate)}
+                                            value={startDate ? isoToDate(startDate) : undefined}
                                             maxDate={isoToDate(todayISO())}
                                             onChange={(d) => {
                                                 const nextStart = d
@@ -322,8 +319,8 @@ export default function ReportsPage() {
                                         <DatePickerInput
                                             disabled={isLoadingReport}
                                             label="Data final"
-                                            value={isoToDate(endDate)}
-                                            minDate={isoToDate(startDate)}
+                                            value={endDate ? isoToDate(endDate) : undefined}
+                                            minDate={startDate ? isoToDate(startDate) : undefined}
                                             maxDate={isoToDate(todayISO())}
                                             onChange={(d) => {
                                                 const nextEnd = d != null ? dateToISO(d) : todayISO();
@@ -338,8 +335,8 @@ export default function ReportsPage() {
                                         size="small"
                                         type="button"
                                         onClick={() => {
-                                            setStartDate(startOfCurrentMonthISO());
-                                            setEndDate(todayISO());
+                                            setStartDate(null);
+                                            setEndDate(null);
                                         }}
                                     >
                                         Redefinir filtros

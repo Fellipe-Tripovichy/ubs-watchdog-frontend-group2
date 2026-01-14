@@ -61,7 +61,7 @@ export default function compliancePage() {
         <div className="w-full relative">
           <img
             src="/banner-compliance.jpg"
-            alt="Conformidade"
+            alt="Compliance"
             className="h-[240px] w-full object-cover"
           />
           <div className="absolute top-0 left-0 w-full h-full z-10 flex items-center justify-start">
@@ -69,9 +69,9 @@ export default function compliancePage() {
               <div className="bg-background/95 p-6 z-5 flex flex-col items-start justify-start w-full md:w-3/5 lg:w-2/5">
                 <HeroTitle
                   as="h1"
-                  subtitle="Monitoramento de conformidade e detecção proativa de riscos financeiros."
+                  subtitle="Monitoramento de Compliance e detecção proativa de riscos financeiros."
                 >
-                  Conformidade
+                  Compliance
                 </HeroTitle>
               </div>
             </div>

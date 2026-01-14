@@ -7,6 +7,7 @@ import type {
     StartAnalysisParams,
     ResolveAlertParams,
 } from '@/types/compliance';
+import { isoToDate, dateToISO } from "@/lib/utils";
 
 export type {
     Alert,
@@ -30,8 +31,21 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
         const queryParams = new URLSearchParams();
         if (clienteId) queryParams.append('clienteId', clienteId);
         if (dataCriacaoInicio) queryParams.append('dataCriacaoInicio', dataCriacaoInicio);
-        if (dataCriacaoFim) queryParams.append('dataCriacaoFim', dataCriacaoFim);
-        if (dataResolucao) queryParams.append('dataResolucao', dataResolucao);
+        
+        // Adjust dataCriacaoFim: add one day
+        if (dataCriacaoFim) {
+            const fimDate = isoToDate(dataCriacaoFim);
+            fimDate.setDate(fimDate.getDate() + 1);
+            queryParams.append('dataCriacaoFim', dateToISO(fimDate));
+        }
+        
+        // Adjust dataResolucao: add one day
+        if (dataResolucao) {
+            const resolucaoDate = isoToDate(dataResolucao);
+            resolucaoDate.setDate(resolucaoDate.getDate() + 1);
+            queryParams.append('dataResolucao', dateToISO(resolucaoDate));
+        }
+        
         if (severidade) queryParams.append('severidade', severidade);
         if (status) queryParams.append('status', status);
         

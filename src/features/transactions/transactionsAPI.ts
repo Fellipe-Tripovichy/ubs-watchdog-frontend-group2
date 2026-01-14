@@ -1,9 +1,11 @@
+import { isoToDate, dateToISO } from "@/lib/utils";
+
 export interface CreateTransactionRequest {
     clienteId: string;
     tipo: string;
     valor: number;
     moeda: string;
-    contraparte?: string | null;
+    contraparteId?: string | null;
 }
 
 export interface Transaction {
@@ -12,7 +14,7 @@ export interface Transaction {
     tipo: string;
     valor: number;
     moeda: string;
-    contraparte: string | null;
+    contraparteId: string | null;
     dataHora: string;
     quantidadeAlertas: number;
 }
@@ -85,8 +87,20 @@ export const getTransactionsAPI = async (params: GetTransactionsParams): Promise
         if (clienteId) queryParams.append('clienteId', clienteId);
         if (tipo) queryParams.append('tipo', tipo);
         if (moeda) queryParams.append('moeda', moeda);
-        if (dataInicio) queryParams.append('dataInicio', dataInicio);
-        if (dataFim) queryParams.append('dataFim', dataFim);
+        
+        // Adjust dataInicio: subtract one day
+        if (dataInicio) {
+            const inicioDate = isoToDate(dataInicio);
+            inicioDate.setDate(inicioDate.getDate() - 1);
+            queryParams.append('dataInicio', dateToISO(inicioDate));
+        }
+        
+        // Adjust dataFim: add one day
+        if (dataFim) {
+            const fimDate = isoToDate(dataFim);
+            fimDate.setDate(fimDate.getDate() + 1);
+            queryParams.append('dataFim', dateToISO(fimDate));
+        }
         
         const queryString = queryParams.toString();
         const url = `${apiUrl}/api/transacoes/filtrar${queryString ? `?${queryString}` : ''}`;
@@ -148,8 +162,20 @@ export const getClientTransactionsAPI = async (params: GetClientTransactionsPara
     
     try {
         const queryParams = new URLSearchParams();
-        if (dataInicio) queryParams.append('dataInicio', dataInicio);
-        if (dataFim) queryParams.append('dataFim', dataFim);
+        
+        // Adjust dataInicio: subtract one day
+        if (dataInicio) {
+            const inicioDate = isoToDate(dataInicio);
+            inicioDate.setDate(inicioDate.getDate() - 1);
+            queryParams.append('dataInicio', dateToISO(inicioDate));
+        }
+        
+        // Adjust dataFim: add one day
+        if (dataFim) {
+            const fimDate = isoToDate(dataFim);
+            fimDate.setDate(fimDate.getDate() + 1);
+            queryParams.append('dataFim', dateToISO(fimDate));
+        }
         
         const queryString = queryParams.toString();
         const url = `${apiUrl}/api/transacoes/clientes/${clientId}${queryString ? `?${queryString}` : ''}`;

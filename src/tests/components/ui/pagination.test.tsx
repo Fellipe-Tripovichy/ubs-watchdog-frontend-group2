@@ -628,7 +628,6 @@ describe('PaginationEllipsis', () => {
         </PaginationContent>
       </Pagination>
     );
-    // Ellipsis should render (check for sr-only text)
     expect(screen.getByText('More pages')).toBeInTheDocument();
   });
 

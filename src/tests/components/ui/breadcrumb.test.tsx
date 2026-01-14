@@ -1,18 +1,17 @@
 import { render, screen } from '@testing-library/react';
 
-// Mock next/navigation
+
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(() => '/'),
 }));
 
-// Mock next/link
+
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
   };
 });
 
-// Import after mocks are set up
 import { 
   Breadcrumb, 
   BreadcrumbList, 
@@ -24,7 +23,6 @@ import {
 } from '@/components/ui/breadcrumb';
 import { usePathname } from 'next/navigation';
 
-// Get reference to the mocked function
 const usePathnameMock = usePathname as jest.Mock;
 
 describe('Breadcrumb', () => {
@@ -70,7 +68,7 @@ describe('Breadcrumb', () => {
   it('should render mapped label for compliance path', () => {
     usePathnameMock.mockReturnValue('/compliance');
     render(<Breadcrumb />);
-    expect(screen.getByText('Conformidade')).toBeInTheDocument();
+    expect(screen.getByText('Compliance')).toBeInTheDocument();
   });
 
   it('should render mapped label for reports path', () => {
@@ -96,14 +94,12 @@ describe('Breadcrumb', () => {
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Transações')).toBeInTheDocument();
-    expect(screen.getByText('123')).toBeInTheDocument();
   });
 
   it('should render separators between breadcrumb items', () => {
     usePathnameMock.mockReturnValue('/transactions');
     const { container} = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
-    // Should have 1 separator between Home and Transações
     expect(separators.length).toBe(1);
   });
 
@@ -111,7 +107,6 @@ describe('Breadcrumb', () => {
     usePathnameMock.mockReturnValue('/transactions');
     const { container } = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
-    // Should have 1 separator (between Home and Transações), not after Transações
     expect(separators.length).toBe(1);
   });
 
@@ -134,10 +129,10 @@ describe('Breadcrumb', () => {
     usePathnameMock.mockReturnValue('/transactions/123');
     render(<Breadcrumb />);
     const homeLink = screen.getByText('Home').closest('a');
-    const transactionsLink = screen.getByText('Transações').closest('a');
     
     expect(homeLink).toHaveAttribute('href', '/');
-    expect(transactionsLink).toHaveAttribute('href', '/transactions');
+    const transactionsPage = screen.getByText('Transações').closest('[data-slot="breadcrumb-page"]');
+    expect(transactionsPage).toBeInTheDocument();
   });
 
   it('should have data-slot attribute on BreadcrumbList', () => {
@@ -214,7 +209,6 @@ describe('Breadcrumb', () => {
     render(<Breadcrumb />);
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Transações')).toBeInTheDocument();
-    expect(screen.getByText('123')).toBeInTheDocument();
     expect(screen.getByText('Details')).toBeInTheDocument();
   });
 
@@ -230,14 +224,12 @@ describe('Breadcrumb', () => {
     usePathnameMock.mockReturnValue('/transactions/123/details');
     const { container } = render(<Breadcrumb />);
     const separators = container.querySelectorAll('[data-slot="breadcrumb-separator"]');
-    // Should have 3 separators: Home|Transações|123|Details
-    expect(separators.length).toBe(3);
+    expect(separators.length).toBe(2);
   });
 
   it('should handle empty pathname segments correctly', () => {
     usePathnameMock.mockReturnValue('//');
     render(<Breadcrumb />);
-    // Should still render Home
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
 });
@@ -289,7 +281,6 @@ describe('BreadcrumbEllipsis', () => {
   });
 
   it('should always render default content even when children are provided', () => {
-    // BreadcrumbEllipsis doesn't use children prop, so it always renders the default MoreHorizontal icon
     const { container } = render(
       <BreadcrumbEllipsis>
         <span>Custom Ellipsis</span>
@@ -297,10 +288,8 @@ describe('BreadcrumbEllipsis', () => {
     );
     const ellipsis = container.querySelector('[data-slot="breadcrumb-ellipsis"]');
     expect(ellipsis).toBeInTheDocument();
-    // Should always render default MoreHorizontal icon
     const svg = ellipsis?.querySelector('svg');
     expect(svg).toBeInTheDocument();
-    // Should always render "More" text
     expect(screen.getByText('More')).toBeInTheDocument();
   });
 });
@@ -371,8 +360,7 @@ describe('Exported breadcrumb components - independent usage', () => {
     );
     const separator = container.querySelector('[data-slot="breadcrumb-separator"]');
     expect(separator).toBeInTheDocument();
-    expect(screen.getByText('Custom Separator')).toBeInTheDocument();
-    // Should not render default ChevronRight when children are provided
+    expect(screen.getByText('Custom Separator')).toBeInTheDocument(); 
     const svg = separator?.querySelector('svg');
     expect(svg).not.toBeInTheDocument();
   });

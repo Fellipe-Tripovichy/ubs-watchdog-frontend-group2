@@ -123,13 +123,13 @@ export default function TransactionDetailPage() {
     }, [transaction?.clienteId, token, dispatch]);
 
     React.useEffect(() => {
-        if (!transaction?.contraparte || !token) return;
+        if (!transaction?.contraparteId || !token) return;
         dispatch(fetchClientById({
-            clientId: transaction.contraparte,
+            clientId: transaction.contraparteId,
             token,
             contraparte: true,
         }));
-    }, [transaction?.contraparte, token, dispatch]);
+    }, [transaction?.contraparteId, token, dispatch]);
 
     return (
         <div className="flex flex-col items-start w-full">

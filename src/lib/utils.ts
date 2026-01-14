@@ -62,6 +62,10 @@ export function todayISO() {
   return toISODateLocal(new Date());
 }
 
+export function tomorrowISO() {
+  return toISODateLocal(new Date(new Date().setDate(new Date().getDate() + 1)));
+}
+
 export function formatDate(isoDate: string) {
   const dateString = isoDate.includes('T') ? isoDate : `${isoDate}T00:00:00`;
   const dt = new Date(dateString);

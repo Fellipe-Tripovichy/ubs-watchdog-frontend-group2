@@ -52,7 +52,7 @@ describe('Button', () => {
   it('should render arrows by default', () => {
     const { container } = render(<Button>Click me</Button>);
     const svgs = container.querySelectorAll('svg');
-    expect(svgs.length).toBe(2); // ArrowRight and ChevronRight
+    expect(svgs.length).toBe(2); 
   });
 
   it('should not render arrows when showArrow is false', () => {
@@ -101,7 +101,6 @@ describe('Button', () => {
     const { container } = render(<Button>Click me</Button>);
     const svgs = container.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
-    // Find ChevronRight (should be visible initially with opacity-100 and -translate-x-1)
     const chevron = Array.from(svgs).find(svg => 
       svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
     );
@@ -113,13 +112,11 @@ describe('Button', () => {
     const button = container.querySelector('[data-slot="button"]') as HTMLElement;
     const svgs = container.querySelectorAll('svg');
     
-    // Initially ChevronRight should be visible, ArrowRight hidden
     const chevron = Array.from(svgs).find(svg => svg.classList.contains('opacity-100'));
     expect(chevron).toBeInTheDocument();
     
     fireEvent.mouseEnter(button);
     
-    // On hover, ArrowRight should be visible, ChevronRight hidden
     const arrow = Array.from(container.querySelectorAll('svg')).find(svg => 
       svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
     );
@@ -131,15 +128,13 @@ describe('Button', () => {
     const button = container.querySelector('[data-slot="button"]') as HTMLElement;
     const svgs = container.querySelectorAll('svg');
     
-    // Find ArrowRight (should be hidden initially)
     const arrowRight = Array.from(svgs).find(svg => 
       svg.classList.contains('opacity-0')
     );
     expect(arrowRight).toBeInTheDocument();
     
     fireEvent.mouseEnter(button);
-    
-    // ArrowRight should now be visible
+
     const visibleArrow = Array.from(container.querySelectorAll('svg')).find(svg =>
       svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
     );
@@ -210,15 +205,11 @@ describe('Button', () => {
     const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
     expect(link?.tagName).toBe('A');
-    // When asChild is true, Slot merges props with the child element
-    // Note: Button wraps children in a div, so asChild may not work as expected
-    // This test verifies the link is rendered, even if wrapped
     expect(link).toBeInTheDocument();
   });
 
   describe('asChild edge cases', () => {
     it('should throw error when asChild is true but children is a string', () => {
-      // Suppress console.error for expected error
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(() => {
@@ -285,12 +276,9 @@ describe('Button', () => {
       const link = container.querySelector('a[href="/test"]') as HTMLElement;
       expect(link).toBeInTheDocument();
       
-      // Test mouse enter event (line 63)
       fireEvent.mouseEnter(link);
-      // Component should not crash and should handle the event
       expect(link).toBeInTheDocument();
       
-      // Test mouse leave event (line 64)
       fireEvent.mouseLeave(link);
       expect(link).toBeInTheDocument();
     });
@@ -358,7 +346,6 @@ describe('Button', () => {
       
       const link = container.querySelector('a[href="/test"]');
       expect(link).toBeInTheDocument();
-      // Props should be merged by Slot component
       expect(link).toHaveAttribute('data-testid', 'custom-button');
     });
 
@@ -391,7 +378,6 @@ describe('Button', () => {
     
     fireEvent.mouseEnter(button);
     
-    // After hover, margin should be removed for secondary variant
     const updatedWrapper = container.querySelector('div');
     expect(updatedWrapper).not.toHaveClass('ml-[1px]');
   });
@@ -405,7 +391,6 @@ describe('Button', () => {
     
     fireEvent.mouseEnter(button);
     
-    // Margin should remain for non-secondary variants even on hover
     const updatedWrapper = container.querySelector('div');
     expect(updatedWrapper).toHaveClass('ml-[1px]');
   });
@@ -419,7 +404,6 @@ describe('Button', () => {
     
     fireEvent.mouseEnter(button);
     
-    // Margin should remain for non-secondary variants even on hover
     const updatedWrapper = container.querySelector('div');
     expect(updatedWrapper).toHaveClass('ml-[1px]');
   });
@@ -433,7 +417,6 @@ describe('Button', () => {
     
     fireEvent.mouseEnter(button);
     
-    // Margin should remain for non-secondary variants even on hover
     const updatedWrapper = container.querySelector('div');
     expect(updatedWrapper).toHaveClass('ml-[1px]');
   });
@@ -471,14 +454,12 @@ describe('Button', () => {
     const { container } = render(<Button>Click me</Button>);
     const button = container.querySelector('[data-slot="button"]') as HTMLElement;
     
-    // Initially ChevronRight should be visible
     let svgs = container.querySelectorAll('svg');
     let chevron = Array.from(svgs).find(svg => 
       svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
     );
     expect(chevron).toBeInTheDocument();
     
-    // On hover, ArrowRight should be visible
     fireEvent.mouseEnter(button);
     svgs = container.querySelectorAll('svg');
     let arrow = Array.from(svgs).find(svg => 
@@ -487,7 +468,6 @@ describe('Button', () => {
     );
     expect(arrow).toBeInTheDocument();
     
-    // On mouse leave, should reset to initial state
     fireEvent.mouseLeave(button);
     svgs = container.querySelectorAll('svg');
     chevron = Array.from(svgs).find(svg => 
@@ -507,7 +487,6 @@ describe('Button', () => {
       expect(svg).toHaveClass('text-primary-foreground');
     });
     
-    // ArrowRight should be visible and translated on hover
     const arrowRight = Array.from(svgs).find(svg => 
       svg.classList.contains('opacity-100') && svg.classList.contains('-translate-x-1')
     );
@@ -577,7 +556,6 @@ describe('Button', () => {
     
     const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
-    // Props should be merged by Slot component
     expect(link).toHaveAttribute('aria-label', 'Navigation link');
   });
 });

@@ -17,7 +17,7 @@ const navigationItems = [
         href: "/transactions",
     },
     {
-        label: "Conformidade",
+        label: "Compliance",
         href: "/compliance",
     },
     {

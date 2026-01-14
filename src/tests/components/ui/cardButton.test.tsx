@@ -180,18 +180,14 @@ describe('CardButton', () => {
         <a href="/test">Link</a>
       </CardButton>
     );
-    // When asChild is true, Slot should merge props with the child
-    // The link should be rendered (may be wrapped or have props merged)
     const link = container.querySelector('a[href="/test"]') || container.querySelector('a');
     expect(link).toBeInTheDocument();
-    // CardButton content should be rendered
     const title = screen.getByText('Test Title');
     expect(title).toBeInTheDocument();
   });
 
   describe('asChild edge cases', () => {
     it('should throw error when asChild is true but children is a string', () => {
-      // Suppress console.error for expected error
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(() => {
@@ -255,21 +251,17 @@ describe('CardButton', () => {
         </CardButton>
       );
       
-      // Slot merges props with the child, so data-slot should be on the <a> element
       const elementWithHandlers = container.querySelector('[data-slot="card-button"]') as HTMLElement ||
                                    container.querySelector('a[href="/test"]') as HTMLElement;
       expect(elementWithHandlers).toBeInTheDocument();
       
       const description = screen.getByText('Test Description');
       
-      // Initially description should be hidden
       expect(description).toHaveClass('opacity-0');
       
-      // Test mouse enter event (line 80) - should show description
       fireEvent.mouseEnter(elementWithHandlers);
       expect(description).toHaveClass('opacity-100');
       
-      // Test mouse leave event (line 81) - should hide description
       fireEvent.mouseLeave(elementWithHandlers);
       expect(description).toHaveClass('opacity-0');
     });
@@ -281,7 +273,6 @@ describe('CardButton', () => {
         </CardButton>
       );
       
-      // Slot merges props with the child, so the div should have data-slot attribute
       const cardElement = container.querySelector('[data-slot="card-button"]') as HTMLElement;
       expect(cardElement).toBeInTheDocument();
       
@@ -290,20 +281,17 @@ describe('CardButton', () => {
       const overlay = container.querySelector('.absolute.bottom-0.left-0');
       const arrowContainer = container.querySelector('.absolute.bottom-5.right-5');
       
-      // Initially not hovered
       expect(title).not.toHaveClass('underline');
       expect(description).toHaveClass('opacity-0');
       expect(overlay).not.toHaveClass('bg-background');
       expect(arrowContainer).toHaveClass('bg-background');
       
-      // On hover (line 80) - trigger on the element that has the event handlers
       fireEvent.mouseEnter(cardElement);
       expect(title).toHaveClass('underline');
       expect(description).toHaveClass('opacity-100');
       expect(overlay).toHaveClass('bg-background');
       expect(arrowContainer).toHaveClass('bg-transparent');
       
-      // On mouse leave (line 81)
       fireEvent.mouseLeave(cardElement);
       expect(title).not.toHaveClass('underline');
       expect(description).toHaveClass('opacity-0');
@@ -358,7 +346,6 @@ describe('CardButton', () => {
       
       const link = container.querySelector('a[href="/test"]');
       expect(link).toBeInTheDocument();
-      // Props should be merged by Slot component
       expect(link).toHaveAttribute('data-testid', 'custom-card-button');
     });
 
@@ -370,7 +357,6 @@ describe('CardButton', () => {
         </CardButton>
       );
       
-      // Slot merges props, so handlers should be on the child element
       const elementWithHandlers = container.querySelector('[data-slot="card-button"]') as HTMLElement ||
                                    container.querySelector('a[href="/test"]') as HTMLElement;
       expect(elementWithHandlers).toBeInTheDocument();
@@ -399,7 +385,6 @@ describe('CardButton', () => {
       
       const link = container.querySelector('a[href="/test"]') as HTMLElement;
       expect(link).toBeInTheDocument();
-      // Disabled state should be applied via Slot
       expect(link).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50');
     });
 
@@ -410,13 +395,11 @@ describe('CardButton', () => {
         </CardButton>
       );
       
-      // Use data-slot selector as Slot merges props with child
       const elementWithHandlers = container.querySelector('[data-slot="card-button"]') as HTMLElement;
       expect(elementWithHandlers).toBeInTheDocument();
       
       const description = screen.getByText('Test Description');
       
-      // Multiple hover cycles (testing lines 80-81)
       fireEvent.mouseEnter(elementWithHandlers);
       expect(description).toHaveClass('opacity-100');
       

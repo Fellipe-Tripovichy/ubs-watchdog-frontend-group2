@@ -64,7 +64,7 @@ const TRANSACTION_CONFIG = {
 interface TransactionFormProps {
     type: TransactionType;
     onDialogOpenChange?: (open: boolean) => void;
-    onFormSubmit?: (data: { clienteId: string; moeda: string; valor: string; contraparte?: string | null }) => void;
+    onFormSubmit?: (data: { clienteId: string; moeda: string; valor: string; contraparteId?: string | null }) => void;
     onTransactionResult?: (isSuccess: boolean, error?: string) => void;
 }
 
@@ -149,7 +149,7 @@ export function TransactionForm({
         }
 
         if (onFormSubmit) {
-            onFormSubmit({ clienteId, moeda, valor, contraparte: isTransfer ? contraparte : null });
+            onFormSubmit({ clienteId, moeda, valor, contraparteId: isTransfer ? contraparte : null });
             if (onDialogOpenChange) {
                 onDialogOpenChange(true);
             }
@@ -187,7 +187,7 @@ export function TransactionForm({
                     tipo: type,
                     valor: parseFloat(valorNumber.toFixed(2)),
                     moeda,
-                    contraparte: isTransfer ? contraparte : null,
+                    contraparteId: isTransfer ? contraparte : null,
                 },
                 token,
             })
