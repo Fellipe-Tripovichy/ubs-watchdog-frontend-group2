@@ -9,6 +9,7 @@ services:
       - POSTGRES_USER=docker_user
       - POSTGRES_PASSWORD=docker_password
       - POSTGRES_DB=ubs_watchdog
+      - POSTGRES_MULTIPLE_DATABASES=ubs_watchdog,ubs_watchdog_test
     shm_size: 128mb
     restart: unless-stopped
     volumes:

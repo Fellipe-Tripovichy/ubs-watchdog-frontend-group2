@@ -94,7 +94,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
             npgsqlOptions.CommandTimeout(60);
         });
-
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();

@@ -22,5 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\UBS.Watchdog.Application\UBS.Watchdog.Application.csproj" />
     <ProjectReference Include="..\UBS.Watchdog.Infrastructure\UBS.Watchdog.Infrastructure.csproj" />
+  
+    <InternalsVisibleTo Include = "UBS.Watchdog.Tests" />
   </ItemGroup>
 </Project>
