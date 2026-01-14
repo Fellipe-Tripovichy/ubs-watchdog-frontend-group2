@@ -18,6 +18,8 @@ import { getReportsColumns } from "@/models/reports";
 import { ReportCard } from "@/components/reports/reportCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SectionTitle } from "@/components/ui/sectionTitle";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 
 export default function ReportsPage() {
   const dispatch = useAppDispatch();
@@ -104,9 +106,21 @@ export default function ReportsPage() {
                 <>
                   <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
                     <div className="flex-1 w-full md:max-w-[172px]">
-                      <label className="text-xs text-muted-foreground mb-1.5 block">
-                        Status Alerta
-                      </label>
+                      <div className="flex items-start gap-2">
+                        <label className="text-xs text-muted-foreground mb-1.5 block">
+                          Status Alerta
+                        </label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2 cursor-help w-fit">
+                              <InfoIcon className="size-3.5 text-muted-foreground" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs text-muted-foreground p-2">Filtre os relatórios por status de alerta, pare ter acesso as quais alertas cadda relatório possui.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                       <Select value={statusAlerta} onValueChange={setStatusAlerta}>
                         <SelectTrigger size="default" className="w-full">
                           <SelectValue placeholder="Todos" />

@@ -1,14 +1,9 @@
-export interface Contraparte {
-    nome: string;
-    pais: string;
-}
-
 export interface CreateTransactionRequest {
     clienteId: string;
     tipo: string;
     valor: number;
     moeda: string;
-    contraparte?: Contraparte;
+    contraparte?: string | null;
 }
 
 export interface Transaction {

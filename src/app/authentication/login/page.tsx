@@ -80,7 +80,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full">
-            <div className="bg-card/95 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
+            <div className="bg-card/95 grid grid-cols-1 lg:grid-cols-2 md:gap-8 max-w-[1554px] mx-auto w-11/12 px-8 py-10 z-2">
                 <div className="flex items-center justify-center">
                     <div className="flex flex-col items-start justify-start md:max-w-md w-full md:min-w-[400px] pb-14">
                         <Link href="/" className="mb-6">
@@ -134,7 +134,7 @@ export default function LoginPage() {
                                         {getButtonContent()}
                                     </Button>
                                 </form>
-                                {!showResetPassword && <div className="mt-2 text-center pb-6 border-b border-border">
+                                {!showResetPassword && <div className="mt-4 text-center pb-6 border-b border-border">
                                     <p className="text-sm text-muted-foreground">
                                         Não lembra sua senha?{" "}
                                         <button

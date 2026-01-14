@@ -10,12 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FlagImage } from "@/components/ui/flagImage";
-import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CopyButton } from "@/components/ui/copyButton";
 import { SectionTitle } from "@/components/ui/sectionTitle";
-import { fetchClientById, selectCurrentClient, selectCurrentClientLoading, clearClient } from "@/features/client/clientSlice";
-import { ConfirmWithdrawalDialog } from "@/components/transactions/confirmWithdrawalDialog";
+import { fetchClientById, selectCurrentClient, selectCurrentClientLoading, clearClient, selectContraparteClient, selectContraparteClientLoading } from "@/features/client/clientSlice";
+import { ConfirmTransactionDialog } from "@/components/transactions/confirmTransactionDialog";
+
+export type TransactionType = "Deposito" | "Saque" | "Transferencia";
 
 function formatMoneyValue(value: number | string): string {
     if (value === "" || value === null || value === undefined) return "";
@@ -33,22 +34,56 @@ function parseMoneyValue(value: string): number {
     return parseFloat(cleaned) || 0;
 }
 
-interface TransactionWithdrawalFormProps {
+const TRANSACTION_CONFIG = {
+    Deposito: {
+        sectionTitle: "Informações do depósito",
+        clientLabel: "Cliente",
+        destinationLabel: "Cliente destino",
+        valueLabel: "Valor do depósito",
+        submitButton: "Realizar Depósito",
+        icon: "banknote-arrow-down" as const,
+    },
+    Saque: {
+        sectionTitle: "Informações do saque",
+        clientLabel: "Cliente",
+        destinationLabel: "Cliente destino",
+        valueLabel: "Valor do saque",
+        submitButton: "Realizar Saque",
+        icon: "banknote-arrow-up" as const,
+    },
+    Transferencia: {
+        sectionTitle: "Informações da transferência",
+        clientLabel: "Cliente origem",
+        destinationLabel: "Cliente destino",
+        valueLabel: "Valor da transferência",
+        submitButton: "Realizar Transferência",
+        icon: "banknote-arrow-up" as const,
+    },
+};
+
+interface TransactionFormProps {
+    type: TransactionType;
     onDialogOpenChange?: (open: boolean) => void;
-    onFormSubmit?: (data: { clienteId: string; moeda: string; valor: string }) => void;
+    onFormSubmit?: (data: { clienteId: string; moeda: string; valor: string; contraparte?: string | null }) => void;
     onTransactionResult?: (isSuccess: boolean, error?: string) => void;
 }
 
-export function TransactionWithdrawalForm({ 
-    onDialogOpenChange, 
+export function TransactionForm({
+    type,
+    onDialogOpenChange,
     onFormSubmit,
-    onTransactionResult 
-}: TransactionWithdrawalFormProps = {}) {
+    onTransactionResult
+}: TransactionFormProps) {
     const dispatch = useAppDispatch();
     const token = useAppSelector(selectToken);
     const isCreating = useAppSelector(selectTransactionCreating);
     const client = useAppSelector(selectCurrentClient);
+    const contraparteClient = useAppSelector(selectContraparteClient);
     const isLoadingClient = useAppSelector(selectCurrentClientLoading);
+    const isLoadingContraparte = useAppSelector(selectContraparteClientLoading);
+
+    const config = TRANSACTION_CONFIG[type];
+    const isTransfer = type === "Transferencia";
 
     const [clients, setClients] = React.useState<Client[]>([]);
     const [loadingClients, setLoadingClients] = React.useState(false);
@@ -56,6 +91,7 @@ export function TransactionWithdrawalForm({
     const [moeda, setMoeda] = React.useState<string>("");
     const [valor, setValor] = React.useState<string>("");
     const [error, setError] = React.useState<string | null>(null);
+    const [contraparte, setContraparte] = React.useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
@@ -81,8 +117,16 @@ export function TransactionWithdrawalForm({
     React.useEffect(() => {
         if (clienteId && token) {
             dispatch(fetchClientById({ clientId: clienteId, token }));
+        } else if (!clienteId && type === "Deposito") {
+            dispatch(clearClient());
         }
-    }, [clienteId, token, dispatch]);
+    }, [clienteId, token, dispatch, type]);
+
+    React.useEffect(() => {
+        if (isTransfer && contraparte && token) {
+            dispatch(fetchClientById({ clientId: contraparte, token, contraparte: true }));
+        }
+    }, [isTransfer, contraparte, token, dispatch]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -99,8 +143,13 @@ export function TransactionWithdrawalForm({
             return;
         }
 
+        if (isTransfer && !contraparte) {
+            setError("Por favor, selecione uma contraparte");
+            return;
+        }
+
         if (onFormSubmit) {
-            onFormSubmit({ clienteId, moeda, valor });
+            onFormSubmit({ clienteId, moeda, valor, contraparte: isTransfer ? contraparte : null });
             if (onDialogOpenChange) {
                 onDialogOpenChange(true);
             }
@@ -109,7 +158,7 @@ export function TransactionWithdrawalForm({
         }
     };
 
-    const handleConfirmWithdrawal = async () => {
+    const handleConfirmTransaction = async () => {
         setError(null);
 
         if (!clienteId || !moeda || !valor || !token) {
@@ -125,17 +174,20 @@ export function TransactionWithdrawalForm({
             return;
         }
 
+        if (isTransfer && !contraparte) {
+            setError("Por favor, selecione uma contraparte");
+            setIsDialogOpen(false);
+            return;
+        }
+
         const result = await dispatch(
             createTransaction({
                 transaction: {
                     clienteId,
-                    tipo: "Saque",
+                    tipo: type,
                     valor: parseFloat(valorNumber.toFixed(2)),
                     moeda,
-                    contraparte: {
-                        nome: "",
-                        pais: "",
-                    },
+                    contraparte: isTransfer ? contraparte : null,
                 },
                 token,
             })
@@ -145,6 +197,7 @@ export function TransactionWithdrawalForm({
             setClienteId("");
             setMoeda("");
             setValor("");
+            setContraparte(null);
             dispatch(clearClient());
             setIsDialogOpen(false);
             if (onTransactionResult) {
@@ -160,7 +213,7 @@ export function TransactionWithdrawalForm({
         }
     };
 
-    const isValid = Boolean(clienteId && moeda && valor && parseMoneyValue(valor) > 0);
+    const isValid = Boolean(clienteId && moeda && valor && parseMoneyValue(valor) > 0 && (!isTransfer || contraparte));
 
     const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let inputValue = e.target.value;
@@ -191,10 +244,10 @@ export function TransactionWithdrawalForm({
             <div className="flex flex-col gap-6 w-full md:max-w-md">
                 <div className="flex flex-col gap-2">
                     <label htmlFor="cliente" className="text-sm font-regular text-foreground">
-                        Cliente
+                        {config.clientLabel}
                     </label>
                     <Select value={clienteId} onValueChange={setClienteId} disabled={loadingClients}>
-                        <SelectTrigger id="cliente" className="w-full">
+                        <SelectTrigger id="cliente" className="w-full" icon={config.icon}>
                             <SelectValue placeholder={loadingClients ? "Carregando clientes..." : "Selecione um cliente"} />
                         </SelectTrigger>
                         <SelectContent>
@@ -206,6 +259,26 @@ export function TransactionWithdrawalForm({
                         </SelectContent>
                     </Select>
                 </div>
+
+                {isTransfer && (
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="contraparte" className="text-sm font-regular text-foreground">
+                            {config.destinationLabel}
+                        </label>
+                        <Select value={contraparte ?? undefined} onValueChange={(value) => setContraparte(value ?? null)} disabled={loadingClients}>
+                            <SelectTrigger id="contraparte" className="w-full" icon="banknote-arrow-down">
+                                <SelectValue placeholder={loadingClients ? "Carregando contrapartes..." : "Selecione um cliente destino"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {clients.map((client) => (
+                                    <SelectItem key={client.id} value={client.id}>
+                                        {client.nome}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-2">
                     <label htmlFor="moeda" className="text-sm font-regular text-foreground">
@@ -238,7 +311,7 @@ export function TransactionWithdrawalForm({
                         type="text"
                         inputMode="decimal"
                         placeholder="0,00"
-                        prefix={moeda ? `${moeda} ` : "$"}
+                        prefix={moeda ? `${CURRENCIES.find((currency) => currency.code === moeda)?.symbol ?? ""} ` : "$"}
                         value={valor}
                         onChange={handleValorChange}
                         onBlur={handleValorBlur}
@@ -260,30 +333,55 @@ export function TransactionWithdrawalForm({
             </div>
 
             <div className="flex flex-col w-full md:max-w-md">
-                <SectionTitle>Informações do saque</SectionTitle>
+                <SectionTitle>{config.sectionTitle}</SectionTitle>
                 <div className="flex flex-col gap-1 w-full">
                     <div className="flex items-start justify-between gap-4 bg-secondary p-4 rounded-xs">
-                        <p className="text-caption text-muted-foreground">Informações do cliente</p>
+                        <p className="text-caption text-muted-foreground">
+                            {isTransfer ? "Cliente origem" : "Cliente"}
+                        </p>
                         <div className="flex flex-col items-end justify-end gap-1">
                             {isLoadingClient ? (
-                                <Skeleton className="w-full h-6" />
-                            ) : (
-                                <p className="text-foreground text-body font-bold">{client?.nome ?? "-"}</p>
-                            )}
-                            {isLoadingClient ? (
-                                <Skeleton className="w-1/2 h-4" />
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <p className="text-xs text-muted-foreground">Client ID: </p>
-                                    <p className="text-foreground text-caption">{client?.id ? `${client?.id?.slice(0, 4)}...${client?.id?.slice(-4)}` : "-"}</p>
-                                    <CopyButton textToCopy={client?.id ?? ""} variant="secondary" size="small" disabled={!client?.id} />
+                                <div className="flex flex-col items-end gap-1">
+                                    <Skeleton className="w-40 h-6" />
+                                    <Skeleton className="w-32 h-4" />
                                 </div>
+                            ) : (
+                                <>
+                                    <p className="text-foreground text-body font-bold text-right">{client?.nome ?? "-"}</p>
+                                    <div className="flex items-center gap-2 justify-end">
+                                        <p className="text-xs text-muted-foreground">Client ID: </p>
+                                        <p className="text-foreground text-caption text-right">{client?.id ? `${client?.id?.slice(0, 4)}...${client?.id?.slice(-4)}` : "-"}</p>
+                                        <CopyButton textToCopy={client?.id ?? ""} variant="secondary" size="small" disabled={!client?.id} />
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
+                    {isTransfer && (
+                        <div className="flex items-start justify-between gap-4 bg-secondary p-4 rounded-xs">
+                            <p className="text-caption text-muted-foreground">Cliente destino</p>
+                            <div className="flex flex-col items-end justify-end gap-1">
+                                {isLoadingContraparte ? (
+                                    <div className="flex flex-col items-end gap-1">
+                                        <Skeleton className="w-40 h-6" />
+                                        <Skeleton className="w-32 h-4" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-foreground text-body font-bold text-right">{contraparteClient?.nome ?? "-"}</p>
+                                        <div className="flex items-center gap-2 justify-end">
+                                            <p className="text-xs text-muted-foreground">Client ID: </p>
+                                            <p className="text-foreground text-caption text-right">{contraparteClient?.id ? `${contraparteClient?.id?.slice(0, 4)}...${contraparteClient?.id?.slice(-4)}` : "-"}</p>
+                                            <CopyButton textToCopy={contraparteClient?.id ?? ""} variant="secondary" size="small" disabled={!contraparteClient?.id} />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div className="flex items-start justify-between gap-4 bg-secondary p-4 rounded-xs">
-                        <p className="text-caption text-muted-foreground">Valor do saque</p>
-                        <p className="text-body text-foreground font-bold"> {moeda ?? "$"} {valor ? formatMoneyValue(valor) :  "-"}</p>
+                        <p className="text-caption text-muted-foreground">{config.valueLabel}</p>
+                        <p className="text-body text-foreground font-bold"> {moeda ? `${CURRENCIES.find((currency) => currency.code === moeda)?.symbol} ` : "$"} {valor ? formatMoneyValue(valor) : "-"}</p>
                     </div>
                     <div className="flex items-start justify-between gap-4 bg-secondary p-4 rounded-xs">
                         <p className="text-caption text-muted-foreground">Moeda da transação</p>
@@ -291,16 +389,19 @@ export function TransactionWithdrawalForm({
                     </div>
                 </div>
                 <Button type="submit" disabled={!isValid || isCreating} className="mt-6 w-full">
-                    Realizar Saque
+                    {config.submitButton}
                 </Button>
             </div>
 
-            <ConfirmWithdrawalDialog
+            <ConfirmTransactionDialog
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
-                onConfirm={handleConfirmWithdrawal}
+                onConfirm={handleConfirmTransaction}
                 isCreating={isCreating}
-                client={client}
+                type={type}
+                client={!isTransfer ? client : undefined}
+                originClient={isTransfer ? client : undefined}
+                destinationClient={isTransfer ? contraparteClient : undefined}
                 valor={valor}
                 moeda={moeda}
             />

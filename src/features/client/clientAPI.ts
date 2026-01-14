@@ -14,6 +14,7 @@ export interface GetClientsParams {
 export interface GetClientByIdParams {
     clientId: string;
     token: string;
+    contraparte?: boolean;
 }
 
 export const getClientsAPI = async (params: GetClientsParams): Promise<Client[] | null> => {

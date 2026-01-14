@@ -11,18 +11,22 @@ import {
 export interface ClientsState {
     clients: Client[];
     currentClient: Client | null;
+    contraparteClient: Client | null;
     loading: boolean;
     loadingAll: boolean;
     loadingCurrent: boolean;
+    loadingContraparte: boolean;
     error: string | null;
 }
 
 const initialState: ClientsState = {
     clients: [],
     currentClient: null,
+    contraparteClient: null,
     loading: true,
     loadingAll: true,
-    loadingCurrent: true,
+    loadingCurrent: false,
+    loadingContraparte: false,
     error: null,
 };
 
@@ -32,7 +36,7 @@ export const fetchClients = createAsyncThunk(
     async (params: GetClientsParams, { rejectWithValue }) => {
         const clients = await getClientsAPI(params);
         if (!clients) {
-            return rejectWithValue('Failed to fetch clients');
+            return rejectWithValue('Erro ao buscar clientes');
         }
         return clients;
     }
@@ -40,10 +44,10 @@ export const fetchClients = createAsyncThunk(
 
 export const fetchClientById = createAsyncThunk(
     'clients/fetchClientById',
-    async (params: GetClientByIdParams, { rejectWithValue }) => {
-        const client = await getClientByIdAPI(params);
+    async ({ clientId, token, contraparte }: GetClientByIdParams, { rejectWithValue }) => {
+        const client = await getClientByIdAPI({ clientId, token, contraparte });
         if (!client) {
-            return rejectWithValue('Failed to fetch client');
+            return rejectWithValue('Erro ao buscar ' + (contraparte ? 'contraparte' : 'cliente'));
         }
         return client;
     }
@@ -55,6 +59,7 @@ export const clientsSlice = createSlice({
     reducers: {
         clearClient: (state) => {
             state.currentClient = null;
+            state.contraparteClient = null;
             state.error = null;
         },
         clearClients: (state) => {
@@ -63,6 +68,12 @@ export const clientsSlice = createSlice({
         },
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
+        },
+        setClientLoading: (state, action: PayloadAction<boolean>) => {
+            state.loadingCurrent = action.payload;
+        },
+        setContraparteClientLoading: (state, action: PayloadAction<boolean>) => {
+            state.loadingContraparte = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -78,7 +89,7 @@ export const clientsSlice = createSlice({
             })
             .addCase(fetchClients.rejected, (state, action) => {
                 state.loadingAll = false;
-                state.error = action.payload as string || 'Failed to fetch clients';
+                state.error = action.payload as string || 'Erro ao buscar clientes';
             })
             .addCase(fetchClientById.pending, (state) => {
                 state.loadingCurrent = true;
@@ -86,17 +97,21 @@ export const clientsSlice = createSlice({
             })
             .addCase(fetchClientById.fulfilled, (state, action) => {
                 state.loadingCurrent = false;
-                state.currentClient = action.payload;
+                if (action.meta.arg.contraparte) {
+                    state.contraparteClient = action.payload;
+                } else {
+                    state.currentClient = action.payload;
+                }
                 state.error = null;
             })
             .addCase(fetchClientById.rejected, (state, action) => {
                 state.loadingCurrent = false;
-                state.error = action.payload as string || 'Failed to fetch client';
+                state.error = action.payload as string || 'Erro ao buscar ' + (action.meta.arg.contraparte ? 'contraparte' : 'cliente');
             });
     },
 });
 
-export const { clearClient, clearClients, setError } = clientsSlice.actions;
+export const { clearClient, clearClients, setError, setClientLoading, setContraparteClientLoading } = clientsSlice.actions;
 
 export const selectClients = (state: RootState) => {
     return state.clients.clients;
@@ -120,6 +135,14 @@ export const selectCurrentClientLoading = (state: RootState) => {
 
 export const selectClientsError = (state: RootState) => {
     return state.clients.error;
+};
+
+export const selectContraparteClient = (state: RootState) => {
+    return state.clients.contraparteClient;
+};
+
+export const selectContraparteClientLoading = (state: RootState) => {
+    return state.clients.loadingContraparte;
 };
 
 export default clientsSlice.reducer;

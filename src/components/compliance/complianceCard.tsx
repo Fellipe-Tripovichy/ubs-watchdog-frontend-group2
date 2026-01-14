@@ -19,14 +19,14 @@ interface ComplianceCardProps {
 
 export function ComplianceCard({ alert }: ComplianceCardProps) {
   return (
-    <Card className="gap-2">
-      <CardHeader>
+    <Card className="gap-2 h-full flex flex-col items-end justify-between w-full">
+      <CardHeader className="w-full">
         <CardTitle className="text-lg">
           {alert.rule}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col">
+      <CardContent className="h-full flex flex-col items-end justify-between w-full">
+        <div className="flex flex-col w-full">
           <div className="grid grid-cols-2 gap-6 pb-4">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">
@@ -86,7 +86,7 @@ export function ComplianceCard({ alert }: ComplianceCardProps) {
             </div>
           </div>
         </div>
-        <CardAction>
+        <CardAction className="mt-4">
           <LinkButton icon="chevron-right" iconLeft={false} asChild>
             <Link href={`/compliance/${alert.id}`}>Ver mais</Link>
           </LinkButton>

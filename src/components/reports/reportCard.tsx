@@ -19,16 +19,16 @@ interface ReportCardProps {
 
 export function ReportCard({ report }: ReportCardProps) {
   return (
-    <Card className="gap-2">
-      <CardHeader>
+    <Card className="gap-2 h-full flex flex-col items-end justify-between w-full">
+      <CardHeader className="w-full">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">
             {report.nomeCliente}
           </CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col">
+      <CardContent className="flex flex-col items-end justify-between w-full">
+        <div className="flex flex-col w-full">
           <div className="flex flex-col items-start justify-center gap-2 pb-4">
             <p className="text-caption text-muted-foreground">Nacionalidade</p>
             <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export function ReportCard({ report }: ReportCardProps) {
             </div>
           </div>
         </div>
-        <CardAction>
+        <CardAction className="mt-4">
           <LinkButton icon="chevron-right" iconLeft={false} asChild>
             <Link href={`/reports/${report.clienteId}`}>Ver mais</Link>
           </LinkButton>

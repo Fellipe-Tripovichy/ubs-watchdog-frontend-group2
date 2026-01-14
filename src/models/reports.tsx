@@ -87,53 +87,62 @@ export function getReportsColumns(): ColumnDef<Report>[] {
       render: (report) => report.totalTransacoes,
     },
     {
-      key: "alerts",
-      label: "Alertas",
+      key: "alertsStatus",
+      label: "Status Alertas",
       render: (report) => (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-2 cursor-help w-fit">
-              <span>{report.totalAlertas}</span>
-              <InfoIcon className="size-3.5 text-muted-foreground" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="flex flex-col gap-1.5 p-4">
-              {report.alertasCriticos > 0 && (
-                <div className="flex items-center gap-2">
-                  <span>{report.alertasCriticos}x</span>
-                  <Badge style={getBadgeStyleBySeverity("Critica")}>
-                    Crítica
-                  </Badge>
+        <div className="flex items-center gap-2">
+          <span>{report.totalAlertas}</span>
+          {report.totalAlertas > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild disabled={report.totalAlertas === 0}>
+                <div className="flex items-center gap-2 cursor-help w-fit">
+                  <InfoIcon className="size-3.5 text-muted-foreground" />
                 </div>
-              )}
-              {report.alertasEmAnalise > 0 && (
-                <div className="flex items-center gap-2">
-                  <span>{report.alertasEmAnalise}x</span>
-                  <Badge style={getBadgeStyleBySeverity("Alta")}>
-                    Em Análise
-                  </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-1.5 p-2">
+                  {report.alertasEmAnalise > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasEmAnalise}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Alta")}>
+                        Em Análise
+                      </Badge>
+                    </div>
+                  )}
+                  {report.alertasNovos > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasNovos}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Media")}>
+                        Novo
+                      </Badge>
+                    </div>
+                  )}
+                  {report.alertasResolvidos > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasResolvidos}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Baixa")}>
+                        Resolvido
+                      </Badge>
+                    </div>
+                  )}
                 </div>
-              )}
-              {report.alertasNovos > 0 && (
-                <div className="flex items-center gap-2">
-                  <span>{report.alertasNovos}x</span>
-                  <Badge style={getBadgeStyleBySeverity("Media")}>
-                    Novo
-                  </Badge>
-                </div>
-              )}
-              {report.alertasResolvidos > 0 && (
-                <div className="flex items-center gap-2">
-                  <span>{report.alertasResolvidos}x</span>
-                  <Badge style={getBadgeStyleBySeverity("Baixa")}>
-                    Resolvido
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "criticalAlerts",
+      label: "Alertas Críticos",
+      render: (report) => (
+        report .alertasCriticos > 0 ? (
+          <Badge style={getBadgeStyleBySeverity("Critica")}>
+            {report.alertasCriticos}
+          </Badge>
+        ) : (
+          <span>-</span>
+        )
       ),
     },
     {

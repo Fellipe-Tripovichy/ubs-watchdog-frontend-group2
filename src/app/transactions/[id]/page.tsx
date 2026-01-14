@@ -8,19 +8,19 @@ import {
     fetchTransactionById,
     selectCurrentTransaction,
     selectCurrentTransactionLoading,
-    selectTransactionsError,
 } from "@/features/transactions/transactionsSlice";
 import {
     fetchClientById,
     selectCurrentClient,
     selectCurrentClientLoading,
+    selectContraparteClient,
+    selectContraparteClientLoading,
 } from "@/features/client/clientSlice";
 
 import { LinkButton } from "@/components/ui/linkButton";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney, formatDateTime, getColorByStatus, formatDate } from "@/lib/utils";
-import { TriangleAlert, CheckCircle2Icon } from "lucide-react";
-import Link from "next/link";
+import { TriangleAlert, CheckCircle2Icon, UserRoundXIcon } from "lucide-react";
 
 import { SectionTitle } from "@/components/ui/sectionTitle";
 import { HeroTitle } from "@/components/ui/heroTitle";
@@ -30,6 +30,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FlagImage } from "@/components/ui/flagImage";
 import { getBadgeStyleByKyc, getBadgeStyleByRisk } from "@/models/reports";
 import { CURRENCIES } from "@/models/transactions";
+import {
+    Empty,
+    EmptyHeader,
+    EmptyTitle,
+    EmptyDescription,
+    EmptyMedia,
+} from "@/components/ui/empty";
 
 function getTypeLabel(type: string): string {
     const map: Record<string, string> = {
@@ -38,19 +45,6 @@ function getTypeLabel(type: string): string {
         Saque: "Saque",
     };
     return map[type] || type;
-}
-
-function getBadgeStyleByType(type: string) {
-    const statusMap: Record<string, string> = {
-        Deposito: "success",
-        Transferencia: "info",
-        Saque: "warning",
-    };
-    const colors = getColorByStatus(statusMap[type] || "neutral");
-    return {
-        backgroundColor: colors.light,
-        color: colors.foreground,
-    };
 }
 
 function AlertBadge({
@@ -100,9 +94,10 @@ export default function TransactionDetailPage() {
     const token = useAppSelector(selectToken);
     const transaction = useAppSelector(selectCurrentTransaction);
     const isLoading = useAppSelector(selectCurrentTransactionLoading);
-    const error = useAppSelector(selectTransactionsError);
     const client = useAppSelector(selectCurrentClient);
     const isLoadingClient = useAppSelector(selectCurrentClientLoading);
+    const isLoadingContraparte = useAppSelector(selectContraparteClientLoading);
+    const contraparteClient = useAppSelector(selectContraparteClient);
 
     const transactionId = React.useMemo(() => {
         const id = params?.id as string;
@@ -126,6 +121,15 @@ export default function TransactionDetailPage() {
             token,
         }));
     }, [transaction?.clienteId, token, dispatch]);
+
+    React.useEffect(() => {
+        if (!transaction?.contraparte || !token) return;
+        dispatch(fetchClientById({
+            clientId: transaction.contraparte,
+            token,
+            contraparte: true,
+        }));
+    }, [transaction?.contraparte, token, dispatch]);
 
     return (
         <div className="flex flex-col items-start w-full">
@@ -151,62 +155,43 @@ export default function TransactionDetailPage() {
                     </div>
                 </div>
                 <div className="max-w-[1554px] mx-auto px-4 md:px-8 py-8">
-                    {error ? (
-                        <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-md mb-4">
-                            <TriangleAlert className="size-5" />
-                            <p>{error}</p>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-20">
-                            <div className="w-full">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-secondary p-6 rounded-xs">
-                                        <h3 className="text-h3 font-regular text-secondary-foreground">
-                                            Valor da transação
-                                        </h3>
+                    <div className="flex flex-col gap-20">
+                        <div className="w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-secondary p-6 rounded-xs">
+                                    <h3 className="text-h3 font-regular text-secondary-foreground">
+                                        Valor da transação
+                                    </h3>
+                                    {isLoading ? (
+                                        <Skeleton className="w-18 h-12 mt-3" />
+                                    ) : transaction ? (
+                                        <p className="text-display text-foreground font-semibold">
+                                            {formatMoney(transaction.valor, transaction.moeda)}
+                                        </p>
+                                    ) : null}
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <p className="text-caption text-muted-foreground align-base">
+                                            Moeda:
+                                        </p>
                                         {isLoading ? (
-                                            <Skeleton className="w-18 h-12 mt-3" />
-                                        ) : transaction ? (
-                                            <p className="text-display text-foreground font-semibold">
-                                                {formatMoney(transaction.valor, transaction.moeda)}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                    <div className="bg-secondary p-6 rounded-xs flex items-start gap-4 flex flex-wrap items-start md:items-start w-full gap-y-4 gap-x-8 gap-x-12 lg:gap-y-8">
-                                        <div>
-                                            <p className="text-caption text-muted-foreground mb-2">
-                                                Moeda:
-                                            </p>
-                                            {isLoading ? (
-                                                <Skeleton className="w-18 h-4" />
-                                            ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <FlagImage
-                                                        country={CURRENCIES.find(currency => currency.code === transaction?.moeda)?.countryCode ?? ""}
-                                                        className="size-4"
-                                                    />
-                                                    <p className="text-body text-foreground">
-                                                        {CURRENCIES.find(currency => currency.code === transaction?.moeda)?.fullName ?? ""}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-caption text-muted-foreground mb-2">
-                                                Contraparte:
-                                            </p>
-                                            {isLoading ? (
-                                                <Skeleton className="w-18 h-4" />
-                                            ) : (
+                                            <Skeleton className="w-18 h-4" />
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <FlagImage
+                                                    country={CURRENCIES.find(currency => currency.code === transaction?.moeda)?.countryCode ?? ""}
+                                                    className="size-4"
+                                                />
                                                 <p className="text-body text-foreground">
-                                                    {transaction?.contraparte ?? "-"}
+                                                    {CURRENCIES.find(currency => currency.code === transaction?.moeda)?.fullName ?? ""}
                                                 </p>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
+                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <SectionTitle>
                                     Informações do cliente
@@ -291,8 +276,107 @@ export default function TransactionDetailPage() {
                                     </div>
                                 </div>
                             </div>
+                            {transaction?.tipo === "Transferencia" && (
+                                <div>
+                                    <SectionTitle>
+                                        Cliente destino
+                                    </SectionTitle>
+                                    {contraparteClient || isLoadingContraparte || isLoadingClient ? (
+                                        <div className="grid grid-cols-1 ">
+                                            <div className="bg-secondary p-6 rounded-xs flex items-start gap-4 justify-between">
+                                                <div className="w-10 h-10 min-w-10 min-h-10 rounded-full bg-muted flex items-center justify-center">
+                                                    {isLoadingContraparte || isLoadingClient ? (
+                                                        <Spinner className="size-6 animate-spin text-muted-foreground" />
+                                                    ) : (
+                                                        <p className="font-bold text-muted-foreground">{contraparteClient?.nome.charAt(0)}</p>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col gap-6 w-full">
+                                                    <div className="flex flex-wrap items-start md:items-start w-full gap-y-4 gap-x-8 gap-x-12 lg:gap-y-8">
+                                                        <div className="flex flex-col items-start justify-center gap-2">
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-full h-6" />
+                                                            ) : (
+                                                                <p className="text-foreground text-body font-bold">{contraparteClient?.nome}</p>
+                                                            )}
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-1/2 h-4" />
+                                                            ) : (
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-xs text-muted-foreground">Client destino ID: </p>
+                                                                    <p className="text-foreground text-caption">{contraparteClient?.id.slice(0, 4)}...{client?.id.slice(-4)}</p>
+                                                                    <CopyButton textToCopy={contraparteClient?.id ?? ""} variant="secondary" size="small" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-start justify-center gap-2">
+                                                            <p className="text-caption text-muted-foreground">Data de criação</p>
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-18 h-4" />
+                                                            ) : (
+                                                                <p className="text-body text-foreground">{formatDate(contraparteClient?.dataCriacao ?? "")}</p>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-start justify-center gap-2">
+                                                            <p className="text-caption text-muted-foreground">Nacionalidade</p>
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-18 h-4" />
+                                                            ) : (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FlagImage
+                                                                        country={contraparteClient?.pais ?? ""}
+                                                                        className="size-4"
+                                                                    />
+                                                                    <p className="text-body text-foreground">
+                                                                        {contraparteClient?.pais}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-start justify-center gap-2">
+                                                            <p className="text-caption text-muted-foreground">Nível de Risco</p>
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-18 h-4" />
+                                                            ) : (
+                                                                <Badge
+                                                                    style={getBadgeStyleByRisk(contraparteClient?.nivelRisco as "Baixo" | "Médio" | "Alto" | "Nenhum")}
+                                                                >
+                                                                    {contraparteClient?.nivelRisco}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-start justify-center gap-2">
+                                                            <p className="text-caption text-muted-foreground">KYC Status</p>
+                                                            {isLoadingContraparte || isLoadingClient ? (
+                                                                <Skeleton className="w-18 h-4" />
+                                                            ) : (
+                                                                <Badge
+                                                                    style={getBadgeStyleByKyc(contraparteClient?.statusKyc as "Aprovado" | "Pendente" | "Rejeitado" | "Nenhum")}
+                                                                >
+                                                                    {contraparteClient?.statusKyc}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>) : (
+                                        <Empty className="w-full h-full">
+                                            <EmptyHeader>
+                                                <EmptyMedia variant="icon">
+                                                    <UserRoundXIcon />
+                                                </EmptyMedia>
+                                                <EmptyTitle>Nenhum cliente destino encontrado</EmptyTitle>
+                                                <EmptyDescription>
+                                                    Não há cliente destino para esta transação. Refaça sua busca ou entre em contato com o suporte.
+                                                </EmptyDescription>
+                                            </EmptyHeader>
+                                        </Empty>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

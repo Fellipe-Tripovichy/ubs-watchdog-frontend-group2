@@ -58,7 +58,7 @@ export function TransactionFeedback({
 
     return (
         <div className="w-full flex items-center justify-center py-10">
-            <Card className="w-full bg-secondary">
+            <Card className="w-full rounded-xs border-dashed shadow-none">
                 <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
                         {isSuccess ? (
