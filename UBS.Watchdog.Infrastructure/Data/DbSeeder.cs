@@ -131,7 +131,7 @@ public static class DbSeeder
             alertas[0].IniciarAnalise();
 
             alertas[1].IniciarAnalise();
-            alertas[1].Resolver("João Analista");
+            alertas[1].Resolver("João Analista", "A transferência era verídica");
 
             await context.SaveChangesAsync();
 

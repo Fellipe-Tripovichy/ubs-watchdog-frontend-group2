@@ -18,6 +18,7 @@ namespace UBS.Watchdog.Application.DTOs.Alerta
         public StatusAlerta Status { get; set; }
         public DateTime DataCriacao { get; set; }
         public DateTime? DataResolucao { get; set; }
+        public string? Resolucao{ get; set; }
         public string? ResolvidoPor { get; set; }
     }
 }
