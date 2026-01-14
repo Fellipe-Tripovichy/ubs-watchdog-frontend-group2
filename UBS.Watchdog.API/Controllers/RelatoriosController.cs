@@ -2,6 +2,7 @@
 using UBS.Watchdog.Application.DTOs.Cliente;
 using UBS.Watchdog.Application.Services;
 using UBS.Watchdog.Domain.Entities;
+using UBS.Watchdog.Domain.Enums;
 
 namespace UBS.Watchdog.API.Controllers;
 
@@ -51,12 +52,16 @@ public class RelatoriosController(IReportService _reportService, ILogger<Relator
         }
     }
 
-    [HttpGet]
-    public async Task<ActionResult<List<RelatorioClienteResponse>>> ListarTodos()
+    [HttpGet ("filtrar")]
+    public async Task<ActionResult<RelatorioClienteResponse>> Filtrar(
+        [FromQuery] StatusAlerta? statusAlerta = null,
+        [FromQuery] StatusKyc? statusKyc = null,
+        [FromQuery] string? pais = null
+        )
     {
-        _logger.LogInformation("GET /api/relatorios - Listando todos os relatórios.");
+        _logger.LogInformation("GET /api/relatorios/filtrar - Listando relatórios filtrados.");
 
-        var relatorios = await _reportService.ListarTodos();
+        var relatorios = await _reportService.ListarFiltrados(statusAlerta, statusKyc, pais);
         return Ok(relatorios);
     }
     

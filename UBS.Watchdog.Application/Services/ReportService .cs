@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,9 @@ namespace UBS.Watchdog.Application.Services
     public interface IReportService
     {
         Task<RelatorioClienteResponse> GerarRelatorioClienteAsync(Guid clienteId, DateTime? dataInicio = null, DateTime? dataFim = null);
-        Task<List<RelatorioClienteResponse>> ListarTodos();
+
+        Task<List<RelatorioClienteResponse>> ListarFiltrados(StatusAlerta? statusAlerta, StatusKyc? statusKyc,
+            string? pais);
     }
 
     public class ReportService : IReportService
@@ -38,7 +40,7 @@ namespace UBS.Watchdog.Application.Services
             _alertaRepository = alertaRepository;
             _logger = logger;
         }
-
+        
         public async Task<RelatorioClienteResponse> GerarRelatorioClienteAsync(
             Guid clienteId,
             DateTime? dataInicio = null,
@@ -56,28 +58,46 @@ namespace UBS.Watchdog.Application.Services
                 _logger.LogWarning("Cliente não encontrado: {ClienteId}", clienteId);
                 throw new KeyNotFoundException($"Cliente {clienteId} não encontrado");
             }
-            
+
             return await GerarRelatorio(cliente, dataInicio, dataFim);
         }
-
-        public async Task<List<RelatorioClienteResponse>> ListarTodos()
+        
+        public async Task<List<RelatorioClienteResponse>> ListarFiltrados(
+            StatusAlerta? statusAlerta,
+            StatusKyc? statusKyc,
+            string? pais
+        )
         {
-            _logger.LogInformation("Gerando relatório para todos os clientes.");
+            var clientes = await _clienteRepository.GetAllAsync();
 
-            List<Cliente> clientes = await _clienteRepository.GetAllAsync();
-            
+            if (statusKyc.HasValue)
+            {
+                clientes = clientes
+                    .Where(c => c.StatusKyc == statusKyc)
+                    .ToList();
+            }
+
+            if (pais != null)
+            {
+                clientes = clientes
+                    .Where(c => c.Pais == pais)
+                    .ToList();
+            }
+
             List<RelatorioClienteResponse> relatorios = new List<RelatorioClienteResponse>();
             foreach (var cliente in clientes)
             {
-                relatorios.Add(await GerarRelatorio(cliente));
+                relatorios.Add(await GerarRelatorio(cliente: cliente, statusAlerta: statusAlerta));
             }
             return relatorios;
         }
-
+        
         private async Task<RelatorioClienteResponse> GerarRelatorio(
             Cliente cliente,
             DateTime? dataInicio = null,
-            DateTime? dataFim = null)
+            DateTime? dataFim = null,
+            StatusAlerta? statusAlerta = null
+            )
         {
             var transacoes = dataInicio.HasValue && dataFim.HasValue
                 ? await _transacaoRepository.GetByClienteEPeriodoAsync(cliente.Id, dataInicio.Value, dataFim.Value)
@@ -93,6 +113,14 @@ namespace UBS.Watchdog.Application.Services
                     .ToList();
             }
 
+            // filtra por status
+            if (statusAlerta.HasValue)
+            {
+                alertas = alertas
+                    .Where(a => a.Status == statusAlerta.Value)
+                    .ToList();
+            }
+            
             // Calcular estatísticas
             var totalTransacoes = transacoes.Count;
             var totalMovimentado = transacoes.Sum(t => t.Valor);
