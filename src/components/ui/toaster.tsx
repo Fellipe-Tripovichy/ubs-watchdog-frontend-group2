@@ -16,7 +16,7 @@ export function Toaster() {
         return (
           <ToastWithIcon
             key={id}
-            variant={variant}
+            variant={variant ?? undefined}
             title={title}
             description={description}
             {...props}
