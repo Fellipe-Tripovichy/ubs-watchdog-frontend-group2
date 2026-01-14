@@ -8,14 +8,12 @@ using UBS.Watchdog.Application.DTOs.Transacao;
 using UBS.Watchdog.Application.Mappings;
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
-using UBS.Watchdog.Domain.ValueObjects;
 using UBS.Watchdog.Infrastructure.Repositories;
 using UBS.Watchdog.Infrastructure.Repositories.Clientes;
 using UBS.Watchdog.Infrastructure.Repositories.Transacoes;
 
 namespace UBS.Watchdog.Application.Services
 {
-
     public interface ITransacaoService
     {
         Task<TransacaoResponse> RegistrarAsync(TransacaoRequest request);
@@ -32,9 +30,9 @@ namespace UBS.Watchdog.Application.Services
             string? moeda,
             TipoTransacao? tipo);
     }
+
     public class TransacaoService : ITransacaoService
     {
-
         private readonly ITransacaoRepository _transacaoRepository;
         private readonly IClienteRepository _clienteRepository;
         private readonly IComplianceService _complianceService;
@@ -54,7 +52,6 @@ namespace UBS.Watchdog.Application.Services
 
         public async Task<TransacaoResponse> RegistrarAsync(TransacaoRequest request)
         {
-
             _logger.LogInformation(
                 "Registrando transação: Cliente {ClienteId}, Tipo {Tipo}, Valor {Valor}",
                 request.ClienteId,
@@ -68,22 +65,27 @@ namespace UBS.Watchdog.Application.Services
                 throw new KeyNotFoundException($"Cliente {request.ClienteId} não encontrado");
             }
 
-            Contraparte? contraparte = null;
-            if (request.Contraparte != null)
+            if (request.ContraparteId.HasValue)
             {
-                contraparte = new Contraparte(
-                    request.Contraparte.Nome,
-                    request.Contraparte.Pais
-                );
+                var contraparte = await _clienteRepository.GetByIdAsync(request.ContraparteId.Value);
+                if (contraparte == null)
+                {
+                    _logger.LogWarning("Contraparte (cliente) não encontrada: {ContraparteId}", request.ContraparteId);
+                    throw new KeyNotFoundException($"Contraparte (cliente) {request.ContraparteId} não encontrada");
+                }
+
+                _logger.LogInformation(
+                    "Contraparte validada: {ContraparteId} - {ContraparteNome}",
+                    contraparte.Id,
+                    contraparte.Nome);
             }
 
-            var transacao =  Transacao.Criar(
+            var transacao = Transacao.Criar(
                 request.ClienteId,
                 request.Tipo,
                 request.Valor,
                 request.Moeda,
-                request.Contraparte?.Nome,
-                request.Contraparte?.Pais
+                request.ContraparteId
             );
 
             await _transacaoRepository.AddAsync(transacao);
@@ -111,13 +113,15 @@ namespace UBS.Watchdog.Application.Services
                     transacao.Id);
             }
 
-            // Buscar transação completa
             var transacaoCompleta = await _transacaoRepository.GetByIdAsync(transacao.Id);
 
-            return Mappings.TransacaoMappings.toResponse(transacaoCompleta!);
+            return TransacaoMappings.toResponse(transacaoCompleta!);
         }
 
-        public async Task<List<TransacaoResponse>> ListarPorClienteIdAsync(Guid clienteId, DateTime? dataInicio = null, DateTime? dataFim = null)
+        public async Task<List<TransacaoResponse>> ListarPorClienteIdAsync(
+            Guid clienteId,
+            DateTime? dataInicio = null,
+            DateTime? dataFim = null)
         {
             _logger.LogInformation(
                 "Listando transações do cliente {ClienteId}. Período: {DataInicio} a {DataFim}",
@@ -132,6 +136,7 @@ namespace UBS.Watchdog.Application.Services
                 _logger.LogWarning($"Cliente não encontrado: {clienteId}");
                 throw new Exception("Cliente não encontrado");
             }
+
             List<Transacao> transacoes;
 
             if (dataInicio.HasValue && dataFim.HasValue)
@@ -145,6 +150,7 @@ namespace UBS.Watchdog.Application.Services
             {
                 transacoes = await _transacaoRepository.GetByClienteIdAsync(clienteId);
             }
+
             return TransacaoMappings.toResponseList(transacoes);
         }
 

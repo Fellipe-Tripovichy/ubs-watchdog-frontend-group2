@@ -38,9 +38,17 @@ namespace UBS.Watchdog.Application.Compliance
                 return null;
             }
 
-            if (transacao.Contraparte == null)
+            if (!transacao.ContraparteId.HasValue)
             {
                 _logger.LogWarning("Transferência {TransacaoId} sem contraparte definida", transacao.Id);
+                return null;
+            }
+
+            var contraparte = await _clienteRepository.GetByIdAsync(transacao.ContraparteId.Value);
+
+            if (contraparte == null)
+            {
+                _logger.LogWarning("Contraparte (cliente) {ContraparteId} não encontrada", transacao.ContraparteId);
                 return null;
             }
 
@@ -56,11 +64,10 @@ namespace UBS.Watchdog.Application.Compliance
 
             _logger.LogInformation(
                 "Validando transferência para: {ContraparteNome} ({ContrapartePais})",
-                transacao.Contraparte.Nome,
-                transacao.Contraparte.Pais);
+                contraparte.Nome,
+                contraparte.Pais);
 
-            // Normalizar o país da contraparte para comparação (remover acentos)
-            var paisContraparteNormalizado = RemoverAcentos(transacao.Contraparte.Pais.ToLowerInvariant());
+            var paisContraparteNormalizado = RemoverAcentos(contraparte.Pais.ToLowerInvariant());
 
             _logger.LogDebug("País da contraparte normalizado: {PaisNormalizado}", paisContraparteNormalizado);
 
@@ -76,7 +83,7 @@ namespace UBS.Watchdog.Application.Compliance
                     _logger.LogWarning(
                         "⚠️ Transferência para país de alto risco detectada! Cliente {ClienteId} -> {Pais}",
                         transacao.ClienteId,
-                        transacao.Contraparte.Pais);
+                        contraparte.Pais);
 
                     var cliente = await _clienteRepository.GetByIdAsync(transacao.ClienteId);
 
@@ -84,8 +91,8 @@ namespace UBS.Watchdog.Application.Compliance
                         clienteId: transacao.ClienteId,
                         transacaoId: transacao.Id,
                         nomeRegra: NomeRegra,
-                        descricao: $"Transferência de {transacao.Valor:C} {transacao.Moeda} para '{transacao.Contraparte.Nome}' " +
-                                   $"em {transacao.Contraparte.Pais} (país de alto risco). Cliente: {cliente?.Nome ?? "N/A"}",
+                        descricao: $"Transferência de {transacao.Valor:C} {transacao.Moeda} para '{contraparte.Nome}' " +
+                                   $"em {contraparte.Pais} (país de alto risco). Cliente: {cliente?.Nome ?? "N/A"}",
                         severidade: SeveridadeAlerta.Critica
                     );
 
@@ -96,6 +103,8 @@ namespace UBS.Watchdog.Application.Compliance
             _logger.LogInformation("✅ País seguro para transação {TransacaoId}", transacao.Id);
             return null;
         }
+
+
 
         /// <summary>
         /// Remove acentos de uma string para facilitar comparação

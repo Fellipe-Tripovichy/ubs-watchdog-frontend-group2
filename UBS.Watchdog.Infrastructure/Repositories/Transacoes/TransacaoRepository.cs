@@ -25,6 +25,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         {
             return await context.Transacoes
                 .Include(t => t.Cliente)
+                .Include(t => t.Contraparte)
                 .Include(t => t.Alertas)
                 .OrderBy(t => t.DataHora)
                 .ToListAsync();
@@ -34,6 +35,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         {
             return await context.Transacoes
                 .Include(t => t.Cliente)
+                .Include(t => t.Contraparte)
                 .Include(t => t.Alertas)
                 .Where(t => t.ClienteId == clienteId)
                 .OrderBy(t => t.DataHora)
@@ -44,6 +46,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         {
             return await context.Transacoes
                 .Include(t => t.Cliente)
+                .Include(t => t.Contraparte)
                 .Include(t => t.Alertas)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
@@ -52,6 +55,8 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         {
             return await context.Transacoes
                 .Include(t => t.Cliente)
+                .Include(t => t.Contraparte)
+                .Include(t => t.Alertas)
                 .Where(t => t.DataHora >= dataInicio && t.DataHora <= dataFim)
                 .OrderBy(t => t.DataHora)
                 .ToListAsync();
@@ -66,6 +71,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         {
             var query = context.Transacoes
                 .Include(t => t.Cliente)
+                .Include(t => t.Contraparte)
                 .Include(t => t.Alertas)
                 .AsQueryable();
 
@@ -99,11 +105,12 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 
         public async Task<List<Transacao>> GetByClienteEPeriodoAsync(Guid clienteId, DateTime dataInicio, DateTime dataFim)
         {
-
             dataInicio = DateTime.SpecifyKind(dataInicio, DateTimeKind.Utc);
             dataFim = DateTime.SpecifyKind(dataFim, DateTimeKind.Utc);
 
             return await context.Transacoes
+                .Include(t => t.Contraparte)
+                .Include(t => t.Alertas)
                 .Where(t => t.ClienteId == clienteId
                     && t.DataHora >= dataInicio
                     && t.DataHora <= dataFim)
@@ -135,6 +142,8 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
             var fimDia = inicioDia.AddDays(1);
 
             return await context.Transacoes
+                .Include(t => t.Contraparte)
+                .Include(t => t.Alertas)
                 .Where(t => t.ClienteId == clienteId
                          && t.DataHora >= inicioDia
                          && t.DataHora < fimDia)
