@@ -231,7 +231,7 @@ export function getTransactionsColumns(): ColumnDef<Transaction>[] {
       label: "Contraparte",
       className: "py-3 pr-4 min-w-[220px]",
       headerClassName: "py-3 pr-4",
-      render: (transaction) => transaction.contraparte || "-",
+      render: (transaction) => transaction.contraparteId || "-",
     },
     {
       key: "dateTime",
