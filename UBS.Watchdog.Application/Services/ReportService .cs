@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UBS.Watchdog.Application.DTOs.Cliente;
+using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
 using UBS.Watchdog.Infrastructure.Repositories;
 using UBS.Watchdog.Infrastructure.Repositories.Alertas;
@@ -16,6 +17,7 @@ namespace UBS.Watchdog.Application.Services
     public interface IReportService
     {
         Task<RelatorioClienteResponse> GerarRelatorioClienteAsync(Guid clienteId, DateTime? dataInicio = null, DateTime? dataFim = null);
+        Task<List<RelatorioClienteResponse>> ListarTodos();
     }
 
     public class ReportService : IReportService
@@ -54,12 +56,34 @@ namespace UBS.Watchdog.Application.Services
                 _logger.LogWarning("Cliente não encontrado: {ClienteId}", clienteId);
                 throw new KeyNotFoundException($"Cliente {clienteId} não encontrado");
             }
+            
+            return await GerarRelatorio(cliente, dataInicio, dataFim);
+        }
 
+        public async Task<List<RelatorioClienteResponse>> ListarTodos()
+        {
+            _logger.LogInformation("Gerando relatório para todos os clientes.");
+
+            List<Cliente> clientes = await _clienteRepository.GetAllAsync();
+            
+            List<RelatorioClienteResponse> relatorios = new List<RelatorioClienteResponse>();
+            foreach (var cliente in clientes)
+            {
+                relatorios.Add(await GerarRelatorio(cliente));
+            }
+            return relatorios;
+        }
+
+        private async Task<RelatorioClienteResponse> GerarRelatorio(
+            Cliente cliente,
+            DateTime? dataInicio = null,
+            DateTime? dataFim = null)
+        {
             var transacoes = dataInicio.HasValue && dataFim.HasValue
-                ? await _transacaoRepository.GetByClienteEPeriodoAsync(clienteId, dataInicio.Value, dataFim.Value)
-                : await _transacaoRepository.GetByClienteIdAsync(clienteId);
+                ? await _transacaoRepository.GetByClienteEPeriodoAsync(cliente.Id, dataInicio.Value, dataFim.Value)
+                : await _transacaoRepository.GetByClienteIdAsync(cliente.Id);
 
-            var alertas = await _alertaRepository.GetByClienteIdAsync(clienteId);
+            var alertas = await _alertaRepository.GetByClienteIdAsync(cliente.Id);
 
             // filtra por periodo
             if (dataInicio.HasValue && dataFim.HasValue)
@@ -112,7 +136,7 @@ namespace UBS.Watchdog.Application.Services
 
             _logger.LogInformation(
                 "Relatório gerado para cliente {ClienteId}: {TotalTransacoes} transações, {TotalAlertas} alertas",
-                clienteId,
+                cliente,
                 totalTransacoes,
                 totalAlertas);
 

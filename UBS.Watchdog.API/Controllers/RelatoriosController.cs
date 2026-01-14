@@ -50,5 +50,15 @@ public class RelatoriosController(IReportService _reportService, ILogger<Relator
             return NotFound(new { message = ex.Message });
         }
     }
+
+    [HttpGet]
+    public async Task<ActionResult<List<RelatorioClienteResponse>>> ListarTodos()
+    {
+        _logger.LogInformation("GET /api/relatorios - Listando todos os relatórios.");
+
+        var relatorios = await _reportService.ListarTodos();
+        return Ok(relatorios);
+    }
+    
     #endregion
 }
