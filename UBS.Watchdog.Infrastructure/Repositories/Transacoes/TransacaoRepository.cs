@@ -52,6 +52,7 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 
             dataInicio = DateTime.SpecifyKind(dataInicio, DateTimeKind.Utc);
             dataFim = DateTime.SpecifyKind(dataFim, DateTimeKind.Utc);
+
             return await context.Transacoes
                 .Where(t => t.ClienteId == clienteId
                     && t.DataHora >= dataInicio

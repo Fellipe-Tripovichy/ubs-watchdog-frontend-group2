@@ -33,8 +33,8 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
 
         public async Task UpdateAsync(Alerta alerta)
         {
-            context.Alertas.Update(alerta);
-            await context.SaveChangesAsync();
+           context.Alertas.Update(alerta);
+           await context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
