@@ -135,7 +135,7 @@ namespace UBS.Watchdog.Application.Services
                 throw new ArgumentException("ResolvidoPor é obrigatório");
             }
 
-            alerta.Resolver(request.ResolvidoPor);
+            alerta.Resolver(request.ResolvidoPor, request.Resolucao);
 
             await _alertaRepository.UpdateAsync(alerta);
 

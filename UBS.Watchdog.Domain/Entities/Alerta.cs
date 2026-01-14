@@ -13,7 +13,8 @@ public class Alerta
 	public StatusAlerta Status { get; private set; }
 	public DateTime DataCriacao { get; private set; }
 	public DateTime? DataResolucao { get; private set; }
-	public string? ResolvidoPor { get; private set; }
+    public string? Resolucao { get; private set; }
+    public string? ResolvidoPor { get; private set; }
 
 	#region Navegação
 	public Cliente Cliente { get; private set; } = null!;
@@ -67,7 +68,7 @@ public class Alerta
     /// <summary>
     /// Resolve o alerta, registrando quem resolveu e quando
     /// </summary>
-    public void Resolver(string resolvidoPor)
+    public void Resolver(string resolvidoPor, string resolucao)
 	{
 		if (Status == StatusAlerta.Resolvido)
 			throw new InvalidOperationException("Alerta já foi resolvido");
@@ -77,8 +78,7 @@ public class Alerta
 
 		Status = StatusAlerta.Resolvido;
 		DataResolucao = DateTime.UtcNow;
-		ResolvidoPor = resolvidoPor;
-	}
-
-
+		ResolvidoPor = resolvidoPor; 
+		Resolucao = resolucao;
+    }
 }

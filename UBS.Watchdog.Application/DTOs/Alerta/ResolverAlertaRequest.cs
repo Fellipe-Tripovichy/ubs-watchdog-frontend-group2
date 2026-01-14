@@ -10,5 +10,7 @@ namespace UBS.Watchdog.Application.DTOs.Alerta
     public class ResolverAlertaRequest
     {
         public required string ResolvidoPor { get; set; }
+        [Required(ErrorMessage = "Resolução do alerta obrigatório")]
+        public required string Resolucao { get; set; }
     }
 }
