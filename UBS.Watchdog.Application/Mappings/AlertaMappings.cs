@@ -24,7 +24,8 @@ namespace UBS.Watchdog.Application.Mappings
                 Status = alerta.Status,
                 DataCriacao = alerta.DataCriacao,
                 DataResolucao = alerta.DataResolucao,
-                ResolvidoPor = alerta.ResolvidoPor
+                ResolvidoPor = alerta.ResolvidoPor,
+                Resolucao = alerta.Resolucao
             };
         }
 

@@ -33,8 +33,8 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
 
         public async Task UpdateAsync(Alerta alerta)
         {
-            context.Alertas.Update(alerta);
-            await context.SaveChangesAsync();
+           context.Alertas.Update(alerta);
+           await context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
@@ -106,16 +106,19 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Alertas
 
             if (dataCriacaoInicio.HasValue)
             {
+                dataCriacaoInicio = DateTime.SpecifyKind((DateTime)dataCriacaoInicio, DateTimeKind.Utc);
                 query = query.Where(a => a.DataCriacao >= dataCriacaoInicio.Value);
             }
 
             if (dataCriacaoFim.HasValue)
             {
+                dataCriacaoFim = DateTime.SpecifyKind((DateTime)dataCriacaoFim, DateTimeKind.Utc);
                 query = query.Where(a => a.DataCriacao <= dataCriacaoFim.Value);
             }
 
             if (dataResolucao.HasValue)
             {
+                dataResolucao = DateTime.SpecifyKind((DateTime)dataResolucao, DateTimeKind.Utc);
                 query = query.Where(a => a.DataResolucao == dataResolucao.Value);
             }
 
