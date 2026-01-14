@@ -6,7 +6,6 @@ import { cookies } from "next/headers";
 import { SectionTitle } from "@/components/ui/sectionTitle";
 
 export default async function Home() {
-
   const token = (await cookies()).get('accessToken')?.value || null;
   const isAuthenticated = token !== null;
 
@@ -19,7 +18,7 @@ export default async function Home() {
             <div className="bg-background/95 p-6 z-5 flex flex-col items-start justify-start w-full md:w-3/5 lg:w-2/5">
               <HeroTitle as="h1" subtitle="Sistema integrado de monitoração de transações financeiras">UBS Watchdog</HeroTitle>
               {isAuthenticated ?
-                (<Link href="/transactions">
+                (<Link href="/transactions/new-transaction">
                   <Button variant="default" className="w-full md:w-auto mt-8">
                     Faça uma nova transação
                   </Button>
@@ -51,7 +50,7 @@ export default async function Home() {
                 <CardButton icon="/services-transaction.jpg" title="Realização de transações" description="Monitoração de transações financeiras em tempo real" />
               </Link>
               <Link href="/compliance">
-                <CardButton icon="/services-compliance.jpg" title="Monitoramento de conformidade" description="Monitoração de transações financeiras em tempo real" />
+                <CardButton icon="/services-compliance.jpg" title="Monitoramento de Compliance" description="Monitoração de transações financeiras em tempo real" />
               </Link>
               <Link href="/report">
                 <CardButton icon="/services-report.jpg" title="Análise de relatórios" description="Monitoração de transações financeiras em tempo real" />

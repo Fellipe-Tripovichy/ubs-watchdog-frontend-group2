@@ -6,7 +6,6 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 
-// Mock ResizeObserver for Radix UI components (Tooltip uses it internally)
 global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
@@ -31,14 +30,10 @@ describe('Tooltip', () => {
         <div>Test content</div>
       </TooltipProvider>
     );
-    // TooltipProvider is a context provider, may not render a direct DOM element
-    // Verify it renders without errors by checking children
     expect(screen.getByText('Test content')).toBeInTheDocument();
   });
 
   it('should have data-slot attribute on TooltipProvider', () => {
-    // TooltipProvider is a context provider, so it may not render a direct DOM element
-    // Verify it renders without errors by checking children
     render(
       <TooltipProvider>
         <div>Test</div>
@@ -48,18 +43,15 @@ describe('Tooltip', () => {
   });
 
   it('should use default delayDuration of 0', () => {
-    // TooltipProvider is a context provider, verify it renders without error
     render(
       <TooltipProvider>
         <div>Test</div>
       </TooltipProvider>
     );
-    // delayDuration is passed as a prop, verify it renders without error
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 
   it('should allow custom delayDuration', () => {
-    // TooltipProvider is a context provider, verify it renders without error
     render(
       <TooltipProvider delayDuration={500}>
         <div>Test</div>
@@ -69,7 +61,6 @@ describe('Tooltip', () => {
   });
 
   it('should pass through additional props to TooltipProvider', () => {
-    // TooltipProvider is a context provider, verify it renders without error
     render(
       <TooltipProvider data-testid="custom-provider" skipDelayDuration={1000}>
         <div>Test</div>
@@ -85,13 +76,10 @@ describe('Tooltip', () => {
         <TooltipContent>Content</TooltipContent>
       </Tooltip>
     );
-    // Tooltip includes TooltipProvider, so children should render
     expect(screen.getByText('Trigger')).toBeInTheDocument();
   });
 
   it('should have data-slot attribute on Tooltip root', () => {
-    // Tooltip Root is a context provider, so it may not render a direct DOM element
-    // Instead, verify the component renders without errors
     render(
       <Tooltip open>
         <TooltipTrigger>Trigger</TooltipTrigger>
@@ -155,8 +143,6 @@ describe('Tooltip', () => {
         <TooltipContent>Tooltip Content Text</TooltipContent>
       </Tooltip>
     );
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toBeInTheDocument();
     expect(content?.textContent).toContain('Tooltip Content Text');
@@ -169,7 +155,6 @@ describe('Tooltip', () => {
         <TooltipContent>Content</TooltipContent>
       </Tooltip>
     );
-    // TooltipContent is rendered in a Portal, so check baseElement
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toBeInTheDocument();
   });
@@ -181,11 +166,8 @@ describe('Tooltip', () => {
         <TooltipContent>Portal Content</TooltipContent>
       </Tooltip>
     );
-    // Content in Portal is accessible in baseElement
-    const content = baseElement.querySelector('[data-slot="tooltip-content"]');
+      const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toBeInTheDocument();
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     expect(content?.textContent).toContain('Portal Content');
   });
 
@@ -220,7 +202,7 @@ describe('Tooltip', () => {
     );
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toHaveClass(
-      'bg-background',
+      'bg-secondary',
       'shadow-lg',
       'text-foreground',
       'rounded-md',
@@ -239,7 +221,7 @@ describe('Tooltip', () => {
     );
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toHaveClass('custom-class');
-    expect(content).toHaveClass('bg-background'); // Still has default classes
+    expect(content).toHaveClass('bg-secondary');
   });
 
   it('should render Arrow component in TooltipContent', () => {
@@ -251,7 +233,6 @@ describe('Tooltip', () => {
     );
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     const arrow = content?.querySelector('[class*="rotate-45"]');
-    // Arrow is rendered as a child of TooltipContent
     expect(arrow).toBeInTheDocument();
   });
 
@@ -264,8 +245,6 @@ describe('Tooltip', () => {
         </TooltipContent>
       </Tooltip>
     );
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content?.textContent).toContain('Child content');
   });
@@ -281,8 +260,6 @@ describe('Tooltip', () => {
     );
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content).toBeInTheDocument();
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     expect(content?.textContent).toContain('Content');
     expect(content).toHaveAttribute('data-side', 'top');
     expect(content).toHaveAttribute('data-align', 'center');
@@ -296,8 +273,6 @@ describe('Tooltip', () => {
       </Tooltip>
     );
     expect(screen.getByText('Hover here')).toBeInTheDocument();
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content?.textContent).toContain('This is a tooltip');
   });
@@ -312,8 +287,6 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
     expect(screen.getByText('Trigger')).toBeInTheDocument();
-    // Radix UI renders content twice (once in div, once in accessibility span)
-    // Check that the text exists within the tooltip content element
     const content = baseElement.querySelector('[data-slot="tooltip-content"]');
     expect(content?.textContent).toContain('Content');
   });
@@ -356,8 +329,6 @@ describe('Tooltip', () => {
       );
       expect(screen.getByText('Trigger 1')).toBeInTheDocument();
       expect(screen.getByText('Trigger 2')).toBeInTheDocument();
-      // Radix UI renders content twice (once in div, once in accessibility span)
-      // Check that the texts exist within the tooltip content elements
       const contents = baseElement.querySelectorAll('[data-slot="tooltip-content"]');
       expect(contents.length).toBeGreaterThanOrEqual(2);
       expect(contents[0]?.textContent).toContain('Content 1');

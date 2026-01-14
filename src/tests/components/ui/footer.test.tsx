@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Footer } from '@/components/ui/footer';
 
-// Mock dependencies
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
@@ -83,14 +82,14 @@ describe('Footer', () => {
   it('should render footer links', () => {
     render(<Footer />);
     expect(screen.getByText('Transações')).toBeInTheDocument();
-    expect(screen.getByText('Conformidade')).toBeInTheDocument();
+    expect(screen.getByText('Compliance')).toBeInTheDocument();
     expect(screen.getByText('Relatórios')).toBeInTheDocument();
   });
 
   it('should render footer links with correct hrefs', () => {
     render(<Footer />);
     const transactionsLink = screen.getByText('Transações').closest('a');
-    const complianceLink = screen.getByText('Conformidade').closest('a');
+    const complianceLink = screen.getByText('Compliance').closest('a');
     const reportsLink = screen.getByText('Relatórios').closest('a');
     
     expect(transactionsLink).toHaveAttribute('href', '/transactions');
@@ -101,7 +100,6 @@ describe('Footer', () => {
   it('should render separators between footer links', () => {
     render(<Footer />);
     const separators = screen.getAllByText('|');
-    // Should have 2 separators between 3 links
     expect(separators.length).toBe(2);
   });
 
@@ -124,10 +122,9 @@ describe('Footer', () => {
   });
 
   it('should render all footer links as LinkButton components', () => {
-    render(<Footer />);
-    // LinkButtons are rendered, verify by checking for the links
+    render(<Footer />); 
     const transactionsLink = screen.getByText('Transações').closest('a');
-    const complianceLink = screen.getByText('Conformidade').closest('a');
+    const complianceLink = screen.getByText('Compliance').closest('a');
     const reportsLink = screen.getByText('Relatórios').closest('a');
     const topButton = screen.getByText('Voltar ao topo');
     expect(transactionsLink).toBeInTheDocument();

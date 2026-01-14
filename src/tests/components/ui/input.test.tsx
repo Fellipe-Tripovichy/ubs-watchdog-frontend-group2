@@ -35,7 +35,7 @@ describe('Input', () => {
   it('should apply default classes', () => {
     const { container } = render(<Input />);
     const input = container.querySelector('[data-slot="input"]');
-    expect(input).toHaveClass('bg-background', 'border-border', 'rounded-md');
+    expect(input).toHaveClass('bg-transparent', 'h-9', 'w-full', 'outline-none');
   });
 
   it('should merge custom className with default classes', () => {
@@ -185,10 +185,8 @@ describe('Input', () => {
     fireEvent.change(input, { target: { value: 'te' } });
     fireEvent.change(input, { target: { value: 'test' } });
     
-    // Should not have validated yet (debounced)
     expect(validationRule).not.toHaveBeenCalled();
     
-    // Fast-forward time
     act(() => {
       jest.advanceTimersByTime(300);
     });
@@ -294,31 +292,24 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule1} />);
     const input = screen.getByRole('textbox');
     
-    // Make field touched and give it a value
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.blur(input);
     
-    // Wait for initial validation to complete
     await waitFor(() => {
       expect(validationRule1).toHaveBeenCalled();
     });
     
-    // Clear timers
     act(() => {
       jest.runOnlyPendingTimers();
     });
     
-    // Trigger a change to create a pending timeout
     fireEvent.change(input, { target: { value: 'test2' } });
     
-    // Verify timeout was created (validationRule1 should not have been called with new value yet)
     expect(validationRule1).not.toHaveBeenCalledWith('test2');
     
-    // Change validationRule - this should clear the timeout (line 100) and validate if touched (line 104)
     const validationRule2 = jest.fn(() => true);
     rerender(<Input validationRule={validationRule2} />);
     
-    // Since field is touched and has value, validationRule2 should be called (line 104)
     await waitFor(() => {
       expect(validationRule2).toHaveBeenCalledWith('test2');
     });
@@ -329,27 +320,21 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule} errorMessage="Error 1" />);
     const input = screen.getByRole('textbox');
     
-    // Make field touched and give it a value
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.blur(input);
     
-    // Wait for initial validation
     await waitFor(() => {
       expect(screen.getByText('Error 1')).toBeInTheDocument();
     });
     
-    // Clear timers
     act(() => {
       jest.runOnlyPendingTimers();
     });
     
-    // Change the value to create a new pending timeout
     fireEvent.change(input, { target: { value: 'test2' } });
     
-    // Change errorMessage - this should clear timeout (line 100) and validate if touched (line 104)
     rerender(<Input validationRule={validationRule} errorMessage="Error 2" />);
     
-    // Since field is touched and has value, should validate with new errorMessage (line 104)
     await waitFor(() => {
       expect(screen.getByText('Error 2')).toBeInTheDocument();
     });
@@ -360,11 +345,9 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule1} />);
     const input = screen.getByRole('textbox');
     
-    // Make the field touched and give it a value
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.blur(input);
     
-    // Change validationRule - should trigger validation (line 104)
     const validationRule2 = jest.fn(() => false);
     rerender(<Input validationRule={validationRule2} />);
     
@@ -387,7 +370,6 @@ describe('Input', () => {
       expect(screen.getByText('Error 1')).toBeInTheDocument();
     });
     
-    // Change errorMessage - should trigger validation with new message (line 104)
     rerender(<Input validationRule={validationRule} errorMessage="Error 2" />);
     
     await waitFor(() => {
@@ -400,14 +382,11 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule1} />);
     const input = screen.getByRole('textbox');
     
-    // Set value but don't blur (not touched)
     fireEvent.change(input, { target: { value: 'test' } });
     
-    // Change validationRule - should not validate because not touched
     const validationRule2 = jest.fn(() => false);
     rerender(<Input validationRule={validationRule2} />);
     
-    // Should not show error because field is not touched
     expect(screen.queryByText('Invalid input')).not.toBeInTheDocument();
   });
 
@@ -416,14 +395,11 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule1} />);
     const input = screen.getByRole('textbox');
     
-    // Blur empty field (touched but empty)
     fireEvent.blur(input);
     
-    // Change validationRule - should not validate because inputValue is empty (line 104 condition)
     const validationRule2 = jest.fn(() => false);
     rerender(<Input validationRule={validationRule2} />);
     
-    // Should not show error because inputValue is empty
     expect(screen.queryByText('Invalid input')).not.toBeInTheDocument();
   });
 
@@ -432,11 +408,9 @@ describe('Input', () => {
     const { rerender } = render(<Input validationRule={validationRule1} errorMessage="Error 1" />);
     const input = screen.getByRole('textbox');
     
-    // Make the field touched and give it a value
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.blur(input);
     
-    // Change both validationRule and errorMessage - should trigger validation (line 104)
     const validationRule2 = jest.fn(() => false);
     rerender(<Input validationRule={validationRule2} errorMessage="Error 2" />);
     

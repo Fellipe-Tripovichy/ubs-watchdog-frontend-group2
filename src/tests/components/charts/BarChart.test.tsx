@@ -229,5 +229,159 @@ describe('BarChart', () => {
       const { container } = render(<BarChart data={extendedData} />);
       expect(container.firstChild).toBeInTheDocument();
     });
+
+    it('should use fills array when provided, ignoring gradientType', () => {
+      const fills = ['#FF0000', '#00FF00', '#0000FF'];
+      const { container } = render(
+        <BarChart data={mockData} fills={fills} gradientType="red" />
+      );
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should use default red gradient when no fills or gradientType provided', () => {
+      const { container } = render(<BarChart data={mockData} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should use gray gradient when gradientType is gray', () => {
+      const { container } = render(<BarChart data={mockData} gradientType="gray" />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle fills array with fewer colors than data points', () => {
+      const fills = ['#FF0000', '#00FF00'];
+      const { container } = render(<BarChart data={mockData} fills={fills} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle fills array with more colors than data points', () => {
+      const fills = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'];
+      const { container } = render(<BarChart data={mockData} fills={fills} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle empty fills array', () => {
+      const { container } = render(<BarChart data={mockData} fills={[]} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle data with string numeric values', () => {
+      const stringData: BarChartData[] = [
+        { name: 'Jan', total: '100' as any },
+        { name: 'Feb', total: '200' as any },
+      ];
+      const { container } = render(<BarChart data={stringData} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle data with some null values but not all', () => {
+      const partialNullData: BarChartData[] = [
+        { name: 'Jan', total: null as any },
+        { name: 'Feb', total: 100 },
+        { name: 'Mar', total: 200 },
+      ];
+      const { container } = render(<BarChart data={partialNullData} />);
+      expect(container.firstChild).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum dado disponível')).not.toBeInTheDocument();
+    });
+
+    it('should handle data with some undefined values but not all', () => {
+      const partialUndefinedData: BarChartData[] = [
+        { name: 'Jan', total: undefined as any },
+        { name: 'Feb', total: 100 },
+        { name: 'Mar', total: 200 },
+      ];
+      const { container } = render(<BarChart data={partialUndefinedData} />);
+      expect(container.firstChild).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum dado disponível')).not.toBeInTheDocument();
+    });
+
+    it('should handle data with some zero values but not all', () => {
+      const partialZeroData: BarChartData[] = [
+        { name: 'Jan', total: 0 },
+        { name: 'Feb', total: 100 },
+        { name: 'Mar', total: 0 },
+      ];
+      const { container } = render(<BarChart data={partialZeroData} />);
+      expect(container.firstChild).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum dado disponível')).not.toBeInTheDocument();
+    });
+
+    it('should handle custom dataKey with zero values', () => {
+      const customData: BarChartData[] = [
+        { name: 'Jan', value: 0 },
+        { name: 'Feb', value: 0 },
+      ];
+      render(<BarChart data={customData} dataKey="value" />);
+      expect(screen.getByText('Nenhum dado disponível')).toBeInTheDocument();
+    });
+
+    it('should handle custom dataKey with non-zero values', () => {
+      const customData: BarChartData[] = [
+        { name: 'Jan', value: 100 },
+        { name: 'Feb', value: 200 },
+      ];
+      const { container } = render(<BarChart data={customData} dataKey="value" />);
+      expect(container.firstChild).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum dado disponível')).not.toBeInTheDocument();
+    });
+
+    it('should handle large dataset', () => {
+      const largeData: BarChartData[] = Array.from({ length: 50 }, (_, i) => ({
+        name: `Month ${i + 1}`,
+        total: (i + 1) * 10,
+      }));
+      const { container } = render(<BarChart data={largeData} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle negative values in data', () => {
+      const negativeData: BarChartData[] = [
+        { name: 'Jan', total: -100 },
+        { name: 'Feb', total: 200 },
+      ];
+      const { container } = render(<BarChart data={negativeData} />);
+      expect(container.firstChild).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum dado disponível')).not.toBeInTheDocument();
+    });
+
+    it('should handle very large numeric values', () => {
+      const largeValueData: BarChartData[] = [
+        { name: 'Jan', total: 1000000 },
+        { name: 'Feb', total: 2000000 },
+      ];
+      const { container } = render(<BarChart data={largeValueData} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle decimal values', () => {
+      const decimalData: BarChartData[] = [
+        { name: 'Jan', total: 100.5 },
+        { name: 'Feb', total: 200.75 },
+      ];
+      const { container } = render(<BarChart data={decimalData} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should apply formatter to tooltip values', () => {
+      const formatter = jest.fn((value: number | string | undefined) => `$${value}`);
+      const { container } = render(<BarChart data={mockData} formatter={formatter} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should apply labelFormatter to tooltip labels', () => {
+      const labelFormatter = jest.fn((label: string) => `Label: ${label}`);
+      const { container } = render(<BarChart data={mockData} labelFormatter={labelFormatter} />);
+      expect(container.firstChild).toBeInTheDocument();
+    });
+
+    it('should handle both formatter and labelFormatter together', () => {
+      const formatter = jest.fn((value: number | string | undefined) => `$${value}`);
+      const labelFormatter = jest.fn((label: string) => `Label: ${label}`);
+      const { container } = render(
+        <BarChart data={mockData} formatter={formatter} labelFormatter={labelFormatter} />
+      );
+      expect(container.firstChild).toBeInTheDocument();
+    });
   });
 });

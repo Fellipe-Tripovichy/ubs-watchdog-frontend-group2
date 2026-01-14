@@ -65,7 +65,6 @@ describe('Badge', () => {
       'items-center',
       'justify-center',
       'rounded-sm',
-      'border',
       'px-2',
       'py-0.5',
       'font-medium'
@@ -76,7 +75,7 @@ describe('Badge', () => {
     const { container } = render(<Badge className="custom-class">Test Badge</Badge>);
     const badge = container.querySelector('[data-slot="badge"]');
     expect(badge).toHaveClass('custom-class');
-    expect(badge).toHaveClass('bg-primary'); // Still has default variant classes
+    expect(badge).toHaveClass('bg-primary'); 
   });
 
   it('should render children correctly', () => {
@@ -91,7 +90,6 @@ describe('Badge', () => {
       </Badge>
     );
     expect(screen.getByText('Complex')).toBeInTheDocument();
-    // Text is split across elements, so check that the badge contains the full text
     const badge = container.querySelector('[data-slot="badge"]');
     const childDiv = badge?.querySelector('div.text-caption');
     expect(childDiv?.textContent).toBe('Complex Content');
@@ -115,15 +113,10 @@ describe('Badge', () => {
         <a href="/test">Link Badge</a>
       </Badge>
     );
-    // When asChild is true, Slot merges props with the first child element
-    // However, Badge wraps children in a div, so Slot merges with the div, not the link
-    // The link should still be rendered inside
     const link = container.querySelector('a[href="/test"]');
     expect(link).toBeInTheDocument();
     expect(link?.tagName).toBe('A');
-    expect(screen.getByText('Link Badge')).toBeInTheDocument();
-    // Verify the link is within the badge structure
-    // The div wrapper should exist with text-caption class
+    expect(screen.getByText('Link Badge')).toBeInTheDocument(); 
     const wrapperDiv = link?.parentElement;
     expect(wrapperDiv).toHaveClass('text-caption');
   });

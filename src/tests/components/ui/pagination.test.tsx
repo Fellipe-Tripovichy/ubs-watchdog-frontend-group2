@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import {
   Pagination,
   PaginationContent,
@@ -383,6 +383,65 @@ describe('PaginationLink', () => {
     expect(screen.getByText('Child 1')).toBeInTheDocument();
     expect(screen.getByText('Child 2')).toBeInTheDocument();
   });
+
+  it('should call handleScrollToTop on click', () => {
+    const scrollToSpy = jest.spyOn(globalThis, 'scrollTo').mockImplementation(() => {});
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink>Link</PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const link = container.querySelector('[data-slot="pagination-link"]') as HTMLElement;
+    fireEvent.click(link);
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    scrollToSpy.mockRestore();
+  });
+
+  it('should apply size prop correctly', () => {
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink size="small">Link</PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const link = container.querySelector('[data-slot="pagination-link"]');
+    expect(link).toBeInTheDocument();
+  });
+
+  it('should use secondary variant when isActive is true', () => {
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink isActive>Link</PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const link = container.querySelector('[data-slot="pagination-link"]');
+    expect(link).toHaveClass('border', 'bg-background', 'shadow-xs');
+  });
+
+  it('should use link variant when isActive is false', () => {
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink isActive={false}>Link</PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const link = container.querySelector('[data-slot="pagination-link"]');
+    expect(link).toHaveClass('text-foreground', 'underline-offset-4');
+  });
 });
 
 describe('PaginationPrevious', () => {
@@ -498,6 +557,23 @@ describe('PaginationPrevious', () => {
     expect(previous).toHaveAttribute('data-testid', 'custom-previous');
     expect(previous).toHaveAttribute('id', 'previous-id');
     expect(previous).toHaveAttribute('href', '/prev');
+  });
+
+  it('should call handleScrollToTop on click', () => {
+    const scrollToSpy = jest.spyOn(globalThis, 'scrollTo').mockImplementation(() => {});
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const previous = container.querySelector('[data-slot="pagination-link"]') as HTMLElement;
+    fireEvent.click(previous);
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    scrollToSpy.mockRestore();
   });
 });
 
@@ -615,6 +691,23 @@ describe('PaginationNext', () => {
     expect(next).toHaveAttribute('id', 'next-id');
     expect(next).toHaveAttribute('href', '/next');
   });
+
+  it('should call handleScrollToTop on click', () => {
+    const scrollToSpy = jest.spyOn(globalThis, 'scrollTo').mockImplementation(() => {});
+    const { container } = render(
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationNext />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+    const next = container.querySelector('[data-slot="pagination-link"]') as HTMLElement;
+    fireEvent.click(next);
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    scrollToSpy.mockRestore();
+  });
 });
 
 describe('PaginationEllipsis', () => {
@@ -628,7 +721,6 @@ describe('PaginationEllipsis', () => {
         </PaginationContent>
       </Pagination>
     );
-    // Ellipsis should render (check for sr-only text)
     expect(screen.getByText('More pages')).toBeInTheDocument();
   });
 

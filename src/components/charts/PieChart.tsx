@@ -31,7 +31,7 @@ export interface PieChartProps {
   outerRadius?: number;
   label?: boolean;
   getCellColor?: (entry: PieChartData, index: number) => string;
-  fills?: string[]; // Array of colors, one for each slice
+  fills?: string[]; 
   width?: number | `${number}%`;
   height?: number | `${number}%`;
   formatter?: (value: number | string | undefined, name?: string) => React.ReactNode;
@@ -51,7 +51,6 @@ export function PieChart({
   formatter = (value) => String(value),
   labelFormatter,
 }: PieChartProps) {
-  // Check if all values are zero
   const allValuesZero = data && data.length > 0
     ? data.every((entry) => {
         const value = entry[dataKey];
@@ -59,7 +58,6 @@ export function PieChart({
       })
     : true;
 
-  // Show empty state if data is null, empty, or all values are zero
   if (!data || data.length === 0 || allValuesZero) {
     return (
       <div style={{ width: typeof width === "number" ? `${width}px` : width, height: typeof height === "number" ? `${height}px` : height }}>
@@ -78,19 +76,15 @@ export function PieChart({
     );
   }
 
-  // Determine cell fill color
   const getCellFill = (entry: PieChartData, index: number): string => {
-    // Priority 1: Use getCellColor function if provided
     if (getCellColor) {
       return getCellColor(entry, index);
     }
-    
-    // Priority 2: Use fills array if provided
+
     if (fills && fills[index] !== undefined) {
       return fills[index];
     }
 
-    // Default fallback color
     return "#999999";
   };
 

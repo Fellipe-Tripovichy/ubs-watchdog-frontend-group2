@@ -53,7 +53,6 @@ describe('LinkButton', () => {
     const { container } = render(<LinkButton icon="chevron-right">Click me</LinkButton>);
     const button = container.querySelector('[data-slot="button"]');
     expect(button).toBeInTheDocument();
-    // Icon should be rendered (check for SVG)
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
   });
@@ -62,7 +61,6 @@ describe('LinkButton', () => {
     const { container } = render(<LinkButton icon="chevron-left" iconLeft>Click me</LinkButton>);
     const button = container.querySelector('[data-slot="button"]');
     expect(button).toBeInTheDocument();
-    // Icon should be rendered
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
   });
@@ -156,19 +154,15 @@ describe('LinkButton', () => {
   });
 
   it('should handle icon name using pascalCase fallback (line 19 second branch)', () => {
-    // Test an icon name that would use the pascalCaseName fallback
-    // Single word icons like "Menu" would use pascalCaseName instead of normalizedName
     const { container } = render(<LinkButton icon="menu">Click me</LinkButton>);
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
   });
 
   it('should handle invalid icon name and return null (line 21)', () => {
-    // Test with an invalid icon name that doesn't exist in lucide-react
     const { container } = render(<LinkButton icon="nonexistent-icon-xyz">Click me</LinkButton>);
     const svg = container.querySelector('svg');
     expect(svg).not.toBeInTheDocument();
-    // Button should still render without icon
     const button = container.querySelector('[data-slot="button"]');
     expect(button).toBeInTheDocument();
   });
@@ -192,7 +186,6 @@ describe('LinkButton', () => {
   });
 
   it('should handle icon with single word name (pascalCase path)', () => {
-    // Single word icons use the pascalCaseName fallback (line 19)
     const { container } = render(<LinkButton icon="x">Click me</LinkButton>);
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();

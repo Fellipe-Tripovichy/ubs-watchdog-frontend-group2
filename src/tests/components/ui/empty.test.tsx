@@ -402,7 +402,6 @@ describe('EmptyDescription', () => {
       </Empty>
     );
     const description = container.querySelector('[data-slot="empty-description"]');
-    // Note: text-muted-foreground may be merged/processed by cn utility
     expect(description).toHaveClass(
       'text-caption',
       '[&>a:hover]:text-primary',

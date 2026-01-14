@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils"
 
 export type ValidationRule = (value: string) => boolean | string
 
-export interface InputProps extends Omit<React.ComponentProps<"input">, "onChange" | "onBlur"> {
+export interface InputProps extends Omit<React.ComponentProps<"input">, "onChange" | "onBlur" | "prefix"> {
   validationRule?: ValidationRule
   errorMessage?: string
+  prefix?: React.ReactNode
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
 }
@@ -22,7 +23,7 @@ function getInitialValue(value: string | number | readonly string[] | undefined,
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, validationRule, errorMessage, onChange, value, defaultValue, onBlur, ...props }, ref) => {
+  ({ className, type, validationRule, errorMessage, prefix, onChange, value, defaultValue, onBlur, ...props }, ref) => {
     const [internalValue, setInternalValue] = React.useState<string>(
       getInitialValue(value, defaultValue)
     )
@@ -109,21 +110,36 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div className="flex flex-col gap-1 w-full">
-        <input
-          ref={ref}
-          type={type}
-          data-slot="input"
-          value={inputValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          aria-invalid={isInvalid}
-          className={cn("bg-background",
-            "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-border h-9 w-full min-w-0 rounded-md border px-3 py-2 text-input shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-input file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-            "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-            className
+        <div className={cn(
+          "relative flex items-center w-full",
+          "bg-background dark:bg-input/30 border-border rounded-xs border shadow-xs transition-[color,box-shadow]",
+          isInvalid && "border-destructive ring-destructive/20 dark:ring-destructive/40"
+        )}>
+          {prefix && (
+            <div className="flex items-center px-3 text-muted-foreground pointer-events-none">
+              {prefix}
+            </div>
           )}
-          {...props}
-        />
+          <input
+            ref={ref}
+            type={type}
+            data-slot="input"
+            value={inputValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            aria-invalid={isInvalid}
+            className={cn(
+              "bg-transparent",
+              "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+              "h-9 w-full min-w-0 py-2 text-input outline-none",
+              "file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-input file:font-medium",
+              "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+              prefix ? "pl-0 pr-3" : "px-3",
+              className
+            )}
+            {...props}
+          />
+        </div>
         {isInvalid && (
           <span className="text-sm text-destructive">
             {error}

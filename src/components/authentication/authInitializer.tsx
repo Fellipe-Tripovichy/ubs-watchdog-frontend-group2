@@ -28,4 +28,3 @@ export function AuthInitializer() {
 
   return null;
 }
-

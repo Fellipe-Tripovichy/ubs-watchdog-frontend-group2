@@ -9,7 +9,6 @@ import {
   DrawerDescription,
   DrawerClose,
   DrawerOverlay,
-  DrawerPortal,
 } from '@/components/ui/drawer';
 
 describe('Drawer', () => {
@@ -37,8 +36,6 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    // Drawer Root is a context provider, so it may not render a DOM element
-    // Instead, verify the component renders without errors
     const trigger = screen.getByText('Open');
     expect(trigger).toBeInTheDocument();
   });
@@ -175,8 +172,6 @@ describe('Drawer', () => {
     );
     const overlay = baseElement.querySelector('[data-slot="drawer-overlay"]');
     expect(overlay).toBeInTheDocument();
-    // DrawerOverlay is rendered inside DrawerContent, and className merging might work differently
-    // Just verify the overlay exists and has the data-slot attribute
     expect(overlay).toHaveAttribute('data-slot', 'drawer-overlay');
   });
 
@@ -456,7 +451,6 @@ describe('Drawer', () => {
         </DrawerContent>
       </Drawer>
     );
-    // DrawerPortal renders content in a portal, verify content is accessible
     const content = screen.getByText('Content');
     expect(content).toBeInTheDocument();
   });
@@ -470,8 +464,7 @@ describe('Drawer', () => {
           Content
         </DrawerContent>
       </Drawer>
-    );
-    // Drawer Root is a context provider, verify the component renders
+    );  
     const trigger = screen.getByText('Open');
     expect(trigger).toBeInTheDocument();
   });

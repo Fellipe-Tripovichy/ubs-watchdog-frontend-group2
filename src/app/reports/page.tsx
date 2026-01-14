@@ -1,144 +1,73 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectToken } from "@/features/auth/authSlice";
 import {
   fetchAllReports,
   selectAllReports,
   selectAllReportsLoading,
-  selectReportsError,
 } from "@/features/reports/reportsSlice";
 
-import { Spinner } from "@/components/ui/spinner";
-import { isoToDate, dateToISO, startOfCurrentMonthISO, todayISO } from "@/lib/utils";
-import { InfoIcon, TriangleAlert } from "lucide-react";
 import { HeroTitle } from "@/components/ui/heroTitle";
 import { LinkButton } from "@/components/ui/linkButton";
-import { DatePickerInput } from "@/components/ui/datePickerInput";
 import { IconButton } from "@/components/ui/iconButton";
 import { DataTable } from "@/components/table/dataTable";
 import { CardTable } from "@/components/table/cardTable";
 import { getReportsColumns } from "@/models/reports";
 import { ReportCard } from "@/components/reports/reportCard";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-
-function createPaginationItem(
-  pageNumber: number,
-  currentPage: number,
-  onPageChange: (page: number) => void
-): React.ReactNode {
-  return (
-    <PaginationItem key={pageNumber}>
-      <PaginationLink
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          onPageChange(pageNumber);
-        }}
-        isActive={currentPage === pageNumber}
-        className="cursor-pointer"
-      >
-        {pageNumber}
-      </PaginationLink>
-    </PaginationItem>
-  );
-}
-
-function renderPaginationItems(
-  currentPage: number,
-  totalPages: number,
-  onPageChange: (page: number) => void
-) {
-  const items: React.ReactNode[] = [];
-
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) {
-      items.push(createPaginationItem(i, currentPage, onPageChange));
-    }
-  } else {
-    items.push(createPaginationItem(1, currentPage, onPageChange));
-
-    if (currentPage > 3) {
-      items.push(
-        <PaginationItem key="ellipsis-start">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    const startPage = Math.max(2, currentPage - 1);
-    const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-    for (let i = startPage; i <= endPage; i++) {
-      if (i !== 1 && i !== totalPages) {
-        items.push(createPaginationItem(i, currentPage, onPageChange));
-      }
-    }
-
-    if (currentPage < totalPages - 2) {
-      items.push(
-        <PaginationItem key="ellipsis-end">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-
-    items.push(createPaginationItem(totalPages, currentPage, onPageChange));
-  }
-
-  return items;
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SectionTitle } from "@/components/ui/sectionTitle";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 
 export default function ReportsPage() {
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectToken);
   const allReports = useAppSelector(selectAllReports);
   const isLoading = useAppSelector(selectAllReportsLoading);
-  const error = useAppSelector(selectReportsError);
 
-  const [startDate, setStartDate] = React.useState<string>(
-    startOfCurrentMonthISO()
-  );
-  const [endDate, setEndDate] = React.useState<string>(todayISO());
+  const [statusAlerta, setStatusAlerta] = React.useState<string>("all");
+  const [statusKyc, setStatusKyc] = React.useState<string>("all");
+  const [pais, setPais] = React.useState<string>("all");
   const [showFilters, setShowFilters] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!startDate) return;
-    if (!endDate) setEndDate(todayISO());
-  }, [startDate, endDate]);
-
-  React.useEffect(() => {
-    if (!startDate || !endDate) return;
-    if (endDate < startDate)
-      setEndDate(todayISO() >= startDate ? todayISO() : startDate);
-  }, [startDate, endDate]);
-
-  const isValidRange =
-    Boolean(startDate) && Boolean(endDate) && endDate >= startDate;
+  const [allCountries, setAllCountries] = React.useState<string[]>([]);
+  const countriesFetchedRef = React.useRef(false);
 
   const columns = React.useMemo(() => getReportsColumns(), []);
 
   React.useEffect(() => {
-    if (!token || !isValidRange) return;
+    if (!token || countriesFetchedRef.current) return;
+    dispatch(
+      fetchAllReports({
+        token,
+        statusAlerta: undefined,
+        statusKyc: undefined,
+        pais: undefined,
+      })
+    ).then((action) => {
+      if (fetchAllReports.fulfilled.match(action) && action.payload) {
+        const uniqueCountries = Array.from(
+          new Set(action.payload.map((report) => report.pais).filter(Boolean))
+        );
+        setAllCountries(uniqueCountries.sort());
+        countriesFetchedRef.current = true;
+      }
+    });
+  }, [token, dispatch]);
+
+  React.useEffect(() => {
+    if (!token) return;
 
     dispatch(
       fetchAllReports({
         token,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
+        statusAlerta: statusAlerta !== "all" ? statusAlerta : undefined,
+        statusKyc: statusKyc !== "all" ? statusKyc : undefined,
+        pais: pais !== "all" ? pais : undefined,
       })
     );
-  }, [token, dispatch, startDate, endDate, isValidRange]);
+  }, [token, dispatch, statusAlerta, statusKyc, pais]);
 
   return (
     <div className="flex flex-col items-start w-full">
@@ -162,116 +91,137 @@ export default function ReportsPage() {
             </div>
           </div>
         </div>
-        <div className="max-w-[1554px] mx-auto px-4 md:px-8 mt-8">
-          <div className="flex items-center justify-between">
-            <div className="flex-1"></div>
-            <div className="flex items-center justify-end block md:hidden">
-              <IconButton icon={showFilters ? "x" : "filter"} variant="secondary" size="small" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-foreground bg-muted" : ""}/>
+        <div className="flex flex-col gap-2 max-w-[1554px] mx-auto px-4 md:px-8 py-8">
+          <SectionTitle>Histórico de relatórios</SectionTitle>
+
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1"></div>
+              <div className="flex items-center justify-end block md:hidden">
+                <IconButton icon={showFilters ? "x" : "filter"} variant="secondary" size="small" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-foreground bg-muted" : ""} />
+              </div>
             </div>
-          </div>
-          {(() => {
-            const filterContent = (
-              <>
-                <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
-                  <div className="flex-1 w-full md:max-w-[172px]">
-                    <DatePickerInput
-                      label="Data inicial"
-                      value={isoToDate(startDate)}
-                      maxDate={isoToDate(todayISO())}
-                      onChange={(d) => {
-                        const nextStart = d
-                          ? dateToISO(d)
-                          : startOfCurrentMonthISO();
-                        setStartDate(nextStart);
+            {(() => {
+              const filterContent = (
+                <>
+                  <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <div className="flex items-start gap-2">
+                        <label className="text-xs text-muted-foreground mb-1.5 block">
+                          Status Alerta
+                        </label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2 cursor-help w-fit">
+                              <InfoIcon className="size-3.5 text-muted-foreground" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs text-muted-foreground p-2">Filtre os relatórios por status de alerta, pare ter acesso as quais alertas cadda relatório possui.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Select value={statusAlerta} onValueChange={setStatusAlerta}>
+                        <SelectTrigger size="default" className="w-full">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="Novo">Novo</SelectItem>
+                          <SelectItem value="EmAnalise">Em Análise</SelectItem>
+                          <SelectItem value="Resolvido">Resolvido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                        const today = todayISO();
-                        if (!endDate || endDate < nextStart)
-                          setEndDate(today >= nextStart ? today : nextStart);
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <label className="text-xs text-muted-foreground mb-1.5 block">
+                        Status KYC
+                      </label>
+                      <Select value={statusKyc} onValueChange={setStatusKyc}>
+                        <SelectTrigger size="default" className="w-full">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="Aprovado">Aprovado</SelectItem>
+                          <SelectItem value="Pendente">Pendente</SelectItem>
+                          <SelectItem value="Rejeitado">Rejeitado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <label className="text-xs text-muted-foreground mb-1.5 block">
+                        País
+                      </label>
+                      <Select value={pais} onValueChange={setPais}>
+                        <SelectTrigger size="default" className="w-full">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          {allCountries.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <LinkButton
+                      variant="default"
+                      size="small"
+                      type="button"
+                      onClick={() => {
+                        setStatusAlerta("all");
+                        setStatusKyc("all");
+                        setPais("all");
                       }}
-                    />
+                    >
+                      Limpar filtros
+                    </LinkButton>
                   </div>
+                </>
+              );
 
-                  <div className="flex-1 w-full md:max-w-[172px]">
-                    <DatePickerInput
-                      label="Data final"
-                      value={isoToDate(endDate)}
-                      minDate={isoToDate(startDate)}
-                      maxDate={isoToDate(todayISO())}
-                      onChange={(d) => {
-                        const nextEnd = d != null ? dateToISO(d) : todayISO();
-                        setEndDate(nextEnd);
-                      }}
-                    />
-                  </div>
-
-                  <LinkButton
-                    variant="default"
-                    size="small"
-                    type="button"
-                    onClick={() => {
-                      setStartDate(startOfCurrentMonthISO());
-                      setEndDate(todayISO());
-                    }}
-                  >
-                    Redefinir período
-                  </LinkButton>
-                </div>
-              </>
-            );
-
-            return (
-              <>
-                {showFilters && (
-                  <div className="flex flex-col gap-2 mt-4 block md:hidden">
+              return (
+                <>
+                  {showFilters && (
+                    <div className="flex flex-col gap-2 mt-4 block md:hidden">
+                      {filterContent}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2 mt-4 hidden md:block">
                     {filterContent}
                   </div>
-                )}
-                <div className="flex flex-col gap-2 mt-4 hidden md:block">
-                  {filterContent}
-                </div>
-              </>
-            );
-          })()}
-        </div>
-        <div className="flex flex-col gap-8 max-w-[1554px] mx-auto px-4 md:px-8 py-8">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-md">
-              <TriangleAlert className="size-5" />
-              <p>{error}</p>
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Spinner />
-            </div>
-          ) : allReports.length > 0 ? (
-            <>
-              <div className="w-full hidden md:block">
-                <DataTable
-                  columns={columns}
-                  data={allReports}
-                  itemsPerPage={10}
-                  getRowKey={(report) => report.client.id}
-                />
-              </div>
-              <div className="block md:hidden">
-                <CardTable
-                  data={allReports}
-                  itemsPerPage={10}
-                  getRowKey={(report) => report.client.id}
-                  renderCard={(report) => <ReportCard report={report} />}
-                />
-              </div>
-            </>
-          ) : (
-            !isLoading && (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <InfoIcon className="size-8 mb-2" />
-                <p>Nenhum relatório encontrado</p>
-              </div>
-            )
-          )}
+                </>
+              );
+            })()}
+          </div>
+          <div className="w-full hidden md:block">
+            <DataTable
+              columns={columns}
+              data={allReports}
+              itemsPerPage={10}
+              getRowKey={(report) => report.clienteId}
+              loading={isLoading}
+              emptyMessage="Nenhum relatório encontrado"
+              emptyDescription="Nenhum relatório encontrado para exibir. Altere os filtros para encontrar relatórios ou entre em contato com o suporte. "
+            />
+          </div>
+          <div className="block md:hidden">
+            <CardTable
+              data={allReports}
+              itemsPerPage={10}
+              getRowKey={(report) => report.clienteId}
+              renderCard={(report) => <ReportCard report={report} />}
+              loading={isLoading}
+              emptyMessage="Nenhum relatório encontrado"
+              emptyDescription="Nenhum relatório encontrado para exibir. Altere os filtros para encontrar relatórios ou entre em contato com o suporte. "
+            />
+          </div>
         </div>
       </div>
     </div>

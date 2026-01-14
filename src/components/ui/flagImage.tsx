@@ -1,16 +1,15 @@
-/**
- * FlagImage Component
- * Generates FlagCDN URLs for country flags
- * 
- * @see https://flagcdn.com/
- */
+"use client";
 
-// Common country name to ISO 3166-1 alpha-2 code mapping
-// Supports both English and Brazilian Portuguese names
+import { useState } from "react";
+import { Flag } from "lucide-react";
+
 const COUNTRY_CODE_MAP: Record<string, string> = {
-  // English
   "united states": "us",
   "united states of america": "us",
+  "european union": "eu",
+  "eurozone": "eu",
+  "euro": "eu",
+  "euro area": "eu",
   "usa": "us",
   "brazil": "br",
   "united kingdom": "gb",
@@ -66,7 +65,8 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   "hungary": "hu",
   "romania": "ro",
   "ukraine": "ua",
-  // Brazilian Portuguese
+  "união europeia": "eu",
+  "zona do euro": "eu",
   "brasil": "br",
   "estados unidos": "us",
   "estados unidos da américa": "us",
@@ -123,24 +123,21 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
 export type FlagFormat = "png" | "svg" | "jpg" | "webp";
 export type FlagSize = string | number | "w20" | "w40" | "w80" | "w160" | "w320" | "w640";
 
-/**
- * Converts a country name to ISO 3166-1 alpha-2 code
- * Supports both English and Brazilian Portuguese country names
- * @param countryName - The name of the country (in English or Brazilian Portuguese)
- * @returns The ISO country code in lowercase, or the original input if no mapping found
- */
+function getFlagSize(size: FlagSize): number {
+  if (typeof size === "number") return size;
+  if (size === "w20") return 20;
+  if (size === "w40") return 40;
+  if (size === "w80") return 80;
+  if (size === "w160") return 160;
+  if (size === "w320") return 320;
+  if (size === "w640") return 640;
+  return 40;
+} 
 function countryNameToCode(countryName: string): string {
   const normalizedName = countryName.toLowerCase().trim();
   return COUNTRY_CODE_MAP[normalizedName] || normalizedName;
 }
 
-/**
- * Generates a FlagCDN URL for a country flag
- * @param country - Country name (English or Brazilian Portuguese) or ISO 3166-1 alpha-2 code
- * @param size - Flag size (e.g., "w40", "w320", or empty string for default SVG)
- * @param format - Image format (png, svg, jpg, webp)
- * @returns The FlagCDN URL string
- */
 export function getFlagUrl(
   country: string,
   size: FlagSize = "",
@@ -148,7 +145,6 @@ export function getFlagUrl(
 ): string {
   const countryCode = countryNameToCode(country);
   
-  // Format size: if it's a number, prepend 'w', otherwise use as-is
   let sizePrefix = "";
   if (size) {
     if (typeof size === "number") {
@@ -158,50 +154,49 @@ export function getFlagUrl(
     }
   }
   
-  // Format extension (ensure lowercase)
   const formatLower = format.toLowerCase() as FlagFormat;
   
-  // Build URL: https://flagcdn.com/[size]/[country_code].[format]
   return `https://flagcdn.com/${sizePrefix}${countryCode}.${formatLower}`;
 }
 
-/**
- * FlagImage Component Props
- */
 export interface FlagImageProps {
-  /** Country name (English or Brazilian Portuguese) or ISO 3166-1 alpha-2 code */
   country: string;
-  /** Flag size (e.g., "w40", "w320", or empty for default) */
   size?: FlagSize;
-  /** Image format */
   format?: FlagFormat;
-  /** Additional CSS classes */
   className?: string;
-  /** Alt text for the image */
   alt?: string;
-  /** Additional image props */
   [key: string]: any;
 }
 
-/**
- * FlagImage Component
- * Renders a country flag image using FlagCDN
- */
 export function FlagImage({
   country,
-  size = "",
-  format = "svg",
+  size = "w20",
+  format = "png",
   className,
   alt,
   ...props
 }: FlagImageProps) {
+  const [hasError, setHasError] = useState(false);
   const flagUrl = getFlagUrl(country, size, format);
   const altText = alt || `Flag of ${country}`;
+
+  if (hasError) {
+    return (
+      <Flag
+        className={`size-${getFlagSize(size)/4}`}
+        aria-label={altText}
+        {...props}
+      />
+    );
+  }
 
   return (
     <img
       src={flagUrl}
       alt={altText}
+      onError={() => setHasError(true)}
+      width={getFlagSize(size)}
+      height="auto"
       className={className}
       {...props}
     />

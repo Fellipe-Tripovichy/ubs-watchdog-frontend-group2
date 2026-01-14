@@ -20,8 +20,6 @@ describe('Popover', () => {
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    // Popover Root is a context provider, so it may not render a DOM element
-    // Instead, verify the component renders without errors
     const trigger = screen.getByText('Open');
     expect(trigger).toBeInTheDocument();
   });
@@ -137,7 +135,6 @@ describe('Popover', () => {
         <PopoverContent>Content</PopoverContent>
       </Popover>
     );
-    // Popover Root is a context provider, verify the component renders
     const trigger = screen.getByText('Open');
     expect(trigger).toBeInTheDocument();
   });

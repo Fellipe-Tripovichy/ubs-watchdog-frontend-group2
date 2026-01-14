@@ -3,14 +3,12 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/features/auth/authSlice';
 
-// Mock Next.js Link
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
   };
 });
 
-// Mock Firebase
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -36,7 +34,6 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// Mock authAPI
 jest.mock('@/features/auth/authAPI', () => ({
   signOutAPI: jest.fn(),
   createUserWithEmailAndPasswordAPI: jest.fn(),
@@ -45,7 +42,6 @@ jest.mock('@/features/auth/authAPI', () => ({
   resetPasswordAPI: jest.fn(),
 }));
 
-// Mock dependencies - must be before imports
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(() => '/'),
 }));
@@ -56,7 +52,6 @@ jest.mock('@/components/ui/footer', () => ({
   Footer: () => <div data-testid="footer">Footer</div>,
 }));
 
-// Import component AFTER mocks are defined
 import { LayoutWrapper } from '@/components/ui/layoutWrapper';
 import { usePathname } from 'next/navigation';
 import type { UserData } from '@/features/auth/authSlice';
@@ -66,7 +61,6 @@ describe('LayoutWrapper', () => {
   
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock document.cookie
     Object.defineProperty(document, 'cookie', {
       writable: true,
       value: '',
@@ -128,8 +122,6 @@ describe('LayoutWrapper', () => {
         </LayoutWrapper>
       </Provider>
     );
-    // AuthInitializer is rendered but might not have a testid since we're not mocking it
-    // Just verify the component renders without errors
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 
@@ -237,8 +229,6 @@ describe('LayoutWrapper', () => {
         </LayoutWrapper>
       </Provider>
     );
-    // AuthInitializer is rendered but might not have a testid since we're not mocking it
-    // Just verify other components render correctly
     expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
   });

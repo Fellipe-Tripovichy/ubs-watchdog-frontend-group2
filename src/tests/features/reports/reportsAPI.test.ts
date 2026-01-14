@@ -4,303 +4,533 @@ import {
   type GetClientReportParams,
   type GetAllReportsParams,
 } from '@/features/reports/reportsAPI';
-import type { ClientReport } from '@/mocks/reportsMock';
+import type { Report } from '@/features/reports/reportsSlice';
 
-// Mock the reportsMock module
-jest.mock('@/mocks/reportsMock', () => ({
-  getMockClientReport: jest.fn(),
-  getMockAllReports: jest.fn(),
-}));
+global.fetch = jest.fn();
 
-import { getMockClientReport, getMockAllReports } from '@/mocks/reportsMock';
+const originalEnv = process.env;
 
-const mockGetMockClientReport = getMockClientReport as jest.MockedFunction<typeof getMockClientReport>;
-const mockGetMockAllReports = getMockAllReports as jest.MockedFunction<typeof getMockAllReports>;
-
-describe('Reports API', () => {
+describe('reportsAPI', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env = { ...originalEnv };
   });
 
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  const mockReport: Report = {
+    clienteId: 'C-1023',
+    nomeCliente: 'Maria Eduarda Ribeiro Facio',
+    pais: 'Brasil',
+    nivelRisco: 'Alto',
+    statusKyc: 'Aprovado',
+    dataCriacao: '2025-01-01T00:00:00-03:00',
+    totalTransacoes: 15,
+    totalMovimentado: 50000,
+    mediaTransacao: 3333.33,
+    dataUltimaTransacao: '2025-01-15T10:30:00-03:00',
+    totalAlertas: 3,
+    alertasNovos: 1,
+    alertasEmAnalise: 1,
+    alertasResolvidos: 1,
+    alertasCriticos: 0,
+    periodoInicio: '2025-01-01T00:00:00-03:00',
+    periodoFim: '2025-01-31T23:59:59-03:00',
+  };
+
   describe('getClientReportAPI', () => {
-    it('should call getMockClientReport with clientId and return the result', async () => {
-      const mockReport: ClientReport = {
-        client: {
-          id: 'C-1023',
-          name: 'Test Client',
-          country: 'Brasil',
-          riskLevel: 'Médio',
-          kycStatus: 'Aprovado',
-        },
-        transactions: [],
-        alerts: [],
-      };
+    const baseParams: GetClientReportParams = {
+      clientId: 'C-1023',
+      token: 'test-token',
+    };
 
-      mockGetMockClientReport.mockReturnValue(mockReport);
+    it('should return report on successful fetch without date filters', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
 
+      const result = await getClientReportAPI(baseParams);
+
+      expect(result).toEqual(mockReport);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/cliente/C-1023',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+
+    it('should return report on successful fetch with dataInicio filter', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
       const params: GetClientReportParams = {
-        clientId: 'C-1023',
-        token: 'test-token',
+        ...baseParams,
+        dataInicio: '2025-01-01T00:00:00-03:00',
       };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
 
       const result = await getClientReportAPI(params);
 
-      expect(mockGetMockClientReport).toHaveBeenCalledWith('C-1023', undefined, undefined);
       expect(result).toEqual(mockReport);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://api.example.com/api/relatorios/cliente/C-1023?dataInicio='),
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('dataInicio=');
+      expect(callUrl).toContain('2024-12-31');
+    });
+
+    it('should return report on successful fetch with dataFim filter', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      const params: GetClientReportParams = {
+        ...baseParams,
+        dataFim: '2025-01-31T23:59:59-03:00',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
+
+      const result = await getClientReportAPI(params);
+
+      expect(result).toEqual(mockReport);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://api.example.com/api/relatorios/cliente/C-1023?dataFim='),
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('dataFim=');
+      expect(callUrl).toMatch(/2025-02-\d{2}/);
+    });
+
+    it('should return report on successful fetch with both date filters', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      const params: GetClientReportParams = {
+        ...baseParams,
+        dataInicio: '2025-01-01T00:00:00-03:00',
+        dataFim: '2025-01-31T23:59:59-03:00',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
+
+      const result = await getClientReportAPI(params);
+
+      expect(result).toEqual(mockReport);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://api.example.com/api/relatorios/cliente/C-1023'),
+        expect.any(Object)
+      );
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('dataInicio=');
+      expect(callUrl).toContain('dataFim=');
+    });
+
+    it('should return null when API URL is not set', async () => {
+      delete process.env.NEXT_PUBLIC_UBS_WATCHDOG_API;
+
+      const result = await getClientReportAPI(baseParams);
+
+      expect(result).toBeNull();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null when response is not ok', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      const result = await getClientReportAPI(baseParams);
+
+      expect(result).toBeNull();
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    it('should return null on network error', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await getClientReportAPI(baseParams);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null on fetch error', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
+
+      const result = await getClientReportAPI(baseParams);
+
+      expect(result).toBeNull();
+    });
+
+    it('should call getMockClientReport with clientId and return the result', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
+
+      const result = await getClientReportAPI({
+        clientId: 'C-2041',
+        token: 'test-token',
+      });
+
+      expect(result).toEqual(mockReport);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/cliente/C-2041',
+        expect.any(Object)
+      );
     });
 
     it('should call getMockClientReport with clientId and date filters', async () => {
-      const mockReport: ClientReport = {
-        client: {
-          id: 'C-1023',
-          name: 'Test Client',
-          country: 'Brasil',
-          riskLevel: 'Médio',
-          kycStatus: 'Aprovado',
-        },
-        transactions: [],
-        alerts: [],
-      };
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
 
-      mockGetMockClientReport.mockReturnValue(mockReport);
-
-      const params: GetClientReportParams = {
+      const result = await getClientReportAPI({
         clientId: 'C-2041',
         token: 'test-token',
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
-      };
+        dataInicio: '2025-01-01T00:00:00-03:00',
+        dataFim: '2025-01-31T23:59:59-03:00',
+      });
 
-      const result = await getClientReportAPI(params);
-
-      expect(mockGetMockClientReport).toHaveBeenCalledWith('C-2041', '2026-01-01', '2026-01-31');
       expect(result).toEqual(mockReport);
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('C-2041');
+      expect(callUrl).toContain('dataInicio=');
+      expect(callUrl).toContain('dataFim=');
     });
 
     it('should call getMockClientReport with only startDate', async () => {
-      const mockReport: ClientReport = {
-        client: {
-          id: 'C-1023',
-          name: 'Test Client',
-          country: 'Brasil',
-          riskLevel: 'Médio',
-          kycStatus: 'Aprovado',
-        },
-        transactions: [],
-        alerts: [],
-      };
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
 
-      mockGetMockClientReport.mockReturnValue(mockReport);
-
-      const params: GetClientReportParams = {
-        clientId: 'C-1023',
+      const result = await getClientReportAPI({
+        clientId: 'C-2041',
         token: 'test-token',
-        startDate: '2026-01-01',
-      };
+        dataInicio: '2025-01-01T00:00:00-03:00',
+      });
 
-      const result = await getClientReportAPI(params);
-
-      expect(mockGetMockClientReport).toHaveBeenCalledWith('C-1023', '2026-01-01', undefined);
       expect(result).toEqual(mockReport);
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('dataInicio=');
+      expect(callUrl).not.toContain('dataFim=');
     });
 
     it('should call getMockClientReport with only endDate', async () => {
-      const mockReport: ClientReport = {
-        client: {
-          id: 'C-1023',
-          name: 'Test Client',
-          country: 'Brasil',
-          riskLevel: 'Médio',
-          kycStatus: 'Aprovado',
-        },
-        transactions: [],
-        alerts: [],
-      };
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+      
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReport,
+      });
 
-      mockGetMockClientReport.mockReturnValue(mockReport);
-
-      const params: GetClientReportParams = {
-        clientId: 'C-1023',
+      const result = await getClientReportAPI({
+        clientId: 'C-2041',
         token: 'test-token',
-        endDate: '2026-01-31',
-      };
+        dataFim: '2025-01-31T23:59:59-03:00',
+      });
 
-      const result = await getClientReportAPI(params);
-
-      expect(mockGetMockClientReport).toHaveBeenCalledWith('C-1023', undefined, '2026-01-31');
       expect(result).toEqual(mockReport);
-    });
-
-    it('should not use token parameter (token is for future API implementation)', async () => {
-      const mockReport: ClientReport = {
-        client: {
-          id: 'C-1023',
-          name: 'Test Client',
-          country: 'Brasil',
-          riskLevel: 'Médio',
-          kycStatus: 'Aprovado',
-        },
-        transactions: [],
-        alerts: [],
-      };
-
-      mockGetMockClientReport.mockReturnValue(mockReport);
-
-      const params: GetClientReportParams = {
-        clientId: 'C-1023',
-        token: 'different-token',
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
-      };
-
-      await getClientReportAPI(params);
-
-      // Token should not be passed to getMockClientReport
-      expect(mockGetMockClientReport).toHaveBeenCalledWith('C-1023', '2026-01-01', '2026-01-31');
-      expect(mockGetMockClientReport).not.toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        'different-token'
-      );
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('dataFim=');
+      expect(callUrl).not.toContain('dataInicio=');
     });
   });
 
   describe('getAllReportsAPI', () => {
-    it('should call getMockAllReports without dates and return the result', async () => {
-      const mockReports: ClientReport[] = [
+    const baseParams: GetAllReportsParams = {
+      token: 'test-token',
+    };
+
+    const mockReports: Report[] = [
+      mockReport,
+      {
+        ...mockReport,
+        clienteId: 'C-2041',
+        nomeCliente: 'João Henrique Souza',
+        pais: 'Estados Unidos',
+      },
+    ];
+
+    it('should return reports on successful fetch without filters', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      const result = await getAllReportsAPI(baseParams);
+
+      expect(result).toEqual(mockReports);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/filtrar',
         {
-          client: {
-            id: 'C-1023',
-            name: 'Test Client 1',
-            country: 'Brasil',
-            riskLevel: 'Médio',
-            kycStatus: 'Aprovado',
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
           },
-          transactions: [],
-          alerts: [],
-        },
-        {
-          client: {
-            id: 'C-2041',
-            name: 'Test Client 2',
-            country: 'Estados Unidos',
-            riskLevel: 'Alto',
-            kycStatus: 'Pendente',
-          },
-          transactions: [],
-          alerts: [],
-        },
-      ];
-
-      mockGetMockAllReports.mockReturnValue(mockReports);
-
-      const params: GetAllReportsParams = {
-        token: 'test-token',
-      };
-
-      const result = await getAllReportsAPI(params);
-
-      expect(mockGetMockAllReports).toHaveBeenCalledWith(undefined, undefined);
-      expect(result).toEqual(mockReports);
-    });
-
-    it('should call getMockAllReports with date filters and return the result', async () => {
-      const mockReports: ClientReport[] = [
-        {
-          client: {
-            id: 'C-1023',
-            name: 'Test Client 1',
-            country: 'Brasil',
-            riskLevel: 'Médio',
-            kycStatus: 'Aprovado',
-          },
-          transactions: [],
-          alerts: [],
-        },
-      ];
-
-      mockGetMockAllReports.mockReturnValue(mockReports);
-
-      const params: GetAllReportsParams = {
-        token: 'test-token',
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
-      };
-
-      const result = await getAllReportsAPI(params);
-
-      expect(mockGetMockAllReports).toHaveBeenCalledWith('2026-01-01', '2026-01-31');
-      expect(result).toEqual(mockReports);
-    });
-
-    it('should call getMockAllReports with only startDate', async () => {
-      const mockReports: ClientReport[] = [];
-
-      mockGetMockAllReports.mockReturnValue(mockReports);
-
-      const params: GetAllReportsParams = {
-        token: 'test-token',
-        startDate: '2026-01-01',
-      };
-
-      const result = await getAllReportsAPI(params);
-
-      expect(mockGetMockAllReports).toHaveBeenCalledWith('2026-01-01', undefined);
-      expect(result).toEqual(mockReports);
-    });
-
-    it('should call getMockAllReports with only endDate', async () => {
-      const mockReports: ClientReport[] = [];
-
-      mockGetMockAllReports.mockReturnValue(mockReports);
-
-      const params: GetAllReportsParams = {
-        token: 'test-token',
-        endDate: '2026-01-31',
-      };
-
-      const result = await getAllReportsAPI(params);
-
-      expect(mockGetMockAllReports).toHaveBeenCalledWith(undefined, '2026-01-31');
-      expect(result).toEqual(mockReports);
-    });
-
-    it('should not use token parameter (token is for future API implementation)', async () => {
-      const mockReports: ClientReport[] = [];
-
-      mockGetMockAllReports.mockReturnValue(mockReports);
-
-      const params: GetAllReportsParams = {
-        token: 'different-token',
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
-      };
-
-      await getAllReportsAPI(params);
-
-      // Token should not be passed to getMockAllReports
-      expect(mockGetMockAllReports).toHaveBeenCalledWith('2026-01-01', '2026-01-31');
-      expect(mockGetMockAllReports).not.toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        'different-token'
+        }
       );
     });
 
-    it('should handle empty array result', async () => {
-      mockGetMockAllReports.mockReturnValue([]);
+    it('should return reports on successful fetch with statusAlerta filter', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
 
       const params: GetAllReportsParams = {
-        token: 'test-token',
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
+        ...baseParams,
+        statusAlerta: 'Novo',
       };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
 
       const result = await getAllReportsAPI(params);
 
+      expect(result).toEqual(mockReports);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/filtrar?statusAlerta=Novo',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+
+    it('should return reports on successful fetch with statusKyc filter', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      const params: GetAllReportsParams = {
+        ...baseParams,
+        statusKyc: 'Aprovado',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      const result = await getAllReportsAPI(params);
+
+      expect(result).toEqual(mockReports);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/filtrar?statusKyc=Aprovado',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+
+    it('should return reports on successful fetch with pais filter', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      const params: GetAllReportsParams = {
+        ...baseParams,
+        pais: 'Brasil',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      const result = await getAllReportsAPI(params);
+
+      expect(result).toEqual(mockReports);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/relatorios/filtrar?pais=Brasil',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+
+    it('should return reports on successful fetch with all filters', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      const params: GetAllReportsParams = {
+        ...baseParams,
+        statusAlerta: 'Novo',
+        statusKyc: 'Aprovado',
+        pais: 'Brasil',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      const result = await getAllReportsAPI(params);
+
+      expect(result).toEqual(mockReports);
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('https://api.example.com/api/relatorios/filtrar'),
+        expect.any(Object)
+      );
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('statusAlerta=');
+      expect(callUrl).toContain('statusKyc=');
+      expect(callUrl).toContain('pais=');
+    });
+
+    it('should return reports on successful fetch with partial filters', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      const params: GetAllReportsParams = {
+        ...baseParams,
+        statusAlerta: 'Novo',
+        pais: 'Brasil',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      const result = await getAllReportsAPI(params);
+
+      expect(result).toEqual(mockReports);
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('statusAlerta=');
+      expect(callUrl).toContain('pais=');
+      expect(callUrl).not.toContain('statusKyc=');
+    });
+
+    it('should return null when API URL is not set', async () => {
+      delete process.env.NEXT_PUBLIC_UBS_WATCHDOG_API;
+
+      const result = await getAllReportsAPI(baseParams);
+
+      expect(result).toBeNull();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null when response is not ok', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      const result = await getAllReportsAPI(baseParams);
+
+      expect(result).toBeNull();
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    it('should return null on network error', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await getAllReportsAPI(baseParams);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null on fetch error', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
+
+      const result = await getAllReportsAPI(baseParams);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return empty array when API returns empty array', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      });
+
+      const result = await getAllReportsAPI(baseParams);
+
       expect(result).toEqual([]);
-      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle URL encoding correctly for filter values', async () => {
+      process.env.NEXT_PUBLIC_UBS_WATCHDOG_API = 'https://api.example.com';
+
+      const params: GetAllReportsParams = {
+        ...baseParams,
+        pais: 'Estados Unidos',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockReports,
+      });
+
+      await getAllReportsAPI(params);
+
+      const callUrl = (global.fetch as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('pais=');
+      // URL should be properly encoded (URLSearchParams uses + for spaces)
+      expect(callUrl).toContain('Estados+Unidos');
     });
   });
 });

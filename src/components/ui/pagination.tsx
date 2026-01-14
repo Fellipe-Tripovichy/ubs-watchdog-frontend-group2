@@ -8,6 +8,10 @@ import {
 import { cn } from "@/lib/utils"
 import { buttonVariants, type Button } from "@/components/ui/button"
 
+function handleScrollToTop(): void {
+  globalThis.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
@@ -53,6 +57,7 @@ function PaginationLink({
       aria-current={isActive ? "page" : undefined}
       data-slot="pagination-link"
       data-active={isActive}
+      onClick={handleScrollToTop}
       className={cn(
         buttonVariants({
           variant: isActive ? "secondary" : "link",
@@ -74,6 +79,7 @@ function PaginationPrevious({
       aria-label="Go to previous page"
       size="default"
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
+      onClick={handleScrollToTop}
       {...props}
     >
       <ChevronLeftIcon />
@@ -91,6 +97,7 @@ function PaginationNext({
       aria-label="Go to next page"
       size="default"
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
+      onClick={handleScrollToTop}
       {...props}
     >
       <span className="hidden sm:block">Next</span>

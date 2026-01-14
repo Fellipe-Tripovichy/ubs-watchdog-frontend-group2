@@ -3,14 +3,12 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/features/auth/authSlice';
 
-// Mock Next.js Link
 jest.mock('next/link', () => {
   return ({ children, href, ...props }: any) => {
     return <a href={href} {...props}>{children}</a>;
   };
 });
 
-// 4. Mock Firebase
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(),
   getApps: jest.fn(() => []),
@@ -36,7 +34,6 @@ jest.mock('firebase/storage', () => ({
   getStorage: jest.fn(() => ({})),
 }));
 
-// Mock authAPI
 jest.mock('@/features/auth/authAPI', () => ({
   signOutAPI: jest.fn(),
   createUserWithEmailAndPasswordAPI: jest.fn(),
@@ -45,7 +42,6 @@ jest.mock('@/features/auth/authAPI', () => ({
   resetPasswordAPI: jest.fn(),
 }));
 
-// Import component AFTER mocks are defined
 import { NavigationBar } from '@/components/ui/navigationBar';
 import type { RootState } from '@/lib/store';
 import { UserData } from '@/features/auth/authSlice';
@@ -55,7 +51,6 @@ import { useRouter } from 'next/navigation';
 describe('NavigationBar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock document.cookie
     Object.defineProperty(document, 'cookie', {
       writable: true,
       value: '',
@@ -116,7 +111,7 @@ describe('NavigationBar', () => {
     );
 
     expect(screen.getByText('Transações')).toBeInTheDocument();
-    expect(screen.getByText('Conformidade')).toBeInTheDocument();
+    expect(screen.getByText('Compliance')).toBeInTheDocument();
     expect(screen.getByText('Relatórios')).toBeInTheDocument();
   });
 
@@ -179,12 +174,10 @@ describe('NavigationBar', () => {
       </Provider>
     );
 
-    // Open the popover by clicking the trigger
     const popoverTrigger = container.querySelector('[data-slot="popover-trigger"]') as HTMLElement;
     expect(popoverTrigger).toBeInTheDocument();
     fireEvent.click(popoverTrigger);
 
-    // Wait for the popover content to appear
     await waitFor(() => {
       expect(screen.getByText('Faça seu logout')).toBeInTheDocument();
     });
@@ -203,86 +196,16 @@ describe('NavigationBar', () => {
     expect(menuButton).toBeInTheDocument();
     fireEvent.click(menuButton);
 
-    // Wait for drawer to open and check for drawer-specific content
     await waitFor(() => {
       const closeButton = screen.getByLabelText('Fechar menu');
       expect(closeButton).toBeInTheDocument();
     });
 
-    // Check that drawer content is visible (drawer should contain navigation items)
     const drawerLinks = screen.getAllByText('Transações');
     expect(drawerLinks.length).toBeGreaterThan(0);
   });
 
-  // it('should close drawer when close button is clicked', async () => {
-  //   const store = createStore(false, false, null);
-
-  //   const { container } = render(
-  //     <Provider store={store}>
-  //       <NavigationBar />
-  //     </Provider>
-  //   );
-
-  //   // 1. Open Drawer
-  //   const menuButton = container.querySelector('[data-slot="button"]') as HTMLButtonElement;
-  //   fireEvent.click(menuButton);
-
-  //   // 2. Wait for close button to appear
-  //   const closeButton = await screen.findByLabelText('Fechar menu');
-  //   expect(closeButton).toBeInTheDocument();
-
-  //   // 3. Click close
-  //   fireEvent.click(closeButton);
-
-  //   // 4. FIX: Check for visibility instead of removal
-  //   // Drawer libraries often keep the element in the DOM but hidden (opacity: 0 or hidden attribute)
-  //   await waitFor(() => {
-  //     const button = screen.queryByLabelText('Fechar menu');
-  //     // Pass if the button is either null (removed) OR not visible (hidden)
-  //     if (button) {
-  //       expect(button).not.toBeVisible();
-  //     }
-  //   });
-  // });
-
-  // it('should call handleLogout when logout button is clicked', async () => {
-  //   const testUser: UserData = {
-  //     uid: '123',
-  //     email: 'test@example.com',
-  //     displayName: 'Test User',
-  //     emailVerified: true,
-  //   };
-  //   const store = createStore(true, false, testUser);
-
-  //   // FIX: Cast to jest.Mock instead of using jest.mocked()
-  //   // This avoids runtime errors if the wrapper doesn't behave as expected
-  //   // Add <any> to the cast
-  //   (signOutAPI as jest.Mock<any>).mockResolvedValue(true);
-
-  //   const { container } = render(
-  //     <Provider store={store}>
-  //       <NavigationBar />
-  //     </Provider>
-  //   );
-
-  //   const popoverTrigger = container.querySelector('[data-slot="popover-trigger"]') as HTMLElement;
-  //   fireEvent.click(popoverTrigger);
-
-  //   await waitFor(() => {
-  //     expect(screen.getByText('Faça seu logout')).toBeInTheDocument();
-  //   });
-
-  //   const logoutButton = screen.getByText('Faça seu logout');
-  //   fireEvent.click(logoutButton);
-
-  //   await waitFor(() => {
-  //     expect(signOutAPI).toHaveBeenCalled();
-  //     const state = store.getState();
-  //     expect(state.auth.token).toBe('');
-  //     expect(state.auth.user).toBeNull();
-  //   });
-  // });
-
+  
   it('should navigate to login page when navigation items are clicked and not authenticated', () => {
     const store = createStore(false, false, null);
 
@@ -359,28 +282,19 @@ describe('NavigationBar', () => {
       </Provider>
     );
 
-    // Open drawer
     const menuButton = container.querySelector('[data-slot="button"]') as HTMLButtonElement;
     fireEvent.click(menuButton);
 
-    // Wait for drawer to open
     await waitFor(() => {
       expect(screen.getByLabelText('Fechar menu')).toBeInTheDocument();
     });
 
-    // Click close button (line 70: onClick={() => setIsDrawerOpen(false)})
     const closeButton = screen.getByLabelText('Fechar menu');
     
-    // Verify the button exists and is clickable
     expect(closeButton).toBeInTheDocument();
     
-    // Click the close button - this should trigger the onClick handler (line 70)
     fireEvent.click(closeButton);
     
-    // The onClick handler should have been called
-    // We verify the handler is working by checking that the drawer state would change
-    // Note: Drawer libraries may keep elements in DOM, but the onClick handler is executed
-    // The key is that line 70 (onClick handler) is covered by this click event
   });
 
   it('should call handleLogout and router.refresh when logout button is clicked (lines 39-40)', async () => {
@@ -392,10 +306,8 @@ describe('NavigationBar', () => {
     };
     const store = createStore(true, false, testUser);
 
-    // Mock signOutAPI to return true for successful logout
     (signOutAPI as jest.Mock).mockResolvedValue(true);
 
-    // Get the mock router
     const mockRefresh = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
@@ -410,20 +322,16 @@ describe('NavigationBar', () => {
       </Provider>
     );
 
-    // Open popover
     const popoverTrigger = container.querySelector('[data-slot="popover-trigger"]') as HTMLElement;
     fireEvent.click(popoverTrigger);
 
-    // Wait for logout button to appear
     await waitFor(() => {
       expect(screen.getByText('Faça seu logout')).toBeInTheDocument();
     });
 
-    // Click logout button (line 39: await dispatch(logout()))
     const logoutButton = screen.getByText('Faça seu logout');
     fireEvent.click(logoutButton);
 
-    // Wait for logout to complete and verify router.refresh is called (line 40)
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalled();
     });
@@ -438,10 +346,8 @@ describe('NavigationBar', () => {
     };
     const store = createStore(true, false, testUser);
 
-    // Mock signOutAPI to return true for successful logout
     (signOutAPI as jest.Mock).mockResolvedValue(true);
 
-    // Get the mock router
     const mockRefresh = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
@@ -456,16 +362,13 @@ describe('NavigationBar', () => {
       </Provider>
     );
 
-    // Open drawer
     const menuButton = container.querySelector('[data-slot="button"]') as HTMLButtonElement;
     fireEvent.click(menuButton);
 
-    // Wait for drawer to open and find logout button
     await waitFor(() => {
       expect(screen.getByText('Faça seu logout')).toBeInTheDocument();
     });
 
-    // Click logout button in drawer (line 104 in navigationBar.tsx)
     const logoutButtons = screen.getAllByText('Faça seu logout');
     const drawerLogoutButton = logoutButtons.find(button => 
       button.closest('[data-slot="drawer"]') || button.closest('[class*="drawer"]')
@@ -473,7 +376,6 @@ describe('NavigationBar', () => {
     
     fireEvent.click(drawerLogoutButton);
 
-    // Verify router.refresh is called (line 40)
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalled();
     });

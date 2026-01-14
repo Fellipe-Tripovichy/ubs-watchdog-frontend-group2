@@ -211,4 +211,144 @@ describe("CardTable", () => {
     // Ensure the function was called
     expect(customKeySpy).toHaveBeenCalledWith(data[0], 0);
   });
+
+  describe("Loading State", () => {
+    it("renders loading skeleton cards when loading is true", () => {
+      const data = generateData(5);
+      const { container } = render(
+        <CardTable data={data} renderCard={renderTestCard} loading={true} />
+      );
+
+      // Should not render actual cards
+      expect(screen.queryByTestId("test-card")).not.toBeInTheDocument();
+
+      // Should render skeleton cards (5 skeleton cards)
+      const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+      expect(skeletons.length).toBeGreaterThan(0);
+
+      // Should render Card components with skeleton structure
+      const cards = container.querySelectorAll('[data-slot="card"]');
+      expect(cards.length).toBe(5);
+    });
+
+    it("renders loading state even when data is empty", () => {
+      const { container } = render(
+        <CardTable data={[]} renderCard={renderTestCard} loading={true} />
+      );
+
+      // Should not show empty state
+      expect(screen.queryByText("Nenhum dado disponível")).not.toBeInTheDocument();
+
+      // Should render skeleton cards
+      const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+      expect(skeletons.length).toBeGreaterThan(0);
+
+      // Should render 5 skeleton cards
+      const cards = container.querySelectorAll('[data-slot="card"]');
+      expect(cards.length).toBe(5);
+    });
+
+    it("applies custom gridClassName to loading state", () => {
+      const { container } = render(
+        <CardTable 
+          data={generateData(5)} 
+          renderCard={renderTestCard} 
+          loading={true}
+          gridClassName="grid-cols-3 gap-6 custom-loading" 
+        />
+      );
+
+      // The loading state should use the custom gridClassName
+      const gridContainer = container.firstChild as HTMLElement;
+      expect(gridContainer).toHaveClass("grid-cols-3 gap-6 custom-loading");
+    });
+
+    it("does not render pagination when loading", () => {
+      const data = generateData(15);
+      render(
+        <CardTable 
+          data={data} 
+          renderCard={renderTestCard} 
+          loading={true}
+          itemsPerPage={10}
+        />
+      );
+
+      // No pagination should be rendered during loading
+      expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Empty State", () => {
+    it("renders default empty message when no custom message provided", () => {
+      render(<CardTable data={[]} renderCard={renderTestCard} />);
+
+      expect(screen.getByText("Nenhum dado disponível")).toBeInTheDocument();
+      expect(
+        screen.getByText("Não há dados para exibir no momento. Refaça sua busca ou entre em contato com o suporte.")
+      ).toBeInTheDocument();
+    });
+
+    it("renders custom empty message when provided", () => {
+      const customMessage = "Nenhum item encontrado";
+      render(
+        <CardTable 
+          data={[]} 
+          renderCard={renderTestCard} 
+          emptyMessage={customMessage}
+        />
+      );
+
+      expect(screen.getByText(customMessage)).toBeInTheDocument();
+      expect(screen.queryByText("Nenhum dado disponível")).not.toBeInTheDocument();
+    });
+
+    it("renders custom empty description when provided", () => {
+      const customDescription = "Por favor, tente novamente mais tarde.";
+      render(
+        <CardTable 
+          data={[]} 
+          renderCard={renderTestCard} 
+          emptyDescription={customDescription}
+        />
+      );
+
+      expect(screen.getByText(customDescription)).toBeInTheDocument();
+      expect(
+        screen.queryByText("Não há dados para exibir no momento. Refaça sua busca ou entre em contato com o suporte.")
+      ).not.toBeInTheDocument();
+    });
+
+    it("renders both custom empty message and description", () => {
+      const customMessage = "Sem resultados";
+      const customDescription = "Tente ajustar seus filtros de busca.";
+      
+      render(
+        <CardTable 
+          data={[]} 
+          renderCard={renderTestCard} 
+          emptyMessage={customMessage}
+          emptyDescription={customDescription}
+        />
+      );
+
+      expect(screen.getByText(customMessage)).toBeInTheDocument();
+      expect(screen.getByText(customDescription)).toBeInTheDocument();
+    });
+
+    it("does not render empty state when loading is true", () => {
+      render(
+        <CardTable 
+          data={[]} 
+          renderCard={renderTestCard} 
+          loading={true}
+          emptyMessage="Custom message"
+        />
+      );
+
+      // Empty state should not be shown when loading
+      expect(screen.queryByText("Custom message")).not.toBeInTheDocument();
+      expect(screen.queryByText("Nenhum dado disponível")).not.toBeInTheDocument();
+    });
+  });
 });

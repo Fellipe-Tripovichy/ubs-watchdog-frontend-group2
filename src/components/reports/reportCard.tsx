@@ -11,33 +11,33 @@ import {
 import { FlagImage } from "@/components/ui/flagImage";
 import { LinkButton } from "@/components/ui/linkButton";
 import { getBadgeStyleByRisk, getBadgeStyleByKyc } from "@/models/reports";
-import type { ClientReport } from "@/mocks/reportsMock";
+import type { Report } from "@/features/reports/reportsSlice";
 
 interface ReportCardProps {
-  report: ClientReport;
+  report: Report;
 }
 
 export function ReportCard({ report }: ReportCardProps) {
   return (
-    <Card className="gap-2">
-      <CardHeader>
+    <Card className="gap-2 h-full flex flex-col items-end justify-between w-full">
+      <CardHeader className="w-full">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">
-            {report.client.name}
+            {report.nomeCliente}
           </CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col">
+      <CardContent className="flex flex-col items-end justify-between w-full">
+        <div className="flex flex-col w-full">
           <div className="flex flex-col items-start justify-center gap-2 pb-4">
             <p className="text-caption text-muted-foreground">Nacionalidade</p>
             <div className="flex items-center gap-2">
               <FlagImage
-                country={report.client.country}
+                country={report.pais}
                 className="size-4"
               />
               <p className="text-body text-foreground">
-                {report.client.country}
+                {report.pais}
               </p>
             </div>
           </div>
@@ -48,10 +48,10 @@ export function ReportCard({ report }: ReportCardProps) {
               </span>
               <Badge
                 style={getBadgeStyleByRisk(
-                  report.client.riskLevel
+                  report.nivelRisco as "Baixo" | "Médio" | "Alto" | "Nenhum"
                 )}
               >
-                {report.client.riskLevel}
+                {report.nivelRisco}
               </Badge>
             </div>
             <div className="flex flex-col gap-2">
@@ -60,10 +60,10 @@ export function ReportCard({ report }: ReportCardProps) {
               </span>
               <Badge
                 style={getBadgeStyleByKyc(
-                  report.client.kycStatus
+                  report.statusKyc as "Aprovado" | "Pendente" | "Rejeitado" | "Nenhum"
                 )}
               >
-                {report.client.kycStatus}
+                {report.statusKyc}
               </Badge>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function ReportCard({ report }: ReportCardProps) {
                 Transações
               </span>
               <span className="text-sm font-medium">
-                {report.transactions.length}
+                {report.totalTransacoes}
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -82,15 +82,15 @@ export function ReportCard({ report }: ReportCardProps) {
               </span>
               <div className="flex items-center gap-2 cursor-help w-fit">
                 <span className="text-sm font-medium">
-                  {report.alerts.length}
+                  {report.totalAlertas}
                 </span>
               </div>
             </div>
           </div>
         </div>
-        <CardAction>
+        <CardAction className="mt-4">
           <LinkButton icon="chevron-right" iconLeft={false} asChild>
-            <Link href={`/reports/${report.client.id}`}>Ver mais</Link>
+            <Link href={`/reports/${report.clienteId}`}>Ver mais</Link>
           </LinkButton>
         </CardAction>
       </CardContent>

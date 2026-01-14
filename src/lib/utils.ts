@@ -62,8 +62,13 @@ export function todayISO() {
   return toISODateLocal(new Date());
 }
 
+export function tomorrowISO() {
+  return toISODateLocal(new Date(new Date().setDate(new Date().getDate() + 1)));
+}
+
 export function formatDate(isoDate: string) {
-  const dt = new Date(`${isoDate}T00:00:00`);
+  const dateString = isoDate.includes('T') ? isoDate : `${isoDate}T00:00:00`;
+  const dt = new Date(dateString);
   if (Number.isNaN(dt.getTime())) return "-";
   return new Intl.DateTimeFormat("pt-BR").format(dt);
 }

@@ -75,15 +75,12 @@ describe("DataTable", () => {
   it("handles empty data gracefully", () => {
     render(<DataTable columns={columns} data={[]} />);
     
-    // Headers should still exist
-    expect(screen.getByText("ID")).toBeInTheDocument();
+    // When data is empty, component shows Empty state instead of table
+    expect(screen.getByText("Nenhum dado disponível")).toBeInTheDocument();
+    expect(screen.getByText("Não há dados para exibir no momento. Refaça sua busca ou entre em contato com o suporte.")).toBeInTheDocument();
     
-    // Body should be empty (no data rows)
-    // We check that the number of rows in the body is 0
-    const rowGroups = screen.getAllByRole("rowgroup");
-    // Usually [thead, tbody]. We look into tbody.
-    const tbody = rowGroups[1]; 
-    expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
+    // Table headers should not be present when showing empty state
+    expect(screen.queryByText("ID")).not.toBeInTheDocument();
     
     // Pagination should not render
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
@@ -234,6 +231,215 @@ describe("DataTable", () => {
 
     // Should be back on page 1 (User 1 visible) and no pagination (since 5 < 10)
     expect(screen.getByText("User 1")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+  });
+
+  it("uses custom itemsPerPage", () => {
+    const data = generateData(15);
+    render(<DataTable columns={columns} data={data} itemsPerPage={5} />);
+
+    // Should show User 1 to User 5
+    expect(screen.getByText("User 1")).toBeInTheDocument();
+    expect(screen.getByText("User 5")).toBeInTheDocument();
+    expect(screen.queryByText("User 6")).not.toBeInTheDocument();
+
+    // Should have pagination (15 items / 5 per page = 3 pages)
+    expect(screen.getByRole("navigation")).toBeInTheDocument();
+  });
+
+  it("uses custom getRowKey function", () => {
+    const data = generateData(3);
+    const getRowKey = (item: TestData) => `row-${item.id}`;
+    render(<DataTable columns={columns} data={data} getRowKey={getRowKey} />);
+
+    // Table should render correctly with custom keys
+    expect(screen.getByText("User 1")).toBeInTheDocument();
+    expect(screen.getByText("User 2")).toBeInTheDocument();
+    expect(screen.getByText("User 3")).toBeInTheDocument();
+  });
+
+  it("applies column className and headerClassName", () => {
+    const columnsWithClasses: ColumnDef<TestData>[] = [
+      { key: "id", label: "ID", accessor: "id", className: "custom-cell", headerClassName: "custom-header" },
+      { key: "name", label: "Name", accessor: "name" },
+    ];
+    const data = generateData(2);
+    const { container } = render(<DataTable columns={columnsWithClasses} data={data} />);
+
+    const headers = container.querySelectorAll("thead th");
+    expect(headers[0]).toHaveClass("custom-header");
+
+    const cells = container.querySelectorAll("tbody td");
+    expect(cells[0]).toHaveClass("custom-cell");
+  });
+
+  it("handles null and undefined accessor values", () => {
+    interface TestDataWithNull {
+      id: number;
+      name: string | null;
+      role: string | undefined;
+    }
+
+    const columnsWithNull: ColumnDef<TestDataWithNull>[] = [
+      { key: "id", label: "ID", accessor: "id" },
+      { key: "name", label: "Name", accessor: "name" },
+      { key: "role", label: "Role", accessor: "role" },
+    ];
+
+    const data: TestDataWithNull[] = [
+      { id: 1, name: null, role: undefined },
+      { id: 2, name: "Test", role: "admin" },
+    ];
+
+    render(<DataTable columns={columnsWithNull} data={data} />);
+
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("Test")).toBeInTheDocument();
+    expect(screen.getByText("admin")).toBeInTheDocument();
+  });
+
+  it("calls render function with correct item and index", () => {
+    const renderSpy = jest.fn((item: TestData, index: number) => (
+      <span data-testid={`render-${index}`}>{item.name} (index: {index})</span>
+    ));
+
+    const columnsWithRender: ColumnDef<TestData>[] = [
+      { key: "id", label: "ID", accessor: "id" },
+      { key: "custom", label: "Custom", render: renderSpy },
+    ];
+
+    const data = generateData(3);
+    render(<DataTable columns={columnsWithRender} data={data} />);
+
+    expect(renderSpy).toHaveBeenCalledTimes(3);
+    expect(renderSpy).toHaveBeenNthCalledWith(1, data[0], 0);
+    expect(renderSpy).toHaveBeenNthCalledWith(2, data[1], 1);
+    expect(renderSpy).toHaveBeenNthCalledWith(3, data[2], 2);
+
+    expect(screen.getByTestId("render-0")).toHaveTextContent("User 1 (index: 0)");
+    expect(screen.getByTestId("render-1")).toHaveTextContent("User 2 (index: 1)");
+    expect(screen.getByTestId("render-2")).toHaveTextContent("User 3 (index: 2)");
+  });
+
+  it("renders loading state with skeletons", () => {
+    const { container } = render(<DataTable columns={columns} data={[]} loading={true} itemsPerPage={5} />);
+
+    expect(screen.getByText("ID")).toBeInTheDocument();
+    expect(screen.getByText("Name")).toBeInTheDocument();
+
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
+
+    expect(screen.queryByText("Nenhum dado disponível")).not.toBeInTheDocument();
+  });
+
+  it("shows correct number of skeleton rows based on itemsPerPage", () => {
+    const { container } = render(<DataTable columns={columns} data={[]} loading={true} itemsPerPage={5} />);
+
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBe(columns.length * 5);
+  });
+
+  it("does not show empty state when loading", () => {
+    render(<DataTable columns={columns} data={[]} loading={true} />);
+
+    expect(screen.queryByText("Nenhum dado disponível")).not.toBeInTheDocument();
+    expect(screen.getByText("ID")).toBeInTheDocument();
+  });
+
+  it("shows custom empty message and description", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={[]}
+        emptyMessage="Custom empty message"
+        emptyDescription="Custom empty description"
+      />
+    );
+
+    expect(screen.getByText("Custom empty message")).toBeInTheDocument();
+    expect(screen.getByText("Custom empty description")).toBeInTheDocument();
+  });
+
+  it("handles render function returning null", () => {
+    const columnsWithNullRender: ColumnDef<TestData>[] = [
+      { key: "id", label: "ID", accessor: "id" },
+      { key: "empty", label: "Empty", render: () => null },
+    ];
+
+    const data = generateData(2);
+    render(<DataTable columns={columnsWithNullRender} data={data} />);
+
+    expect(screen.getByText("ID")).toBeInTheDocument();
+    expect(screen.getByText("Empty")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+  });
+
+  it("handles column without accessor or render", () => {
+    const columnsWithoutAccessor: ColumnDef<TestData>[] = [
+      { key: "id", label: "ID", accessor: "id" },
+      { key: "empty", label: "Empty Column" },
+    ];
+
+    const data = generateData(2);
+    render(<DataTable columns={columnsWithoutAccessor} data={data} />);
+
+    expect(screen.getByText("ID")).toBeInTheDocument();
+    expect(screen.getByText("Empty Column")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+  });
+
+  it("handles React node as column label", () => {
+    const columnsWithNodeLabel: ColumnDef<TestData>[] = [
+      { key: "id", label: <span data-testid="custom-label">Custom Label</span>, accessor: "id" },
+      { key: "name", label: "Name", accessor: "name" },
+    ];
+
+    const data = generateData(2);
+    render(<DataTable columns={columnsWithNodeLabel} data={data} />);
+
+    expect(screen.getByTestId("custom-label")).toBeInTheDocument();
+    expect(screen.getByText("Custom Label")).toBeInTheDocument();
+  });
+
+  it("prevents navigation beyond first page", () => {
+    render(<DataTable columns={columns} data={generateData(15)} itemsPerPage={10} />);
+
+    const prevButton = screen.getByLabelText("Go to previous page");
+    expect(prevButton).toHaveClass("pointer-events-none");
+
+    fireEvent.click(prevButton);
+    expect(screen.getByText("User 1")).toBeInTheDocument();
+  });
+
+  it("prevents navigation beyond last page", () => {
+    render(<DataTable columns={columns} data={generateData(15)} itemsPerPage={10} />);
+
+    const nextButton = screen.getByLabelText("Go to next page");
+    fireEvent.click(nextButton);
+    expect(screen.getByText("User 11")).toBeInTheDocument();
+
+    fireEvent.click(nextButton);
+    expect(screen.getByText("User 11")).toBeInTheDocument();
+    expect(screen.queryByText("User 16")).not.toBeInTheDocument();
+  });
+
+  it("handles single page correctly", () => {
+    const data = generateData(5);
+    render(<DataTable columns={columns} data={data} itemsPerPage={10} />);
+
+    expect(screen.getByText("User 1")).toBeInTheDocument();
+    expect(screen.getByText("User 5")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+  });
+
+  it("handles exact page boundary", () => {
+    const data = generateData(10);
+    render(<DataTable columns={columns} data={data} itemsPerPage={10} />);
+
+    expect(screen.getByText("User 1")).toBeInTheDocument();
+    expect(screen.getByText("User 10")).toBeInTheDocument();
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 });

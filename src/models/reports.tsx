@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -8,70 +7,50 @@ import {
 } from "@/components/ui/tooltip";
 import { FlagImage } from "@/components/ui/flagImage";
 import { InfoIcon, ArrowUpRight } from "lucide-react";
-import type { AlertSeverity, AlertStatus, Alert, ClientReport, Transaction, TransactionType } from "@/mocks/reportsMock";
 import type { ColumnDef } from "@/components/table/dataTable";
 import { getColorByStatus, formatMoney, formatDateTime } from "@/lib/utils";
+import { getBadgeStyleBySeverity } from "@/models/complience";
+import type { Severidade } from "@/types/compliance";
+import type { Report } from "@/features/reports/reportsSlice";
+import type { Transaction } from "@/features/transactions/transactionsAPI";
 
-function getBadgeStyleByRisk(risk: "Baixo" | "Médio" | "Alto") {
-  const statusMap: Record<"Baixo" | "Médio" | "Alto", string> = {
+type TransactionType = "Depósito" | "Saque" | "Transferência";
+
+function getBadgeStyleByRisk(risk: "Baixo" | "Médio" | "Alto" | "Nenhum") {
+  const statusMap: Record<"Baixo" | "Médio" | "Alto" | "Nenhum", string> = {
     Baixo: "low",
     Médio: "medium",
     Alto: "high",
+    Nenhum: "neutral",
   };
-  const colors = getColorByStatus(statusMap[risk]);
+  const colors = getColorByStatus(statusMap[risk as keyof typeof statusMap]);
   return {
     backgroundColor: colors.light,
     color: colors.foreground,
   };
 }
 
-function getBadgeStyleByKyc(kyc: "Aprovado" | "Pendente" | "Reprovado") {
-  const statusMap: Record<"Aprovado" | "Pendente" | "Reprovado", string> = {
+function getBadgeStyleByKyc(kyc: "Aprovado" | "Pendente" | "Rejeitado" | "Nenhum") {
+  const statusMap: Record<"Aprovado" | "Pendente" | "Rejeitado" | "Nenhum", string> = {
     Aprovado: "approved",
     Pendente: "pending",
-    Reprovado: "rejected",
+    Rejeitado: "rejected",
+    Nenhum: "neutral",
   };
-  const colors = getColorByStatus(statusMap[kyc]);
+  const colors = getColorByStatus(statusMap[kyc as keyof typeof statusMap]);
   return {
     backgroundColor: colors.light,
     color: colors.foreground,
   };
 }
 
-function getBadgeStyleBySeverity(severity: AlertSeverity) {
-  const statusMap: Record<AlertSeverity, string> = {
-    Crítica: "critical",
-    Alta: "high",
-    Média: "medium",
-    Baixa: "low",
-  };
-  const colors = getColorByStatus(statusMap[severity]);
-  return {
-    backgroundColor: colors.light,
-    color: colors.foreground,
-  };
-}
-
-function getBadgeStyleByStatus(status: AlertStatus) {
-  const statusMap: Record<AlertStatus, string> = {
-    Resolvido: "resolved",
-    "Em Análise": "in-review",
-    Novo: "new",
-  };
-  const colors = getColorByStatus(statusMap[status]);
-  return {
-    backgroundColor: colors.light,
-    color: colors.foreground,
-  };
-}
-
-export function getReportsColumns(): ColumnDef<ClientReport>[] {
+export function getReportsColumns(): ColumnDef<Report>[] {
   return [
     {
       key: "client",
       label: "Cliente",
       render: (report) => (
-        <span className="font-medium">{report.client.name}</span>
+        <span className="font-medium">{report.nomeCliente}</span>
       ),
     },
     {
@@ -79,8 +58,8 @@ export function getReportsColumns(): ColumnDef<ClientReport>[] {
       label: "País",
       render: (report) => (
         <div className="flex items-center gap-2">
-          <FlagImage country={report.client.country} className="size-4" />
-          <span>{report.client.country}</span>
+          <FlagImage country={report.pais} className="size-4" />
+          <span>{report.pais}</span>
         </div>
       ),
     },
@@ -88,8 +67,8 @@ export function getReportsColumns(): ColumnDef<ClientReport>[] {
       key: "riskLevel",
       label: "Nível de Risco",
       render: (report) => (
-        <Badge style={getBadgeStyleByRisk(report.client.riskLevel)}>
-          {report.client.riskLevel}
+        <Badge style={getBadgeStyleByRisk(report.nivelRisco as "Baixo" | "Médio" | "Alto" | "Nenhum")}>
+          {report.nivelRisco}
         </Badge>
       ),
     },
@@ -97,58 +76,83 @@ export function getReportsColumns(): ColumnDef<ClientReport>[] {
       key: "kycStatus",
       label: "Status KYC",
       render: (report) => (
-        <Badge style={getBadgeStyleByKyc(report.client.kycStatus)}>
-          {report.client.kycStatus}
+        <Badge style={getBadgeStyleByKyc(report.statusKyc as "Aprovado" | "Pendente" | "Rejeitado" | "Nenhum")}>
+          {report.statusKyc}
         </Badge>
       ),
     },
     {
       key: "transactions",
       label: "Transações",
-      render: (report) => report.transactions.length,
+      render: (report) => report.totalTransacoes,
     },
     {
-      key: "alerts",
-      label: "Alertas",
+      key: "alertsStatus",
+      label: "Status Alertas",
       render: (report) => (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-2 cursor-help w-fit">
-              <span>{report.alerts.length}</span>
-              <InfoIcon className="size-3.5 text-muted-foreground" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="flex flex-col gap-1.5 p-4">
-              {(["Crítica", "Alta", "Média", "Baixa"] as AlertSeverity[]).map(
-                (severity) => {
-                  const count = report.alerts.filter(
-                    (alert) => alert.severity === severity
-                  ).length;
-                  if (count === 0) return null;
-                  return (
-                    <div key={severity} className="flex items-center gap-2">
-                      <span>{count}x</span>
-                      <Badge style={getBadgeStyleBySeverity(severity)}>
-                        {severity}
+        <div className="flex items-center gap-2">
+          <span>{report.totalAlertas}</span>
+          {report.totalAlertas > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild disabled={report.totalAlertas === 0}>
+                <div className="flex items-center gap-2 cursor-help w-fit">
+                  <InfoIcon className="size-3.5 text-muted-foreground" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-1.5 p-2">
+                  {report.alertasEmAnalise > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasEmAnalise}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Alta")}>
+                        Em Análise
                       </Badge>
                     </div>
-                  );
-                }
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
+                  )}
+                  {report.alertasNovos > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasNovos}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Media")}>
+                        Novo
+                      </Badge>
+                    </div>
+                  )}
+                  {report.alertasResolvidos > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>{report.alertasResolvidos}x</span>
+                      <Badge style={getBadgeStyleBySeverity("Baixa")}>
+                        Resolvido
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       ),
     },
     {
-      key: "actions",
-      label: "Ações",
+      key: "criticalAlerts",
+      label: "Alertas Críticos",
+      render: (report) => (
+        report .alertasCriticos > 0 ? (
+          <Badge style={getBadgeStyleBySeverity("Critica")}>
+            {report.alertasCriticos}
+          </Badge>
+        ) : (
+          <span>-</span>
+        )
+      ),
+    },
+    {
+      key: "details",
+      label: "Detalhes",
       headerClassName: "text-right",
       className: "text-right",
       render: (report) => (
         <div className="flex items-center justify-end cursor-pointer px-2">
-          <Link href={`/reports/${report.client.id}`}>
+          <Link href={`/reports/${report.clienteId}`}>
             <ArrowUpRight className="size-5 text-primary" />
           </Link>
         </div>
@@ -199,75 +203,6 @@ export function getTransactionSummaryColumns(
   ];
 }
 
-export function getAlertsColumns(): ColumnDef<Alert>[] {
-  return [
-    {
-      key: "id",
-      label: "ID",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => alert.id,
-    },
-    {
-      key: "transactionId",
-      label: "ID da Transação",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => alert.transactionId,
-    },
-    {
-      key: "rule",
-      label: "Regra",
-      className: "py-3 pr-4 min-w-[260px]",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => alert.rule,
-    },
-    {
-      key: "severity",
-      label: "Severidade",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => (
-        <span
-          className="text-xs px-2 py-1 rounded"
-          style={getBadgeStyleBySeverity(alert.severity)}
-        >
-          {alert.severity}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => (
-        <span
-          className="text-xs px-2 py-1 rounded"
-          style={getBadgeStyleByStatus(alert.status)}
-        >
-          {alert.status}
-        </span>
-      ),
-    },
-    {
-      key: "dataCriacao",
-      label: "Data de Criação",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) => formatDateTime(alert.dataCriacao),
-    },
-    {
-      key: "dataResolucao",
-      label: "Data de Resolução",
-      className: "py-3 pr-4 whitespace-nowrap",
-      headerClassName: "py-3 pr-4",
-      render: (alert) =>
-        alert.dataResolucao ? formatDateTime(alert.dataResolucao) : "-",
-    },
-  ];
-}
-
 export function getTransactionsColumns(): ColumnDef<Transaction>[] {
   return [
     {
@@ -282,31 +217,30 @@ export function getTransactionsColumns(): ColumnDef<Transaction>[] {
       label: "Tipo",
       className: "py-3 pr-4 whitespace-nowrap",
       headerClassName: "py-3 pr-4",
-      render: (transaction) => transaction.type,
+      render: (transaction) => transaction.tipo,
     },
     {
       key: "amount",
       label: "Valor",
       className: "py-3 pr-4 whitespace-nowrap",
       headerClassName: "py-3 pr-4",
-      render: (transaction) => formatMoney(transaction.amount, transaction.currency),
+      render: (transaction) => formatMoney(transaction.valor, transaction.moeda as "BRL" | "USD" | "EUR"),
     },
     {
       key: "counterparty",
       label: "Contraparte",
       className: "py-3 pr-4 min-w-[220px]",
       headerClassName: "py-3 pr-4",
-      render: (transaction) => transaction.counterparty,
+      render: (transaction) => transaction.contraparteId || "-",
     },
     {
       key: "dateTime",
       label: "DataHora",
       className: "py-3 pr-4 whitespace-nowrap",
       headerClassName: "py-3 pr-4",
-      render: (transaction) => formatDateTime(transaction.dateTime),
+      render: (transaction) => formatDateTime(transaction.dataHora),
     },
   ];
 }
 
-// Export helper functions for use in other components
-export { getBadgeStyleByRisk, getBadgeStyleByKyc, getBadgeStyleBySeverity, getBadgeStyleByStatus };
+export { getBadgeStyleByRisk, getBadgeStyleByKyc };
