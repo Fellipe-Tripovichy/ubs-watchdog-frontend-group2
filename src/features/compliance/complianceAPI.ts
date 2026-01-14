@@ -50,7 +50,7 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
         if (status) queryParams.append('status', status);
         
         const queryString = queryParams.toString();
-        const url = `${apiUrl}/api/alertas/filtrar${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/alertas/filtrar${queryString ? `?${queryString}` : ''}`;
         
         const response = await fetch(url, {
             method: 'GET',
@@ -80,7 +80,7 @@ export const getAlertByIdAPI = async (params: GetAlertByIdParams): Promise<Alert
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/alertas/${alertId}`, {
+        const response = await fetch(`/api/alertas/${alertId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ export const getClientAlertsAPI = async (params: GetClientAlertsParams): Promise
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/alertas/clientes/${clientId}`, {
+        const response = await fetch(`/api/alertas/clientes/${clientId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -136,7 +136,7 @@ export const getAlertsByStatusAPI = async (params: GetAlertsByStatusParams): Pro
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/alertas/status/${status}`, {
+        const response = await fetch(`/api/alertas/status/${status}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -164,7 +164,7 @@ export const startAnalysisAPI = async (params: StartAnalysisParams): Promise<Ale
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/alertas/${alertId}/iniciar-analise`, {
+        const response = await fetch(`/api/alertas/${alertId}/iniciar-analise`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -192,7 +192,7 @@ export const resolveAlertAPI = async (params: ResolveAlertParams): Promise<Alert
     }
     
     try {
-        const response = await fetch(`${apiUrl}/api/alertas/${alertId}/resolver`, {
+        const response = await fetch(`/api/alertas/${alertId}/resolver`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,

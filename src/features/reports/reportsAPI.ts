@@ -71,7 +71,7 @@ export const getClientReportAPI = async (params: GetClientReportParams): Promise
         }
         
         const queryString = queryParams.toString();
-        const url = `${apiUrl}/api/relatorios/cliente/${clientId}${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/relatorios/cliente/${clientId}${queryString ? `?${queryString}` : ''}`;
         
         const response = await fetch(url, {
             method: 'GET',
@@ -107,7 +107,7 @@ export const getAllReportsAPI = async (params: GetAllReportsParams): Promise<Rep
         if (pais) queryParams.append('pais', pais);
         
         const queryString = queryParams.toString();
-        const url = `${apiUrl}/api/relatorios/filtrar${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/relatorios/filtrar${queryString ? `?${queryString}` : ''}`;
         
         const response = await fetch(url, {
             method: 'GET',
