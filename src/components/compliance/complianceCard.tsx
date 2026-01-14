@@ -5,13 +5,16 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardAction,
 } from "@/components/ui/card";
-import { formatDateTime } from "@/lib/utils";
-import { getBadgeStyleBySeverity, getBadgeStyleByStatus } from "@/models/reports";
-import type { Alert } from "@/mocks/reportsMock";
+import { formatDate } from "@/lib/utils";
+import { getBadgeStyleBySeverity, getBadgeStyleByStatus, type DisplayAlert } from "@/models/complience";
+import { CopyButton } from "../ui/copyButton";
+import Link from "next/link";
+import { LinkButton } from "../ui/linkButton";
 
 interface ComplianceCardProps {
-  alert: Alert;
+  alert: DisplayAlert;
 }
 
 export function ComplianceCard({ alert }: ComplianceCardProps) {
@@ -29,17 +32,19 @@ export function ComplianceCard({ alert }: ComplianceCardProps) {
               <span className="text-xs text-muted-foreground">
                 ID
               </span>
-              <span className="text-sm font-medium">
-                {alert.id}
-              </span>
+              <div className="flex items-center gap-2 justify-between">
+                <p>{alert.id.slice(0, 4)}...{alert.id.slice(-4)}</p>
+                <CopyButton textToCopy={alert.id} variant="secondary" size="small" />
+              </div>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">
                 ID da Transação
               </span>
-              <span className="text-sm font-medium">
-                {alert.transactionId}
-              </span>
+              <div className="flex items-center gap-2 justify-between">
+                <p>{alert.transactionId.slice(0, 4)}...{alert.transactionId.slice(-4)}</p>
+                <CopyButton textToCopy={alert.transactionId} variant="secondary" size="small" />
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-6 pb-4">
@@ -67,7 +72,7 @@ export function ComplianceCard({ alert }: ComplianceCardProps) {
                   Data de Criação
                 </span>
                 <span className="text-sm font-medium">
-                  {formatDateTime(alert.dataCriacao)}
+                  {formatDate(alert.dataCriacao)}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
@@ -75,12 +80,17 @@ export function ComplianceCard({ alert }: ComplianceCardProps) {
                   Data de Resolução
                 </span>
                 <span className="text-sm font-medium">
-                  {alert.dataResolucao ? formatDateTime(alert.dataResolucao) : "-"}
+                  {alert.dataResolucao ? formatDate(alert.dataResolucao) : "-"}
                 </span>
               </div>
             </div>
           </div>
         </div>
+        <CardAction>
+          <LinkButton icon="chevron-right" iconLeft={false} asChild>
+            <Link href={`/compliance/${alert.id}`}>Ver mais</Link>
+          </LinkButton>
+        </CardAction> 
       </CardContent>
     </Card>
   );

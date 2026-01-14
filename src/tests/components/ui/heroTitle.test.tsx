@@ -29,10 +29,10 @@ describe('HeroTitle', () => {
     expect(subtitle).not.toBeInTheDocument();
   });
 
-  it('should render subtitle as paragraph element', () => {
+  it('should render subtitle as div element', () => {
     render(<HeroTitle subtitle="Subtitle text">Test Title</HeroTitle>);
     const subtitle = screen.getByText('Subtitle text');
-    expect(subtitle.tagName).toBe('P');
+    expect(subtitle.tagName).toBe('DIV');
   });
 
   it('should apply default classes to wrapper', () => {
@@ -97,8 +97,8 @@ describe('HeroTitle', () => {
   it('should render with empty subtitle string', () => {
     const { container } = render(<HeroTitle subtitle="">Test Title</HeroTitle>);
     // Empty string is falsy, so subtitle should not render
-    // Check that there's no subtitle paragraph element
-    const subtitle = container.querySelector('p');
+    // Check that there's no subtitle div element
+    const subtitle = container.querySelector('div.text-\\[20px\\]');
     expect(subtitle).not.toBeInTheDocument();
     // Title should still render
     expect(screen.getByText('Test Title')).toBeInTheDocument();

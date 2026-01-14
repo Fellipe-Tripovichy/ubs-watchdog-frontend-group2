@@ -4,34 +4,57 @@ import React from "react";
 import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectToken } from "@/features/auth/authSlice";
-import { fetchClientReport, selectCurrentReport, selectReportsLoading } from "@/features/reports/reportsSlice";
+import { fetchClientReport, selectCurrentReport, selectReportLoading } from "@/features/reports/reportsSlice";
+import {
+    fetchClientTransactions,
+    selectClientTransactions,
+    selectClientTransactionsLoading,
+    selectTransactionsError,
+} from "@/features/transactions/transactionsSlice";
+import {
+    fetchAlerts,
+    selectAlerts,
+    selectAllAlertsLoading,
+    selectComplianceError,
+} from "@/features/compliance/complianceSlice";
 
 import { LinkButton } from "@/components/ui/linkButton";
 import { DatePickerInput } from "@/components/ui/datePickerInput";
-import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getColorByStatus, formatMoney, isoToDate, dateToISO, startOfCurrentMonthISO, todayISO, formatDate, formatDateTime } from "@/lib/utils";
+import { getColorByStatus, formatMoney, isoToDate, dateToISO, startOfCurrentMonthISO, todayISO, formatDate } from "@/lib/utils";
 import { BarChart } from "@/components/charts/BarChart";
 import { PieChart } from "@/components/charts/PieChart";
-import { FilterIcon, InfoIcon, TriangleAlert } from "lucide-react"
+import { CheckCircle2Icon, InfoIcon, TriangleAlert } from "lucide-react"
 import Link from "next/link";
 
-import {
-    type TransactionType,
-    type AlertSeverity,
-} from "@/mocks/reportsMock";
 import { SectionTitle } from "@/components/ui/sectionTitle";
 import { FlagImage } from "@/components/ui/flagImage";
 import { HeroTitle } from "@/components/ui/heroTitle";
 import { IconButton } from "@/components/ui/iconButton";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { CopyButton } from "@/components/ui/copyButton";
 import { DataTable } from "@/components/table/dataTable";
 import { CardTable } from "@/components/table/cardTable";
-import { getTransactionSummaryColumns, getAlertsColumns, getTransactionsColumns } from "@/models/reports";
-import { ResumeTransactionCard } from "@/components/transactions/resumeTransactionCard";
+import { getTransactionsColumns } from "@/models/transactions";
+import { mapAPIAlertToMockAlert, getAlertsColumns } from "@/models/complience";
+import type { Severidade } from "@/types/compliance";
 import { TransactionCard } from "@/components/transactions/transactionCard";
 import { ComplianceCard } from "@/components/compliance/complianceCard";
+import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type AlertSeverity = "Baixa" | "Média" | "Alta" | "Crítica";
+type TransactionType = "Depósito" | "Saque" | "Transferência";
+
+function mapSeveridadeToAlertSeverity(severidade: Severidade): AlertSeverity {
+    const map: Record<Severidade, AlertSeverity> = {
+        Baixa: "Baixa",
+        Media: "Média",
+        Alta: "Alta",
+        Critica: "Crítica",
+    };
+    return map[severidade];
+}
 
 function getSeverityPieColor(severity: AlertSeverity): string {
     const statusMap: Record<AlertSeverity, string> = {
@@ -51,56 +74,22 @@ function createBadgeStyle<T extends string>(statusMap: Record<T, string>, value:
     };
 }
 
-function getBadgeStyleByRisk(risk: "Baixo" | "Médio" | "Alto") {
-    const statusMap: Record<"Baixo" | "Médio" | "Alto", string> = {
-        Baixo: "low",
-        Médio: "medium",
-        Alto: "high",
+function getBadgeStyleByRisk(risk: string) {
+    const statusMap: Record<string, string> = {
+        "Baixo": "low",
+        "Médio": "medium",
+        "Alto": "high",
     };
     return createBadgeStyle(statusMap, risk);
 }
 
-function getBadgeStyleByKyc(kyc: "Aprovado" | "Pendente" | "Reprovado") {
-    const statusMap: Record<"Aprovado" | "Pendente" | "Reprovado", string> = {
-        Aprovado: "approved",
-        Pendente: "pending",
-        Reprovado: "rejected",
+function getBadgeStyleByKyc(kyc: string) {
+    const statusMap: Record<string, string> = {
+        "Aprovado": "approved",
+        "Pendente": "pending",
+        "Rejeitado": "rejected",
     };
     return createBadgeStyle(statusMap, kyc);
-}
-
-function getBadgeStyleBySeverity(sev: AlertSeverity) {
-    const statusMap: Record<AlertSeverity, string> = {
-        Crítica: "critical",
-        Alta: "high",
-        Média: "medium",
-        Baixa: "low",
-    };
-    return createBadgeStyle(statusMap, sev);
-}
-
-function getBadgeStyleByStatus(status: "Novo" | "Em Análise" | "Resolvido") {
-    const statusMap: Record<"Novo" | "Em Análise" | "Resolvido", string> = {
-        Resolvido: "resolved",
-        "Em Análise": "in-review",
-        Novo: "new",
-    };
-    return createBadgeStyle(statusMap, status);
-}
-
-function PlainField({
-    label,
-    value,
-}: {
-    label: string;
-    value: React.ReactNode;
-}) {
-    return (
-        <div className="flex flex-col w-full">
-            <span className="text-sm text-muted-foreground">{label}</span>
-            <p className="text-sm text-foreground mt-1">{value}</p>
-        </div>
-    );
 }
 
 export default function ReportsPage() {
@@ -108,18 +97,23 @@ export default function ReportsPage() {
     const dispatch = useAppDispatch();
     const token = useAppSelector(selectToken);
     const report = useAppSelector(selectCurrentReport);
-    const isLoading = useAppSelector(selectReportsLoading);
+    const isLoadingReport = useAppSelector(selectReportLoading);
+    const clientTransactions = useAppSelector(selectClientTransactions);
+    const isLoadingTransactions = useAppSelector(selectClientTransactionsLoading);
+    const transactionsError = useAppSelector(selectTransactionsError);
+    const alerts = useAppSelector(selectAlerts);
+    const isLoadingAlerts = useAppSelector(selectAllAlertsLoading);
+    const alertsError = useAppSelector(selectComplianceError);
 
-    // Get client ID from URL params (e.g., "c-1023" from /reports/c-1023)
     const clientId = React.useMemo(() => {
         const id = params?.id as string;
-        // Normalize to uppercase format if needed (C-1023)
         return id ? id.toUpperCase() : "C-1023";
     }, [params?.id]);
 
     const [startDate, setStartDate] = React.useState<string>(
         startOfCurrentMonthISO()
     );
+
     const [endDate, setEndDate] = React.useState<string>(todayISO());
 
     const [showFilters, setShowFilters] = React.useState(false);
@@ -138,23 +132,47 @@ export default function ReportsPage() {
     const isValidRange =
         Boolean(startDate) && Boolean(endDate) && endDate >= startDate;
 
-    // Fetch report when clientId, dates, or token changes
     React.useEffect(() => {
         if (!clientId || !token || !isValidRange) return;
 
         dispatch(fetchClientReport({
             clientId,
             token,
-            startDate: startDate || undefined,
-            endDate: endDate || undefined,
+            dataInicio: startDate || undefined,
+            dataFim: endDate || undefined,
+        }));
+    }, [clientId, token, startDate, endDate, dispatch, isValidRange]);
+
+    React.useEffect(() => {
+        if (!clientId || !token || !isValidRange) return;
+
+        dispatch(fetchClientTransactions({
+            clientId,
+            token,
+            dataInicio: startDate || undefined,
+            dataFim: endDate || undefined,
+        }));
+    }, [clientId, token, startDate, endDate, dispatch, isValidRange]);
+
+    React.useEffect(() => {
+        if (!clientId || !token || !isValidRange) return;
+
+        dispatch(fetchAlerts({
+            token,
+            clienteId: clientId,
+            dataCriacaoInicio: startDate || undefined,
+            dataCriacaoFim: endDate || undefined,
+            dataResolucao: undefined,
+            severidade: undefined,
+            status: undefined,
         }));
     }, [clientId, token, startDate, endDate, dispatch, isValidRange]);
 
     const currencies = React.useMemo(() => {
-        if (!report) return [];
-        const set = new Set(report.transactions.map((t) => t.currency));
+        if (!clientTransactions || clientTransactions.length === 0) return [];
+        const set = new Set(clientTransactions.map((t) => t.moeda));
         return Array.from(set) as ("BRL" | "USD" | "EUR")[];
-    }, [report]);
+    }, [clientTransactions]);
 
     const [selectedCurrency, setSelectedCurrency] = React.useState<"BRL" | "USD" | "EUR">("BRL");
 
@@ -164,25 +182,25 @@ export default function ReportsPage() {
     }, [currencies, selectedCurrency]);
 
     const txInCurrency = React.useMemo(() => {
-        if (!report) return [];
-        return report.transactions.filter((t) => t.currency === selectedCurrency);
-    }, [report, selectedCurrency]);
+        if (!clientTransactions || clientTransactions.length === 0) return [];
+        return clientTransactions.filter((t) => t.moeda === selectedCurrency);
+    }, [clientTransactions, selectedCurrency]);
 
     const totalMovedSelectedCurrency = React.useMemo(() => {
-        return txInCurrency.reduce((acc, t) => acc + t.amount, 0);
+        return txInCurrency.reduce((acc, t) => acc + t.valor, 0);
     }, [txInCurrency]);
 
     const totalsByCurrency = React.useMemo(() => {
-        if (!report) return [];
+        if (!clientTransactions || clientTransactions.length === 0) return [];
         const map = new Map<string, number>();
-        for (const t of report.transactions) {
-            map.set(t.currency, (map.get(t.currency) ?? 0) + t.amount);
+        for (const t of clientTransactions) {
+            map.set(t.moeda, (map.get(t.moeda) ?? 0) + t.valor);
         }
         return Array.from(map.entries()).map(([currency, total]) => ({
             currency,
             total,
         }));
-    }, [report]);
+    }, [clientTransactions]);
 
     const totalsByType = React.useMemo(() => {
         const types: TransactionType[] = ["Depósito", "Saque", "Transferência"];
@@ -192,9 +210,21 @@ export default function ReportsPage() {
             Transferência: { count: 0, total: 0 },
         };
 
+        const typeMapping: Record<string, TransactionType> = {
+            Deposito: "Depósito",
+            Transferencia: "Transferência",
+            Saque: "Saque",
+            
+            Depósito: "Depósito",
+            Transferência: "Transferência",
+        };
+
         for (const tx of txInCurrency) {
-            map[tx.type].count += 1;
-            map[tx.type].total += tx.amount;
+            const normalizedType = typeMapping[tx.tipo];
+            if (normalizedType && map[normalizedType]) {
+                map[normalizedType].count += 1;
+                map[normalizedType].total += tx.valor;
+            }
         }
 
         return types.map((type) => ({
@@ -208,7 +238,6 @@ export default function ReportsPage() {
     const barData = totalsByType.map((x) => ({ name: x.type, total: x.total }));
 
     const alertsBySeverity = React.useMemo(() => {
-        if (!report) return [];
         const order: AlertSeverity[] = ["Crítica", "Alta", "Média", "Baixa"];
         const map: Record<AlertSeverity, number> = {
             Crítica: 0,
@@ -216,11 +245,17 @@ export default function ReportsPage() {
             Média: 0,
             Baixa: 0,
         };
-        for (const a of report.alerts) map[a.severity] += 1;
+        
+        alerts.forEach((apiAlert) => {
+            const mappedAlert = mapAPIAlertToMockAlert(apiAlert);
+            const alertSeverity = mapSeveridadeToAlertSeverity(mappedAlert.severity);
+            map[alertSeverity] = (map[alertSeverity] || 0) + 1;
+        });
+        
         return order
             .map((sev) => ({ name: sev, value: map[sev] }))
             .filter((x) => x.value > 0);
-    }, [report]);
+    }, [alerts]);
 
     return (
         <div className="flex flex-col items-start w-full">
@@ -235,340 +270,376 @@ export default function ReportsPage() {
                         </div>
                     </div>
                 </div>
-                {!isLoading && report && (
-                    <div className="max-w-[1554px] mx-auto px-4 md:px-8 mt-8">
-                        <div className="flex items-center justify-end">
-                            <div className="flex items-center justify-end block md:hidden">
-                                <IconButton icon={showFilters ? "x" : "filter"} variant="secondary" size="small" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-foreground bg-muted" : ""} />
-                            </div>
+                <div className="max-w-[1554px] mx-auto px-4 md:px-8 mt-8">
+                    <div className="flex items-center justify-end">
+                        <div className="flex items-center justify-end block md:hidden">
+                            <IconButton icon={showFilters ? "x" : "filter"} variant="secondary" size="small" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-foreground bg-muted" : ""} />
                         </div>
-                        {(() => {
-                            const filterContent = (
-                                <>
-                                    <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
-                                        <div className="flex-1 w-full md:max-w-[172px]">
-                                            <span className="text-sm text-muted-foreground">Moeda</span>
-                                            <Select
-                                                value={selectedCurrency}
-                                                onValueChange={(value) => setSelectedCurrency(value as "BRL" | "USD" | "EUR")}
-                                            >
-                                                <SelectTrigger className="mt-1 w-full">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {currencies.map((c) => (
-                                                        <SelectItem key={c} value={c}>
-                                                            {c}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="flex-1 w-full md:max-w-[172px]">
-                                            <DatePickerInput
-                                                label="Data inicial"
-                                                value={isoToDate(startDate)}
-                                                maxDate={isoToDate(todayISO())}
-                                                onChange={(d) => {
-                                                    const nextStart = d
-                                                        ? dateToISO(d)
-                                                        : startOfCurrentMonthISO();
-                                                    setStartDate(nextStart);
-
-                                                    const today = todayISO();
-                                                    if (!endDate || endDate < nextStart)
-                                                        setEndDate(today >= nextStart ? today : nextStart);
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 w-full md:max-w-[172px]">
-                                            <DatePickerInput
-                                                label="Data final"
-                                                value={isoToDate(endDate)}
-                                                minDate={isoToDate(startDate)}
-                                                maxDate={isoToDate(todayISO())}
-                                                onChange={(d) => {
-                                                    const nextEnd = d != null ? dateToISO(d) : todayISO();
-                                                    setEndDate(nextEnd);
-                                                }}
-                                            />
-                                        </div>
-
-                                        <LinkButton
-                                            variant="default"
-                                            size="small"
-                                            type="button"
-                                            onClick={() => {
-                                                setStartDate(startOfCurrentMonthISO());
-                                                setEndDate(todayISO());
-                                            }}
+                    </div>
+                    {(() => {
+                        const filterContent = (
+                            <>
+                                <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
+                                    <div className="flex-1 w-full md:max-w-[172px]">
+                                        <span className="text-sm text-muted-foreground">Moeda</span>
+                                        <Select
+                                            disabled={isLoadingReport}
+                                            value={selectedCurrency}
+                                            onValueChange={(value) => setSelectedCurrency(value as "BRL" | "USD" | "EUR")}
                                         >
-                                            Limpar filtros
-                                        </LinkButton>
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {currencies.map((c) => (
+                                                    <SelectItem key={c} value={c}>
+                                                        {c}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                </>
-                            );
+                                    <div className="flex-1 w-full md:max-w-[172px]">
+                                        <DatePickerInput
+                                            disabled={isLoadingReport}
+                                            label="Data inicial"
+                                            value={isoToDate(startDate)}
+                                            maxDate={isoToDate(todayISO())}
+                                            onChange={(d) => {
+                                                const nextStart = d
+                                                    ? dateToISO(d)
+                                                    : startOfCurrentMonthISO();
+                                                setStartDate(nextStart);
 
-                            return (
-                                <>
-                                    {showFilters && (
-                                        <div className="flex flex-col gap-2 mt-4 block md:hidden">
-                                            {filterContent}
-                                        </div>
-                                    )}
-                                    <div className="flex flex-col gap-2 mt-4 hidden md:block">
+                                                const today = todayISO();
+                                                if (!endDate || endDate < nextStart)
+                                                    setEndDate(today >= nextStart ? today : nextStart);
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="flex-1 w-full md:max-w-[172px]">
+                                        <DatePickerInput
+                                            disabled={isLoadingReport}
+                                            label="Data final"
+                                            value={isoToDate(endDate)}
+                                            minDate={isoToDate(startDate)}
+                                            maxDate={isoToDate(todayISO())}
+                                            onChange={(d) => {
+                                                const nextEnd = d != null ? dateToISO(d) : todayISO();
+                                                setEndDate(nextEnd);
+                                            }}
+                                        />
+                                    </div>
+
+                                    <LinkButton
+                                        disabled={isLoadingReport}
+                                        variant="default"
+                                        size="small"
+                                        type="button"
+                                        onClick={() => {
+                                            setStartDate(startOfCurrentMonthISO());
+                                            setEndDate(todayISO());
+                                        }}
+                                    >
+                                        Redefinir filtros
+                                    </LinkButton>
+                                </div>
+                            </>
+                        );
+
+                        return (
+                            <>
+                                {showFilters && (
+                                    <div className="flex flex-col gap-2 mt-4 block md:hidden">
                                         {filterContent}
                                     </div>
-                                </>
-                            );
-                        })()}
-                    </div>
-                )}
-                <div className="flex flex-col gap-8 max-w-[1554px] mx-auto px-4 md:px-8 py-8">
-                    {isLoading && (
-                        <div className="bg-secondary p-4 rounded-md flex items-center gap-2">
-                            <Spinner />
-                            <p className="text-sm text-muted-foreground">
-                                Atualizando relatório...
-                            </p>
-                        </div>
-                    )}
+                                )}
+                                <div className="flex flex-col gap-2 mt-4 hidden md:block">
+                                    {filterContent}
+                                </div>
+                            </>
+                        );
+                    })()}
+                </div>
+                <div className="flex flex-col gap-8 max-w-[1554px] mx-auto px-4 md:px-8 py-8 gap-20">
 
-                    {!isLoading && !report && (
-                        <div className="bg-secondary p-4 rounded-md">
-                            <p className="text-sm text-muted-foreground">
-                                Nenhum relatório encontrado para o cliente {clientId}.
-                            </p>
-                        </div>
-                    )}
-
-                    {report && !isLoading && (
-                        <>
-                            <div className="w-full">
-                                <SectionTitle>
-                                    Informações gerais
-                                </SectionTitle>
-                                {
-                                    report.alerts.length > 0 && (
-                                        <div className="flex items-center justify-start gap-6 bg-secondary p-6 rounded-md mb-6 bg-warning-light">
-                                            <TriangleAlert className="min-h-6 min-w-6 size-6 text-warning-foreground" />
-                                            <p className="text-body text-warning-foreground">
-                                                O usuário tem um total de <span className="font-bold">{report.alerts.length}</span> alertas ativos no período.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-secondary p-6 rounded-xs flex items-start gap-4 justify-between">
-                                        <div className="w-10 h-10 min-w-10 min-h-10 rounded-full bg-muted flex items-center justify-center">
-                                            <p className="font-bold text-muted-foreground">{report.client.name?.charAt(0)}</p>
-                                        </div>
-                                        <div className="flex flex-col gap-6 w-full">
-                                            <div className="flex flex-wrap items-start md:items-start w-full gap-6 lg:gap-12">
-                                                <div className="flex flex-col items-start justify-center gap-2">
-                                                    <p className="text-foreground text-body font-bold">{report.client.name}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-xs text-muted-foreground">Client ID: </p>
-                                                        <p className="text-foreground text-caption">{report.client.id}</p>
-                                                    </div>
+                        <div className="w-full">
+                            <SectionTitle>
+                                Informações gerais
+                            </SectionTitle>
+                            {
+                                isLoadingReport ? (
+                                    <Skeleton className="w-full h-18 mb-6" />
+                                ) : (
+                                    <>
+                                        {
+                                            (report?.totalAlertas ?? 0) > 0 ? (
+                                                <div className="flex items-center justify-start gap-6 bg-secondary p-6 rounded-md mb-6 bg-warning-light">
+                                                    <TriangleAlert className="min-h-6 min-w-6 size-6 text-warning-foreground" />
+                                                    <p className="text-body text-warning-foreground">
+                                                        O usuário tem um total de <span className="font-bold">{report?.totalAlertas ?? 0}</span> alertas ativos no período.
+                                                    </p>
                                                 </div>
-                                                <div className="flex flex-col items-start justify-center gap-2">
-                                                    <p className="text-caption text-muted-foreground">Nacionalidade</p>
+                                            )
+                                                : (
+                                                    <div className="flex items-center justify-start gap-6 bg-secondary p-6 rounded-md mb-6 bg-success-light">
+                                                        <CheckCircle2Icon className="min-h-6 min-w-6 size-6 text-success-foreground" />
+                                                        <p className="text-body text-success-foreground">
+                                                            O usuário não tem nenhum alerta ativo no período.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                    </>
+                                )
+                            }
+
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-secondary p-6 rounded-xs flex items-start gap-4 justify-between">
+                                    <div className="w-10 h-10 min-w-10 min-h-10 rounded-full bg-muted flex items-center justify-center">
+                                        {isLoadingReport ? (
+                                            <Spinner className="size-6 animate-spin text-muted-foreground" />
+                                        ) : (
+                                            <p className="font-bold text-muted-foreground">{report?.nomeCliente.charAt(0)}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col gap-6 w-full">
+                                        <div className="flex flex-col items-start justify-center gap-2">
+                                            {isLoadingReport ? (
+                                                <Skeleton className="w-full h-6" />
+                                            ) : (
+                                                <p className="text-foreground text-body font-bold">{report?.nomeCliente}</p>
+                                            )}
+                                            {isLoadingReport ? (
+                                                <Skeleton className="w-1/2 h-4" />
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xs text-muted-foreground">Client ID: </p>
+                                                    <p className="text-foreground text-caption">{report?.clienteId.slice(0, 4)}...{report?.clienteId.slice(-4)}</p>
+                                                    <CopyButton textToCopy={report?.clienteId ?? ""} variant="secondary" size="small" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap items-start md:items-start w-full gap-y-4 gap-x-8 gap-x-12 lg:gap-y-8">
+                                            <div className="flex flex-col items-start justify-center gap-2">
+                                                <p className="text-caption text-muted-foreground">Data de criação</p>
+                                                {isLoadingReport ? (
+                                                    <Skeleton className="w-18 h-4" />
+                                                ) : (
+                                                    <p className="text-body text-foreground">{formatDate(report?.dataCriacao ?? "")}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-start justify-center gap-2">
+                                                <p className="text-caption text-muted-foreground">Nacionalidade</p>
+                                                {isLoadingReport ? (
+                                                    <Skeleton className="w-18 h-4" />
+                                                ) : (
                                                     <div className="flex items-center gap-2">
                                                         <FlagImage
-                                                            country={report.client.country}
+                                                            country={report?.pais ?? ""}
                                                             className="size-4"
                                                         />
                                                         <p className="text-body text-foreground">
-                                                            {report.client.country}
+                                                            {report?.pais}
                                                         </p>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
-                                            <div className="flex flex-wrap items-start md:items-start w-full gap-6 md:gap-8 lg:gap-12">
-                                                <div className="flex flex-col items-start justify-center gap-2">
-                                                    <p className="text-caption text-muted-foreground">Nível de Risco</p>
+                                            <div className="flex flex-col items-start justify-center gap-2">
+                                                <p className="text-caption text-muted-foreground">Nível de Risco</p>
+                                                {isLoadingReport ? (
+                                                    <Skeleton className="w-18 h-4" />
+                                                ) : (
                                                     <Badge
-                                                        style={getBadgeStyleByRisk(report.client.riskLevel)}
+                                                        style={getBadgeStyleByRisk(report?.nivelRisco ?? "")}
                                                     >
-                                                        {report.client.riskLevel}
+                                                        {report?.nivelRisco}
                                                     </Badge>
-                                                </div>
-                                                <div className="flex flex-col items-start justify-center gap-2">
-                                                    <p className="text-caption text-muted-foreground">KYC Status</p>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-start justify-center gap-2">
+                                                <p className="text-caption text-muted-foreground">KYC Status</p>
+                                                {isLoadingReport ? (
+                                                    <Skeleton className="w-18 h-4" />
+                                                ) : (
                                                     <Badge
-                                                        style={getBadgeStyleByKyc(report.client.kycStatus)}
+                                                        style={getBadgeStyleByKyc(report?.statusKyc ?? "")}
                                                     >
-                                                        {report.client.kycStatus}
+                                                        {report?.statusKyc}
                                                     </Badge>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="bg-secondary p-6 rounded-xs">
-                                        <h3 className="text-h3 font-regular text-secondary-foreground">
-                                            Total movimentado no período
-                                        </h3>
-                                        <p className="text-display text-foreground font-semibold mt-1">
+                                </div>
+                                <div className="bg-secondary p-6 rounded-xs">
+                                    <div className="flex items-center justify-start gap-2 mb-4">
+                                        {isLoadingReport ? (
+                                            <Skeleton className="w-18 h-4" />
+                                        ) : (
+                                            report?.dataUltimaTransacao ? (
+                                                <p className="text-caption text-foreground">Última transação {formatDate(report?.dataUltimaTransacao)}</p>
+                                            ) : (
+                                                <p className="text-caption text-muted-foreground">Usuário nunca realizou uma transação.</p>
+                                            ))}
+                                    </div>
+                                    <h3 className="text-h3 font-regular text-secondary-foreground">
+                                        Total movimentado no período
+                                    </h3>
+                                    {isLoadingReport ? (
+                                        <Skeleton className="w-18 h-12 mt-3" />
+                                    ) : (
+                                        <p className="text-display text-foreground font-semibold">
                                             {formatMoney(totalMovedSelectedCurrency, selectedCurrency)}
                                         </p>
+                                    )}
 
-                                        {totalsByCurrency.length > 1 && (
-                                            <div className="mt-4">
-                                                <p className="text-caption text-muted-foreground mb-2">
-                                                    Totais por moeda:
-                                                </p>
-                                                <div className="flex flex-wrap gap-4">
-                                                    {totalsByCurrency.map((x) => (
-                                                        <Badge
-                                                            key={x.currency}
-                                                            variant="outline"
-                                                            className="text-xs"
-                                                        >
-                                                            {x.currency}: {formatMoney(x.total, x.currency)}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
+                                    {totalsByCurrency.length > 1 && (
+                                        <div className="mt-4">
+                                            <p className="text-caption text-muted-foreground mb-2">
+                                                Totais por moeda:
+                                            </p>
+                                            <div className="flex flex-wrap gap-4">
+                                                {totalsByCurrency.map((x) => (
+                                                    <Badge
+                                                        key={x.currency}
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {x.currency}: {formatMoney(x.total, x.currency)}
+                                                    </Badge>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        </div>
 
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="w-full py-10">
-                                    <SectionTitle>
-                                        Transações
-                                    </SectionTitle>
-                                    <div className="flex items-center justify-start gap-2 mb-4">
-                                        <InfoIcon className="size-4 text-muted-foreground text-body" />
-                                        <p className="text-body font-regular text-muted-foreground">
-                                            Movimentação por tipo ({selectedCurrency})
-                                        </p>
-                                    </div>
-                                    <div className="h-[320px] w-full mt-4 min-w-0">
-                                        <BarChart
-                                            data={barData}
-                                            gradientType="gray"
-                                            formatter={(value) =>
-                                                formatMoney(Number(value), selectedCurrency)
-                                            }
-                                            labelFormatter={(label) => `Tipo: ${label}`}
-                                        />
-                                    </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="w-full">
+                                <SectionTitle>
+                                    Transações
+                                </SectionTitle>
+                                <div className="flex items-center justify-start gap-2 mb-4">
+                                    <InfoIcon className="size-4 text-muted-foreground text-body" />
+                                    <p className="text-body font-regular text-muted-foreground">
+                                        Movimentação por tipo ({selectedCurrency})
+                                    </p>
                                 </div>
-                                <div className="w-full py-10">
-                                    <SectionTitle>
+                                <div className="h-[320px] w-full mt-4 min-w-0">
+                                    <BarChart
+                                        data={barData}
+                                        gradientType="gray"
+                                        formatter={(value) =>
+                                            formatMoney(Number(value), selectedCurrency)
+                                        }
+                                        labelFormatter={(label) => `Tipo: ${label}`}
+                                    />
+                                </div>
+                            </div>
+                            <div className="w-full">
+                                <SectionTitle>
+                                    Alertas por severidade
+                                </SectionTitle>
+                                <div className="flex items-center justify-start gap-2 mb-4">
+                                    <InfoIcon className="size-4 text-muted-foreground text-body" />
+                                    <p className="text-body font-regular text-muted-foreground">
                                         Alertas por severidade
-                                    </SectionTitle>
-                                    <div className="flex items-center justify-start gap-2 mb-4">
-                                        <InfoIcon className="size-4 text-muted-foreground text-body" />
-                                        <p className="text-body font-regular text-muted-foreground">
-                                            Alertas por severidade
-                                        </p>
-                                    </div>
-                                    <div className="h-[320px] w-full mt-4 min-w-0">
-                                        <PieChart
-                                            data={alertsBySeverity}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            outerRadius={110}
-                                            label
-                                            getCellColor={(entry) => getSeverityPieColor(entry.name as AlertSeverity)}
-                                            formatter={(value) => String(value)}
-                                        />
-                                    </div>
+                                    </p>
+                                </div>
+                                <div className="h-[320px] w-full mt-4 min-w-0">
+                                    <PieChart
+                                        data={alertsBySeverity}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        outerRadius={110}
+                                        label
+                                        getCellColor={(entry) => getSeverityPieColor(entry.name as AlertSeverity)}
+                                        formatter={(value) => String(value)}
+                                    />
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="py-10">
-                                <SectionTitle>Resumo de transações ({selectedCurrency})</SectionTitle>
+                        <div>
+                            <SectionTitle>
+                                Alertas ativos no período
+                            </SectionTitle>
+                            {alertsError ? (
+                                <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-md mb-4">
+                                    <TriangleAlert className="size-5" />
+                                    <p>{alertsError}</p>
+                                </div>
+                            ) : (
                                 <>
                                     <div className="w-full hidden md:block">
                                         <DataTable
-                                            columns={getTransactionSummaryColumns(selectedCurrency)}
-                                            data={totalsByType}
-                                            getRowKey={(row) => row.type}
+                                            columns={getAlertsColumns()}
+                                            data={alerts.map(mapAPIAlertToMockAlert)}
+                                            getRowKey={(alert) => alert.id}
+                                            loading={isLoadingAlerts}
+                                            emptyDescription="Nenhum alerta no período. Verifique os filtros aplicados ou entre em contato com o suporte."
+                                            emptyMessage="Nenhum alerta encontrado."
                                         />
                                     </div>
                                     <div className="block md:hidden">
                                         <CardTable
-                                            data={totalsByType}
+                                            data={alerts.map(mapAPIAlertToMockAlert)}
                                             itemsPerPage={10}
-                                            getRowKey={(row) => row.type}
-                                            renderCard={(row) => <ResumeTransactionCard transaction={row} currency={selectedCurrency} />}
+                                            getRowKey={(alert) => alert.id}
+                                            renderCard={(alert) => <ComplianceCard alert={alert} />}
+                                            loading={isLoadingAlerts}
+                                            emptyDescription="Nenhum alerta no período. Verifique os filtros aplicados ou entre em contato com o suporte."
+                                            emptyMessage="Nenhum alerta encontrado."
                                         />
                                     </div>
                                 </>
-                            </div>
+                            )}
+                        </div>
 
-                            <div className="py-10">
-                                <SectionTitle>
-                                    Alertas ativos no período
-                                </SectionTitle>
+                        <div>
+                            <SectionTitle>
+                                Detalhes de Transações
+                            </SectionTitle>
 
-                                {report.alerts.length === 0 ? (
-                                    <div className="py-6 text-muted-foreground">
-                                        Nenhum alerta no período.
+                            {transactionsError ? (
+                                <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-md">
+                                    <TriangleAlert className="size-5" />
+                                    <p>{transactionsError}</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="w-full hidden md:block">
+                                        <DataTable
+                                            columns={getTransactionsColumns()}
+                                            data={clientTransactions
+                                                .slice()
+                                                .sort((a, b) => (a.dataHora < b.dataHora ? 1 : -1))}
+                                            getRowKey={(transaction) => transaction.id}
+                                            emptyDescription="Nenhuma transação no período. Verifique os filtros aplicados ou entre em contato com o suporte."
+                                            emptyMessage="Nenhuma transação encontrada."
+                                            loading={isLoadingTransactions}
+                                        />
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="w-full hidden md:block">
-                                            <DataTable
-                                                columns={getAlertsColumns()}
-                                                data={report.alerts}
-                                                getRowKey={(alert) => alert.id}
-                                            />
-                                        </div>
-                                        <div className="block md:hidden">
-                                            <CardTable
-                                                data={report.alerts}
-                                                itemsPerPage={10}
-                                                getRowKey={(alert) => alert.id}
-                                                renderCard={(alert) => <ComplianceCard alert={alert} />}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="py-10">
-                                <SectionTitle>
-                                    Detalhes de Transações
-                                </SectionTitle>
-
-                                {report.transactions.length === 0 ? (
-                                    <div className="py-6 text-muted-foreground">
-                                        Nenhuma transação no período.
+                                    <div className="block md:hidden">
+                                        <CardTable
+                                            data={clientTransactions
+                                                .slice()
+                                                .sort((a, b) => (a.dataHora < b.dataHora ? 1 : -1))}
+                                            itemsPerPage={10}
+                                            getRowKey={(transaction) => transaction.id}
+                                            renderCard={(transaction) => <TransactionCard transaction={transaction} />}
+                                            emptyDescription="Nenhuma transação no período. Verifique os filtros aplicados ou entre em contato com o suporte."
+                                            emptyMessage="Nenhuma transação encontrada."
+                                            loading={isLoadingTransactions}
+                                        />
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="w-full hidden md:block">
-                                            <DataTable
-                                                columns={getTransactionsColumns()}
-                                                data={report.transactions
-                                                    .slice()
-                                                    .sort((a, b) => (a.dateTime < b.dateTime ? 1 : -1))}
-                                                getRowKey={(transaction) => transaction.id}
-                                            />
-                                        </div>
-                                        <div className="block md:hidden">
-                                            <CardTable
-                                                data={report.transactions
-                                                    .slice()
-                                                    .sort((a, b) => (a.dateTime < b.dateTime ? 1 : -1))}
-                                                itemsPerPage={10}
-                                                getRowKey={(transaction) => transaction.id}
-                                                renderCard={(transaction) => <TransactionCard transaction={transaction} />}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </>
-                    )}
+                                </>
+                            )}
+                        </div>
+
                 </div>
             </div>
         </div>

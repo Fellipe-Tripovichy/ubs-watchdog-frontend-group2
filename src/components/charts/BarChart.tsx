@@ -32,7 +32,7 @@ export interface BarChartProps {
   dataKey?: string;
   nameKey?: string;
   barName?: string;
-  fills?: string[]; // Array of colors, one for each bar
+  fills?: string[]; 
   gradientType?: GradientType;
   width?: number | `${number}%`;
   height?: number | `${number}%`;
@@ -42,7 +42,6 @@ export interface BarChartProps {
   yAxisLabel?: string;
 }
 
-// Helper function to convert hex to RGB
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
@@ -54,7 +53,6 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
     : { r: 0, g: 0, b: 0 };
 }
 
-// Helper function to convert RGB to hex
 function rgbToHex(r: number, g: number, b: number): string {
   return "#" + [r, g, b].map((x) => {
     const hex = Math.round(x).toString(16);
@@ -62,7 +60,6 @@ function rgbToHex(r: number, g: number, b: number): string {
   }).join("");
 }
 
-// Interpolate between two colors
 function interpolateColor(color1: string, color2: string, factor: number): string {
   const rgb1 = hexToRgb(color1);
   const rgb2 = hexToRgb(color2);
@@ -74,7 +71,6 @@ function interpolateColor(color1: string, color2: string, factor: number): strin
   return rgbToHex(r, g, b);
 }
 
-// Get gradient colors based on type
 function getGradientColors(gradientType: GradientType): { dark: string; light: string } {
   if (gradientType === "red") {
     return { dark: "#990000", light: "#EC4040" };
@@ -96,7 +92,6 @@ export function BarChart({
   xAxisLabel,
   yAxisLabel,
 }: BarChartProps) {
-  // Check if all values are zero
   const allValuesZero = data && data.length > 0 
     ? data.every((entry) => {
         const value = entry[dataKey];
@@ -104,7 +99,6 @@ export function BarChart({
       })
     : true;
 
-  // Show empty state if data is null, empty, or all values are zero
   if (!data || data.length === 0 || allValuesZero) {
     return (
       <div style={{ width: typeof width === "number" ? `${width}px` : width, height: typeof height === "number" ? `${height}px` : height }}>
@@ -123,29 +117,22 @@ export function BarChart({
     );
   }
 
-  // Determine which gradient type to use (default to "red" if neither fills nor gradientType provided)
   const effectiveGradientType: GradientType | null = fills
-    ? null // If fills array is provided, don't use gradient
-    : gradientType ?? "red"; // Use provided gradientType or default to "red"
+    ? null 
+    : gradientType ?? "red";
 
-  // Generate gradient colors for each bar
   const getBarFill = (index: number): string => {
-    // Priority 1: Use individual fills if provided
     if (fills && fills[index] !== undefined) {
       return fills[index];
     }
 
-    // Priority 2: Use gradient (either provided or default red)
     if (effectiveGradientType && data.length > 0) {
       const { dark, light } = getGradientColors(effectiveGradientType);
-      // First bar (index 0) gets the darkest color, last bar gets the lightest
-      // Factor goes from 0 (darkest) to 1 (lightest)
       const factor = data.length > 1 ? index / (data.length - 1) : 0;
       return interpolateColor(dark, light, factor);
     }
 
-    // This should never be reached, but TypeScript requires a return
-    return "#990000"; // Default red color
+    return "#990000"; 
   };
 
   return (

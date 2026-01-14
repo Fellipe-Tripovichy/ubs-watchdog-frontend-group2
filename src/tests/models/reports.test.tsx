@@ -3,13 +3,15 @@ import React from 'react';
 import {
   getBadgeStyleByRisk,
   getBadgeStyleByKyc,
-  getBadgeStyleBySeverity,
-  getBadgeStyleByStatus,
   getReportsColumns,
   getTransactionSummaryColumns,
-  getAlertsColumns,
   getTransactionsColumns,
 } from '@/models/reports';
+import {
+  getBadgeStyleBySeverity,
+  getBadgeStyleByStatus,
+  getAlertsColumns,
+} from '@/models/complience';
 import type {
   ClientReport,
   Transaction,
@@ -81,8 +83,8 @@ describe('reports models', () => {
       expect(style.color).toBeDefined();
     });
 
-    it('should return correct style for "Reprovado" kyc', () => {
-      const style = getBadgeStyleByKyc('Reprovado');
+    it('should return correct style for "Rejeitado" kyc', () => {
+      const style = getBadgeStyleByKyc('Rejeitado');
       expect(style).toHaveProperty('backgroundColor');
       expect(style).toHaveProperty('color');
       expect(style.backgroundColor).toBeDefined();
@@ -92,11 +94,11 @@ describe('reports models', () => {
     it('should return different styles for different kyc statuses', () => {
       const aprovadoStyle = getBadgeStyleByKyc('Aprovado');
       const pendenteStyle = getBadgeStyleByKyc('Pendente');
-      const reprovadoStyle = getBadgeStyleByKyc('Reprovado');
+      const RejeitadoStyle = getBadgeStyleByKyc('Rejeitado');
 
       expect(aprovadoStyle).not.toEqual(pendenteStyle);
-      expect(pendenteStyle).not.toEqual(reprovadoStyle);
-      expect(aprovadoStyle).not.toEqual(reprovadoStyle);
+      expect(pendenteStyle).not.toEqual(RejeitadoStyle);
+      expect(aprovadoStyle).not.toEqual(RejeitadoStyle);
     });
   });
 

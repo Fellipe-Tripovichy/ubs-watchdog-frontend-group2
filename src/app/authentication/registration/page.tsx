@@ -12,7 +12,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function RegistrationPage() {
-
     const dispatch = useAppDispatch();
 
     const [responseStatus, setResponseStatus] = React.useState("waitingSubmission");

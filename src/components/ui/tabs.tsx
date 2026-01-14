@@ -21,10 +21,9 @@ Tabs.displayName = "Tabs";
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-    showShadow?: boolean;
     onTriggerCountChange?: (count: number) => void;
   }
->(({ className, showShadow = false, onTriggerCountChange, children, ...props }, ref) => {
+>(({ className, onTriggerCountChange, children, ...props }, ref) => {
   const breakpoint = useBreakpoint();
   const [open, setOpen] = React.useState(false);
 
@@ -68,15 +67,13 @@ const TabsList = React.forwardRef<
     <TabsPrimitive.List
       ref={ref}
       className={cn(
-        "flex items-center w-full bg-background shadow-md",
-        showShadow && "shadow-[0_35px_24px_-15px_rgba(0,0,0,0.3)]",
+        "flex items-center w-full bg-background border-b border-muted",
         className
       )}
       {...props}
     >
       <div className={cn(
         `flex-1 rounded-lg text-foreground grid grid-cols-${sliceCount}`,
-        showShadow && "shadow-[0_35px_24px_-15px_rgba(0,0,0,0.3)]",
       )}>
         {visibleChildren.map((child, index) => (
           <React.Fragment key={index}>

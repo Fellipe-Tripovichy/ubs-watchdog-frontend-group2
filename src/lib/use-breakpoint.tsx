@@ -1,6 +1,6 @@
 import * as React from "react"
 
-// Tailwind CSS default breakpoints
+
 const BREAKPOINTS = {
   sm: 640,
   md: 768,

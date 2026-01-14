@@ -2,7 +2,6 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '@/lib/store';
 import { createUserWithEmailAndPasswordAPI, getUserDataAPI, resetPasswordAPI, signInWithEmailAndPasswordAPI, signOutAPI } from './authAPI';
 
-// Helper function to set cookie on client side
 const setCookie = (name: string, value: string, days: number = 7) => {
     if (typeof document !== 'undefined') {
         const expires = new Date();
@@ -11,14 +10,12 @@ const setCookie = (name: string, value: string, days: number = 7) => {
     }
 };
 
-// Helper function to delete cookie on client side
 const deleteCookie = (name: string) => {
     if (typeof document !== 'undefined') {
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
     }
 };
 
-// Serializable user data interface
 export interface UserData {
     uid: string;
     email: string | null;
@@ -26,21 +23,19 @@ export interface UserData {
     emailVerified: boolean;
 }
 
-// Auth state interface
 export interface AuthState {
     token: string;
     user: UserData | null;
     loading: boolean;
 }
 
-// Initial state
 const initialState: AuthState = {
     token: '',
     user: null,
     loading: true,
 };
 
-// Async thunks (must be defined before the slice that references them)
+
 export const createUser = createAsyncThunk(
     'auth/createUser',
     async ({ email, password, name }: { email: string; password: string; name: string }) => {
@@ -48,7 +43,7 @@ export const createUser = createAsyncThunk(
         if (!user) {
             throw new Error('Failed to create user');
         }
-        // Extract only serializable data
+        
         return {
             uid: user.uid,
             email: user.email,
@@ -67,8 +62,7 @@ export const login = createAsyncThunk(
         }
         const token = await user.getIdToken();
         setCookie('accessToken', token);
-        
-        // Extract only serializable data
+
         const userData: UserData = {
             uid: user.uid,
             email: user.email,
@@ -129,7 +123,6 @@ export const resetPassword = createAsyncThunk(
     }
 );
 
-// Create slice
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -149,7 +142,6 @@ export const authSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // createUser
         builder
             .addCase(createUser.pending, (state) => {
                 state.loading = true;
@@ -159,10 +151,7 @@ export const authSlice = createSlice({
             })
             .addCase(createUser.rejected, (state) => {
                 state.loading = false;
-            });
-
-        // login
-        builder
+            })
             .addCase(login.pending, (state) => {
                 state.loading = true;
             })
@@ -173,10 +162,7 @@ export const authSlice = createSlice({
             })
             .addCase(login.rejected, (state) => {
                 state.loading = false;
-            });
-
-        // logout
-        builder
+            })
             .addCase(logout.pending, (state) => {
                 state.loading = true;
             })
@@ -187,10 +173,7 @@ export const authSlice = createSlice({
             })
             .addCase(logout.rejected, (state) => {
                 state.loading = false;
-            });
-
-        // getUserData
-        builder
+            })
             .addCase(getUserData.pending, (state) => {
                 state.loading = true;
             })
@@ -210,20 +193,16 @@ export const authSlice = createSlice({
                 state.user = null;
                 state.token = '';
                 deleteCookie('accessToken');
-            });
-        // toggleLoading
-        builder
+            })
             .addCase(toggleLoading.pending, (state) => {
                 state.loading = false;
             })
             .addCase(toggleLoading.fulfilled, (state, action) => {
                 state.loading = action.payload;
             })
-            .addCase(toggleLoading.rejected, (state) => {   
+            .addCase(toggleLoading.rejected, (state) => {
                 state.loading = false;
-            });
-        // resetPassword
-        builder
+            })
             .addCase(resetPassword.pending, (state) => {
                 state.loading = true;
             })
@@ -236,10 +215,8 @@ export const authSlice = createSlice({
     },
 });
 
-// Export actions
 export const { setToken, clearToken, setUser, clearUser } = authSlice.actions;
 
-// Selectors
 export const selectIsAuthenticated = (state: RootState) => {
     return state.auth.token !== '';
 };
@@ -256,6 +233,5 @@ export const selectUser = (state: RootState) => {
     return state.auth.user;
 };
 
-// Export reducer
 export default authSlice.reducer;
 

@@ -8,28 +8,17 @@ interface IconViewerProps {
   className?: string;
 }
 
-/**
- * IconViewer component that dynamically renders lucide-react icons by name
- * @param iconName - Name of the icon (case-insensitive, e.g., 'Telescope', 'telescope', or 'Triangle-alert')
- * @param size - Size of the icon (default: 24)
- * @param color - Color of the icon (default: 'currentColor')
- * @param className - Additional CSS classes
- */
 const IconViewer: React.FC<IconViewerProps> = ({ 
   iconName, 
   size = 24, 
   color = 'currentColor',
   className 
 }) => {
-  // Try to find the icon component with case-insensitive matching
-  // First try exact match, then try various case variations
   const findIcon = (name: string): React.ComponentType<any> | null => {
-    // Try exact match first
     if ((Icons as any)[name]) {
       return (Icons as any)[name];
     }
 
-    // Convert hyphenated names to PascalCase (e.g., "Triangle-alert" -> "TriangleAlert")
     if (name.includes('-')) {
       const pascalCaseFromHyphen = name
         .split('-')
@@ -40,18 +29,16 @@ const IconViewer: React.FC<IconViewerProps> = ({
       }
     }
 
-    // Try PascalCase (first letter uppercase, rest lowercase)
     const pascalCase = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     if ((Icons as any)[pascalCase]) {
       return (Icons as any)[pascalCase];
     }
 
-    // Try to find by matching keys case-insensitively
     const iconKeys = Object.keys(Icons);
     const matchedKey = iconKeys.find(
       key => key.toLowerCase() === name.toLowerCase()
     );
-    
+
     if (matchedKey) {
       return (Icons as any)[matchedKey];
     }
@@ -61,14 +48,11 @@ const IconViewer: React.FC<IconViewerProps> = ({
 
   const IconComponent = findIcon(iconName);
 
-  // Convert size to number if it's a string
   const iconSize = typeof size === 'string' ? parseInt(size, 10) || 24 : size;
 
-  // If icon doesn't exist, show placeholder with low opacity
   if (!IconComponent) {
-    // Use HelpCircle as fallback icon
     const HelpCircle = (Icons as any).HelpCircle;
-    
+
     if (HelpCircle) {
       return (
         <HelpCircle 
@@ -81,7 +65,6 @@ const IconViewer: React.FC<IconViewerProps> = ({
       );
     }
 
-    // Fallback SVG if HelpCircle is not available
     return (
       <svg
         width={iconSize}
@@ -103,7 +86,6 @@ const IconViewer: React.FC<IconViewerProps> = ({
     );
   }
 
-  // Render the found icon
   return (
     <IconComponent 
       size={iconSize} 
@@ -114,4 +96,3 @@ const IconViewer: React.FC<IconViewerProps> = ({
 };
 
 export default IconViewer;
-

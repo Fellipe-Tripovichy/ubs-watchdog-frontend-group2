@@ -13,16 +13,31 @@ const pathLabelMap: Record<string, string> = {
   "compliance": "Conformidade",
   "authentication": "Autenticação",
   "reports": "Relatórios",
+  "new-transaction": "Nova transação",
 }
 
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
   const pathname = usePathname()
   const pathSegments = pathname.split("/").filter(Boolean)
+
+  const isIdSegment = (segment: string): boolean => {
+    if (/^\d+$/.test(segment)) return true
+
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)) return true
+
+    if (/^[a-z0-9]{20,}$/i.test(segment)) return true
+    return false
+  }
+
+  const nonIdSegments = pathSegments
+    .map((segment, index) => ({ segment, originalIndex: index }))
+    .filter(({ segment }) => !isIdSegment(segment))
   
   const breadcrumbItems = [
     { href: "/", label: pathLabelMap[""] || "Home" },
-    ...pathSegments.map((segment, index) => {
-      const href = "/" + pathSegments.slice(0, index + 1).join("/")
+    ...nonIdSegments.map(({ segment, originalIndex }, index) => {
+      const hrefSegments = nonIdSegments.slice(0, index + 1).map(item => item.segment)
+      const href = "/" + hrefSegments.join("/")
       return {
         href,
         label: pathLabelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),

@@ -37,6 +37,7 @@ function parsePtBr(value: string): Date | undefined {
 }
 
 type DatePickerInputProps = {
+  disabled: boolean
   label: string
   value: Date | undefined
   onChange: (date: Date | undefined) => void
@@ -46,6 +47,7 @@ type DatePickerInputProps = {
 }
 
 export function DatePickerInput({
+  disabled,
   label,
   value,
   onChange,
@@ -68,6 +70,7 @@ export function DatePickerInput({
 
       <div className="relative w-full">
         <Input
+          disabled={disabled}
           value={text}
           placeholder={placeholder}
           className="pr-10"
@@ -100,6 +103,7 @@ export function DatePickerInput({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              disabled={disabled}
               type="button"
               variant="secondary"
               size="small"

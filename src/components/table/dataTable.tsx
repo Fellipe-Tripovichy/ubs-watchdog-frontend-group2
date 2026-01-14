@@ -16,7 +16,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyMedia,
+} from "@/components/ui/empty";
+import { Table as TableIcon } from "lucide-react";
 import { renderPaginationItems } from "./paginationUtils";
+import { Skeleton } from "../ui/skeleton";
 
 export type ColumnDef<T> = {
   key: string;
@@ -32,6 +41,9 @@ export type DataTableProps<T> = {
   data: T[];
   itemsPerPage?: number;
   getRowKey?: (item: T, index: number) => string | number;
+  emptyMessage?: string;
+  emptyDescription?: string;
+  loading?: boolean;
 };
 
 export function DataTable<T>({
@@ -39,21 +51,70 @@ export function DataTable<T>({
   data,
   itemsPerPage = 10,
   getRowKey,
+  emptyMessage,
+  emptyDescription,
+  loading,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  // Reset to first page when data changes
   React.useEffect(() => {
     setCurrentPage(1);
   }, [data.length]);
 
-  // Pagination logic
+  if (data.length === 0 && !loading) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <TableIcon />
+          </EmptyMedia>
+          <EmptyTitle>{emptyMessage || "Nenhum dado disponível"}</EmptyTitle>
+          <EmptyDescription>
+            {emptyDescription || "Não há dados para exibir no momento. Refaça sua busca ou entre em contato com o suporte."}
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Table>
+      <TableHeader>
+        <TableRow>
+          {columns.map((column) => (
+            <TableHead
+              key={column.key}
+              className={column.headerClassName || column.className}
+            >
+              {column.label}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...Array(itemsPerPage)].map((item, index) => (
+          <TableRow key={index}>
+            {columns.map((column) => (
+              <TableCell
+                key={column.key}
+                className={column.className}
+              >
+                <Skeleton className="w-full h-4" />
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    );
+  }
+
   const totalPages = Math.ceil(data.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedData = data.slice(startIndex, endIndex);
 
-  // Default row key function
   const getKey = React.useCallback(
     (item: T, index: number) => {
       if (getRowKey) {
@@ -64,7 +125,6 @@ export function DataTable<T>({
     [getRowKey, startIndex]
   );
 
-  // Render cell content
   const renderCell = React.useCallback(
     (column: ColumnDef<T>, item: T, index: number) => {
       if (column.render) {

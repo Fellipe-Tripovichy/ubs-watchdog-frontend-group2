@@ -4,65 +4,54 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectToken } from "@/features/auth/authSlice";
 import {
-  fetchAllReports,
-  selectAllReports,
-  selectAllReportsLoading,
-  selectReportsError,
-} from "@/features/reports/reportsSlice";
+  fetchTransactions,
+  selectTransactions,
+  selectAllTransactionsLoading,
+} from "@/features/transactions/transactionsSlice";
 
-import { Spinner } from "@/components/ui/spinner";
-import { isoToDate, dateToISO, startOfCurrentMonthISO, todayISO } from "@/lib/utils";
-import { InfoIcon, TriangleAlert } from "lucide-react";
 import { HeroTitle } from "@/components/ui/heroTitle";
-import { LinkButton } from "@/components/ui/linkButton";
-import { DatePickerInput } from "@/components/ui/datePickerInput";
-import { IconButton } from "@/components/ui/iconButton";
 import { DataTable } from "@/components/table/dataTable";
 import { CardTable } from "@/components/table/cardTable";
-import { getReportsColumns } from "@/models/reports";
-import { ReportCard } from "@/components/reports/reportCard";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { getTransactionsColumns, CURRENCIES } from "@/models/transactions";
+import { TransactionCard } from "@/components/transactions/transactionCard";
+import { SectionTitle } from "@/components/ui/sectionTitle";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePickerInput } from "@/components/ui/datePickerInput";
+import { IconButton } from "@/components/ui/iconButton";
+import { LinkButton } from "@/components/ui/linkButton";
+import Link from "next/link";
 
-export default function ReportsPage() {
+export default function TransactionsPage() {
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectToken);
-  const allReports = useAppSelector(selectAllReports);
-  const isLoading = useAppSelector(selectAllReportsLoading);
-  const error = useAppSelector(selectReportsError);
+  const transactions = useAppSelector(selectTransactions);
+  const isLoading = useAppSelector(selectAllTransactionsLoading);
 
-  const [startDate, setStartDate] = React.useState<string>(
-    startOfCurrentMonthISO()
-  );
-  const [endDate, setEndDate] = React.useState<string>(todayISO());
+  const [tipo, setTipo] = React.useState<string>("all");
+  const [moeda, setMoeda] = React.useState<string>("all");
+  const [dataInicio, setDataInicio] = React.useState<Date | undefined>(undefined);
+  const [dataFim, setDataFim] = React.useState<Date | undefined>(undefined);
   const [showFilters, setShowFilters] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!startDate) return;
-    if (!endDate) setEndDate(todayISO());
-  }, [startDate, endDate]);
+  const columns = React.useMemo(() => getTransactionsColumns(), []);
 
   React.useEffect(() => {
-    if (!startDate || !endDate) return;
-    if (endDate < startDate)
-      setEndDate(todayISO() >= startDate ? todayISO() : startDate);
-  }, [startDate, endDate]);
+    if (!token) return;
 
-  const isValidRange =
-    Boolean(startDate) && Boolean(endDate) && endDate >= startDate;
-
-  const columns = React.useMemo(() => getReportsColumns(), []);
-
-  React.useEffect(() => {
-    if (!token || !isValidRange) return;
+    const dataInicioISO = dataInicio ? dataInicio.toISOString() : undefined;
+    const dataFimISO = dataFim ? dataFim.toISOString() : undefined;
 
     dispatch(
-      fetchAllReports({
+      fetchTransactions({
         token,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
+        tipo: tipo !== "all" ? (tipo as "Deposito" | "Saque" | "Transferencia") : undefined,
+        moeda: moeda !== "all" ? moeda : undefined,
+        dataInicio: dataInicioISO,
+        dataFim: dataFimISO,
       })
     );
-  }, [token, dispatch, startDate, endDate, isValidRange]);
+  }, [token, dispatch, tipo, moeda, dataInicio, dataFim]);
 
   return (
     <div className="flex flex-col items-start w-full">
@@ -80,51 +69,148 @@ export default function ReportsPage() {
                   as="h1"
                   subtitle="Administração de Depósitos, Transferências, Saques e Histórico Global."
                 >
-                  Transaçõess
+                  Transações
                 </HeroTitle>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-full">
-          <Tabs defaultValue="transferencia" className="w-full">
-            <TabsList className="w-full max-w-[1554px] mx-auto px-4 md:px-8">
-              <TabsTrigger value="transferencia">Transferencia</TabsTrigger>
-              <TabsTrigger value="deposito">Deposito</TabsTrigger>
-              <TabsTrigger value="saque">Saque</TabsTrigger>
-            </TabsList>
-            <TabsContent value="transferencia" className="mt-4">
-              <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8">
-                {/* Transferencia content */}
-                Teste
-              </div>
-            </TabsContent>
-            <TabsContent value="deposito" className="mt-4">
-              <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8">
-                {/* Deposito content */}
-                Teste
-              </div>
-            </TabsContent>
-            <TabsContent value="saque" className="mt-4">
-              <div className="w-full max-w-[1554px] mx-auto px-4 md:px-8">
-                {/* Saque content */}
-                Teste
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
 
-        <div className="flex flex-col gap-8 max-w-[1554px] mx-auto px-4 md:px-8 py-8">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-md">
-              <TriangleAlert className="size-5" />
-              <p>{error}</p>
+        <div className="flex flex-col  max-w-[1554px] mx-auto px-4 md:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <SectionTitle>Histórico de transações</SectionTitle>
+            <Link href="/transactions/new-transaction" className="w-auto">
+              <Button variant="default" className="w-auto" size="small">
+                Nova transação
+              </Button>
+            </Link>
+          </div>
+          <div className="w-full mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1"></div>
+              <div className="flex items-center justify-end block md:hidden">
+                <IconButton icon={showFilters ? "x" : "filter"} variant="secondary" size="small" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-foreground bg-muted" : ""} />
+              </div>
             </div>
-          )}
+            {(() => {
+              const filterContent = (
+                <>
+                  <div className="flex flex-col md:flex-row gap-4 items-center md:items-end">
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <label className="text-xs text-muted-foreground mb-1.5 block">
+                        Tipo
+                      </label>
+                      <Select value={tipo} onValueChange={setTipo}>
+                        <SelectTrigger size="default" className="w-full">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="Deposito">Depósito</SelectItem>
+                        <SelectItem value="Saque">Saque</SelectItem>
+                        <SelectItem value="Transferencia">Transferência</SelectItem>
+                      </SelectContent>
+                      </Select>
+                    </div>
 
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <label className="text-xs text-muted-foreground mb-1.5 block">
+                        Moeda
+                      </label>
+                      <Select value={moeda} onValueChange={setMoeda}>
+                        <SelectTrigger size="default" className="w-full">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          {CURRENCIES.map((currency) => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              {currency.code} - {currency.fullName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <DatePickerInput
+                        disabled={false}
+                        label="Data Início"
+                        value={dataInicio}
+                        onChange={setDataInicio}
+                        maxDate={dataFim}
+                        placeholder="dd/mm/aaaa"
+                      />
+                    </div>
+
+                    <div className="flex-1 w-full md:max-w-[172px]">
+                      <DatePickerInput
+                        disabled={false}
+                        label="Data Fim"
+                        value={dataFim}
+                        onChange={setDataFim}
+                        minDate={dataInicio}
+                        placeholder="dd/mm/aaaa"
+                      />
+                    </div>
+
+                    <LinkButton
+                      variant="default"
+                      size="small"
+                      type="button"
+                      onClick={() => {
+                        setTipo("all");
+                        setMoeda("all");
+                        setDataInicio(undefined);
+                        setDataFim(undefined);
+                      }}
+                    >
+                      Limpar filtros
+                    </LinkButton>
+                  </div>
+                </>
+              );
+
+              return (
+                <>
+                  {showFilters && (
+                    <div className="flex flex-col gap-2 mt-4 block md:hidden">
+                      {filterContent}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2 mt-4 hidden md:block">
+                    {filterContent}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+          <div className="w-full hidden md:block">
+            <DataTable
+              columns={columns}
+              data={transactions}
+              itemsPerPage={10}
+              getRowKey={(transaction) => transaction.id}
+              loading={isLoading}
+              emptyMessage="Nenhuma transação encontrada"
+              emptyDescription="Nenhuma transação encontrada para exibir. Altere os filtros para encontrar transações ou entre em contato com o suporte. "
+            />
+          </div>
+          <div className="block md:hidden">
+            <CardTable
+              data={transactions}
+              itemsPerPage={10}
+              getRowKey={(transaction) => transaction.id}
+              renderCard={(transaction) => <TransactionCard transaction={transaction} />}
+              loading={isLoading}
+              emptyMessage="Nenhuma transação encontrada"
+              emptyDescription="Nenhuma transação encontrada para exibir. Altere os filtros para encontrar transações ou entre em contato com o suporte. "
+            />
+          </div>
         </div>
       </div>
+
     </div>
   );
 }

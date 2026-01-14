@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { NavigationBar } from "@/components/ui/navigationBar";
 import { Footer } from "@/components/ui/footer";
 import { AuthInitializer } from "@/components/authentication/authInitializer";
+import { Toaster } from "@/components/ui/toaster";
 
 export function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
@@ -15,7 +16,7 @@ export function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode
       {!isAuthenticationPage && <NavigationBar />}
       {children}
       {!isAuthenticationPage && <Footer />}
+      <Toaster />
     </div>
   );
 }
-

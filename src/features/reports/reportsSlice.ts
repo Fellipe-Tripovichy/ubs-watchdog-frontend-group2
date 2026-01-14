@@ -1,27 +1,43 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '@/lib/store';
 import { getClientReportAPI, getAllReportsAPI, type GetClientReportParams, type GetAllReportsParams } from './reportsAPI';
-import type { ClientReport } from '@/mocks/reportsMock';
 
-// Reports state interface
 export interface ReportsState {
-    currentReport: ClientReport | null;
-    allReports: ClientReport[];
-    loading: boolean;
+    currentReport: Report | null;
+    allReports: Report[];
+    loadingReport: boolean;
     loadingAll: boolean;
     error: string | null;
 }
 
-// Initial state
+export interface Report {
+    clienteId: string;
+    nomeCliente: string;
+    pais: string;
+    nivelRisco: string;
+    statusKyc: string;
+    dataCriacao: string;
+    totalTransacoes: number;
+    totalMovimentado: number;
+    mediaTransacao: number;
+    dataUltimaTransacao: string | null;
+    totalAlertas: number;
+    alertasNovos: number;
+    alertasEmAnalise: number;
+    alertasResolvidos: number;
+    alertasCriticos: number;
+    periodoInicio: string | null;
+    periodoFim: string | null;
+}
+
 const initialState: ReportsState = {
     currentReport: null,
     allReports: [],
-    loading: false,
-    loadingAll: false,
+    loadingReport: true,
+    loadingAll: true,
     error: null,
 };
 
-// Async thunks
 export const fetchClientReport = createAsyncThunk(
     'reports/fetchClientReport',
     async (params: GetClientReportParams, { rejectWithValue }) => {
@@ -44,7 +60,6 @@ export const fetchAllReports = createAsyncThunk(
     }
 );
 
-// Create slice
 export const reportsSlice = createSlice({
     name: 'reports',
     initialState,
@@ -62,22 +77,20 @@ export const reportsSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // fetchClientReport
         builder
             .addCase(fetchClientReport.pending, (state) => {
-                state.loading = true;
+                state.loadingReport = true;
                 state.error = null;
             })
             .addCase(fetchClientReport.fulfilled, (state, action) => {
-                state.loading = false;
-                state.currentReport = action.payload;
+                state.loadingReport = false;
+                state.currentReport = action.payload as unknown as Report;
                 state.error = null;
             })
             .addCase(fetchClientReport.rejected, (state, action) => {
-                state.loading = false;
+                state.loadingReport = false;
                 state.error = action.payload as string || 'Failed to fetch report';
             })
-            // fetchAllReports
             .addCase(fetchAllReports.pending, (state) => {
                 state.loadingAll = true;
                 state.error = null;
@@ -94,10 +107,8 @@ export const reportsSlice = createSlice({
     },
 });
 
-// Export actions
 export const { clearReport, clearAllReports, setError } = reportsSlice.actions;
 
-// Selectors
 export const selectCurrentReport = (state: RootState) => {
     return state.reports.currentReport;
 };
@@ -106,8 +117,8 @@ export const selectAllReports = (state: RootState) => {
     return state.reports.allReports;
 };
 
-export const selectReportsLoading = (state: RootState) => {
-    return state.reports.loading;
+export const selectReportLoading = (state: RootState) => {
+    return state.reports.loadingReport;
 };
 
 export const selectAllReportsLoading = (state: RootState) => {
@@ -118,5 +129,4 @@ export const selectReportsError = (state: RootState) => {
     return state.reports.error;
 };
 
-// Export reducer
 export default reportsSlice.reducer;
