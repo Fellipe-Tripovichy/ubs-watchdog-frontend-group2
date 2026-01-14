@@ -126,12 +126,12 @@ namespace UBS.Watchdog.Application.Services
                 dataFim);
 
             var cliente = await _clienteRepository.GetByIdAsync(clienteId);
+
             if (cliente == null)
             {
                 _logger.LogWarning($"Cliente não encontrado: {clienteId}");
                 throw new Exception("Cliente não encontrado");
             }
-
             List<Transacao> transacoes;
 
             if (dataInicio.HasValue && dataFim.HasValue)
@@ -175,54 +175,25 @@ namespace UBS.Watchdog.Application.Services
             TipoTransacao? tipo)
         {
             _logger.LogInformation(
-                "Listando transações com filtros: ClienteId={ClienteId}, PeriodoInicio={DataInicio}, PeriodoFim={DataFim}, Moeda={Moeda}, Tipo={Tipo}",
+                "Listando transações com filtros: ClienteId={ClienteId}, DataInicio={DataInicio}, DataFim={DataFim}, Moeda={Moeda}, Tipo={Tipo}",
                 clienteId,
                 dataInicio,
                 dataFim,
                 moeda,
                 tipo);
 
-            var transacoes = await _transacaoRepository.GetAllAsync();
+            var transacoes = await _transacaoRepository.GetComFiltrosAsync(
+                clienteId,
+                dataInicio,
+                dataFim,
+                moeda,
+                tipo);
 
             _logger.LogInformation(
-                "Total de transações antes dos filtros: {Total}",
-                transacoes.Count);
-
-            if (clienteId.HasValue)
-            {
-                transacoes = transacoes
-                    .Where(t => t.ClienteId == clienteId.Value)
-                    .ToList();
-            }
-
-            if (!string.IsNullOrWhiteSpace(moeda))
-            {
-                transacoes = transacoes
-                    .Where(t => t.Moeda.Equals(moeda))
-                    .ToList();
-            }
-
-            if (tipo.HasValue)
-            {
-                transacoes = transacoes
-                    .Where(t => t.Tipo == tipo.Value)
-                    .ToList();
-            }
-
-            if (dataInicio.HasValue && dataFim.HasValue)
-            {
-                transacoes = transacoes
-                    .Where(t => t.DataHora >= dataInicio.Value &&
-                                t.DataHora <= dataFim.Value)
-                    .ToList();
-            }
-
-            _logger.LogInformation(
-                "Total de transações após aplicação dos filtros: {Total}",
+                "Total encontrado após filtros: {Total}",
                 transacoes.Count);
 
             return TransacaoMappings.toResponseList(transacoes);
         }
-
     }
 }
