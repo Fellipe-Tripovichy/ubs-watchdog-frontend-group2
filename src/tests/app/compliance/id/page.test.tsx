@@ -604,7 +604,7 @@ describe("ComplianceDetailPage", () => {
     (selectCurrentTransactionLoading as jest.Mock).mockReturnValue(false);
     (selectCurrentTransaction as jest.Mock).mockReturnValue({
       ...mockTransaction,
-      contraparteId: "C-2041",
+      contraparteId: null,
     });
 
     render(<ComplianceDetailPage />);

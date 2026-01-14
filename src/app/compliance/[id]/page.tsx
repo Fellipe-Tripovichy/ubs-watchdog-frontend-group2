@@ -329,13 +329,13 @@ export default function ComplianceDetailPage() {
                                         <p className="text-body text-foreground">{formatDateTime(transaction?.dataHora ?? "")}</p>
                                     )}
                                 </div>
-                                {transaction?.contraparte && (
+                                {transaction?.contraparteId && (
                                     <div className="flex flex-col gap-2 w-full sm:w-1/2 md:w-1/3">
                                         <p className="text-caption text-muted-foreground">Contraparte</p>
                                         {isLoadingTransaction ? (
                                             <Skeleton className="w-18 h-4" />
                                         ) : (
-                                            <p className="text-body text-foreground">{transaction?.contraparte ?? ""}</p>
+                                            <p className="text-body text-foreground">{transaction?.contraparteId ?? ""}</p>
                                         )}
                                     </div>
                                 )}
