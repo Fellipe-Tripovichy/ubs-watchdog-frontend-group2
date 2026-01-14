@@ -10,7 +10,7 @@ namespace UBS.Watchdog.Application.Mappings
 {
     public static class TransacaoMappings
     {
-        public static TransacaoResponse toResponse(Transacao transacao) 
+        public static TransacaoResponse toResponse(Transacao transacao)
         {
             return new TransacaoResponse
             {
@@ -19,11 +19,12 @@ namespace UBS.Watchdog.Application.Mappings
                 Tipo = transacao.Tipo,
                 Valor = transacao.Valor,
                 Moeda = transacao.Moeda,
-                Contraparte = transacao.Contraparte?.ToString(),
+                ContraparteId = transacao.ContraparteId,
                 DataHora = transacao.DataHora,
                 QuantidadeAlertas = transacao.Alertas?.Count ?? 0
             };
         }
+
         public static List<TransacaoResponse> toResponseList(List<Transacao> transacoes)
         {
             return transacoes.Select(toResponse).ToList();

@@ -14,7 +14,7 @@ namespace UBS.Watchdog.Application.DTOs.Transacao
         public TipoTransacao Tipo { get; set; }
         public decimal Valor { get; set; }
         public Moeda Moeda { get; set; }
-        public string? Contraparte { get; set; }
+        public Guid? ContraparteId { get; set; }
         public DateTime DataHora { get; set; }
         public int QuantidadeAlertas { get; set; }
     }

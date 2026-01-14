@@ -1,6 +1,5 @@
 using UBS.Watchdog.Domain.Entities;
 using UBS.Watchdog.Domain.Enums;
-using UBS.Watchdog.Domain.ValueObjects;
 
 public class Transacao
 {
@@ -9,11 +8,11 @@ public class Transacao
     public TipoTransacao Tipo { get; private set; }
     public decimal Valor { get; private set; }
     public Moeda Moeda { get; private set; }
-    public Contraparte? Contraparte { get; private set; }
+    public Guid? ContraparteId { get; private set; }
     public DateTime DataHora { get; private set; }
-
     #region Navegação
     public Cliente Cliente { get; private set; } = null!;
+    public Cliente? Contraparte { get; private set; }
     public ICollection<Alerta> Alertas { get; private set; }
     #endregion
 
@@ -27,20 +26,20 @@ public class Transacao
         TipoTransacao tipo,
         decimal valor,
         Moeda moeda,
-        Contraparte? contraparte = null)
+        Guid? contraparteId = null)
     {
         if (valor <= 0)
             throw new ArgumentException("Valor deve ser maior que zero", nameof(valor));
 
-        if (tipo == TipoTransacao.Transferencia && contraparte == null)
-            throw new ArgumentException("Transferência precisa de contraparte", nameof(contraparte));
+        if (tipo == TipoTransacao.Transferencia && contraparteId == null)
+            throw new ArgumentException("Transferência precisa de contraparte", nameof(contraparteId));
 
         Id = Guid.NewGuid();
         ClienteId = clienteId;
         Tipo = tipo;
         Valor = valor;
         Moeda = moeda;
-        Contraparte = contraparte;
+        ContraparteId = contraparteId;
         DataHora = DateTime.UtcNow;
 
         Alertas = new List<Alerta>();
@@ -54,15 +53,8 @@ public class Transacao
         TipoTransacao tipo,
         decimal valor,
         Moeda moeda,
-        string? contraparteNome = null,
-        string? contrapartePais = null)
+        Guid? contraparteId = null)
     {
-        Contraparte? contraparte = null;
-        if (!string.IsNullOrWhiteSpace(contraparteNome) && !string.IsNullOrWhiteSpace(contrapartePais))
-        {
-            contraparte = new Contraparte(contraparteNome, contrapartePais);
-        }
-
-        return new Transacao(clienteId, tipo, valor, moeda, contraparte);
+        return new Transacao(clienteId, tipo, valor, moeda, contraparteId);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using UBS.Watchdog.Domain.Entities;
+using UBS.Watchdog.Domain.Enums;
 
 namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
 {
@@ -11,7 +12,12 @@ namespace UBS.Watchdog.Infrastructure.Repositories.Transacoes
         Task<List<Transacao>> GetByPeriodoAsync(DateTime dataInicio, DateTime dataFim);
 
         Task<List<Transacao>> GetByClienteEPeriodoAsync(Guid clienteId, DateTime dataInicio, DateTime dataFim);
-
+        Task<List<Transacao>> GetComFiltrosAsync(
+            Guid? clienteId,
+            DateTime? dataInicio,
+            DateTime? dataFim,
+            string? moeda,
+            TipoTransacao? tipo);
         Task<Transacao> AddAsync(Transacao transacao);
 
         Task UpdateAsync(Transacao transacao);

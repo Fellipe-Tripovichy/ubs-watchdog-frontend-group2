@@ -9,12 +9,19 @@ public class ClienteRepository(AppDbContext context) : IClienteRepository
 {
     public async Task<List<Cliente>> GetAllAsync()
     {
-        return await context.Clientes.ToListAsync();
+        return await context.Clientes
+            .Include(c => c.Transacoes)
+            .Include(c => c.Alertas)
+            .OrderBy(c => c.Nome)
+            .ToListAsync();
     }
 
     public async Task<Cliente?> GetByIdAsync(Guid id)
     {
-        return await context.Clientes.FindAsync(id);
+        return await context.Clientes
+            .Include(c => c.Transacoes)
+            .Include(c => c.Alertas)
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Cliente> AddAsync(Cliente cliente)
@@ -42,13 +49,18 @@ public class ClienteRepository(AppDbContext context) : IClienteRepository
         pais = pais.ToLower();
 
         return await context.Clientes
-            .Where(c => c.Pais.ToLower() == pais)
+            .Where(c => c.Pais == pais)
+            .Include(c => c.Transacoes)
+            .Include(c => c.Alertas)
             .ToListAsync();
     }
 
     public async Task<List<Cliente>> GetByNivelRiscoAsync(NivelRisco nivelRisco)
     {
-        return await context.Clientes.Where(c => c.NivelRisco == nivelRisco)
+        return await context.Clientes
+            .Where(c => c.NivelRisco == nivelRisco)
+            .Include(c => c.Transacoes)
+            .Include(c => c.Alertas)
             .ToListAsync();
     }
 }

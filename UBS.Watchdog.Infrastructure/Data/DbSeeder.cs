@@ -26,35 +26,66 @@ public static class DbSeeder
                 Cliente.Criar("Fellipe Tripovichy Andrade", "Brasil", "Alto"),
                 Cliente.Criar("Ana Silva", "Argentina", "Baixo"),
                 Cliente.Criar("Carlos Mendes", "Brasil", "Alto"),
-                Cliente.Criar("Lucia Santos", "Portugal", "Medio")
+                Cliente.Criar("Lucia Santos", "Portugal", "Medio"),
+                
+                // Clientes adicionais que serão usados como contrapartes
+                Cliente.Criar("Banco da Coreia do Norte", "Coreia do Norte", "Alto"),
+                Cliente.Criar("Broker XPTO", "Estados Unidos", "Baixo"),
+                Cliente.Criar("Iran Bank Ltd", "Irã", "Alto"),
+                Cliente.Criar("European Bank", "Alemanha", "Baixo")
             };
 
             await context.Clientes.AddRangeAsync(clientes);
             await context.SaveChangesAsync();
 
-            Console.WriteLine($"{clientes.Count} clientes criados");
+            Console.WriteLine($"✅ {clientes.Count} clientes criados");
         }
 
         var allClients = await context.Clientes.ToListAsync();
 
         if (!await context.Transacoes.AnyAsync())
         {
+            // Encontrar contrapartes pelos nomes
+            var bancoCoreiaNorte = allClients.FirstOrDefault(c => c.Nome == "Banco da Coreia do Norte");
+            var brokerXPTO = allClients.FirstOrDefault(c => c.Nome == "Broker XPTO");
+            var iranBank = allClients.FirstOrDefault(c => c.Nome == "Iran Bank Ltd");
+            var europeanBank = allClients.FirstOrDefault(c => c.Nome == "European Bank");
+
             var transacoes = new List<Transacao>
             {
+                // Transferência para país de alto risco (Coreia do Norte)
                 Transacao.Criar(
                     allClients[0].Id,
                     TipoTransacao.Transferencia,
                     75000,
                     Moeda.BRL,
-                    "Banco da Coreia do Norte",
-                    "Coreia do Norte"
+                    bancoCoreiaNorte?.Id
                 ),
                 
                 // Soma: 105k excede o limite diário
-                Transacao.Criar(allClients[0].Id, TipoTransacao.Deposito, 30000, Moeda.BRL),
+                Transacao.Criar(
+                    allClients[0].Id,
+                    TipoTransacao.Deposito,
+                    30000,
+                    Moeda.BRL,
+                    null // Depósito não precisa de contraparte
+                ),
 
-                Transacao.Criar(allClients[1].Id, TipoTransacao.Deposito, 12000, Moeda.BRL),
-                Transacao.Criar(allClients[2].Id, TipoTransacao.Saque, 2000, Moeda.BRL),
+                Transacao.Criar(
+                    allClients[1].Id,
+                    TipoTransacao.Deposito,
+                    12000,
+                    Moeda.BRL,
+                    null
+                ),
+
+                Transacao.Criar(
+                    allClients[2].Id,
+                    TipoTransacao.Saque,
+                    2000,
+                    Moeda.BRL,
+                    null
+                ),
 
                 // Excede limite diário em USD
                 Transacao.Criar(
@@ -62,12 +93,17 @@ public static class DbSeeder
                     TipoTransacao.Transferencia,
                     500000,
                     Moeda.USD,
-                    "Broker XPTO",
-                    "Estados Unidos"
+                    brokerXPTO?.Id
                 ),
                 
                 // Excede limite diário
-                Transacao.Criar(allClients[4].Id, TipoTransacao.Deposito, 300000, Moeda.BRL),
+                Transacao.Criar(
+                    allClients[4].Id,
+                    TipoTransacao.Deposito,
+                    300000,
+                    Moeda.BRL,
+                    null
+                ),
                 
                 // País de risco - Transferência para Irã
                 Transacao.Criar(
@@ -75,19 +111,31 @@ public static class DbSeeder
                     TipoTransacao.Transferencia,
                     25000,
                     Moeda.BRL,
-                    "Iran Bank Ltd",
-                    "Irã"
+                    iranBank?.Id
                 ),
 
-                Transacao.Criar(allClients[5].Id, TipoTransacao.Deposito, 5000, Moeda.BRL),
-                Transacao.Criar(allClients[6].Id, TipoTransacao.Saque, 1500, Moeda.BRL),
+                Transacao.Criar(
+                    allClients[5].Id,
+                    TipoTransacao.Deposito,
+                    5000,
+                    Moeda.BRL,
+                    null
+                ),
+
+                Transacao.Criar(
+                    allClients[6].Id,
+                    TipoTransacao.Saque,
+                    1500,
+                    Moeda.BRL,
+                    null
+                ),
+
                 Transacao.Criar(
                     allClients[7].Id,
                     TipoTransacao.Transferencia,
                     8000,
                     Moeda.EUR,
-                    "European Bank",
-                    "Alemanha"
+                    europeanBank?.Id
                 )
             };
 
@@ -126,7 +174,6 @@ public static class DbSeeder
             };
 
             await context.Alertas.AddRangeAsync(alertas);
-
 
             alertas[0].IniciarAnalise();
 
