@@ -34,7 +34,7 @@ function formatMoneyValue(value: number | string): string {
     if (isNaN(numValue)) return "";
     const formatted = numValue.toFixed(2).replace(".", ",");
     const parts = formatted.split(",");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    parts[0] = parts[0].replace(/(\d)(?=(\d{3})+$)/g, "$1.");
     return parts.join(",");
 }
 
