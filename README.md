@@ -1,180 +1,191 @@
-# BACKEND:
-.NET Back-End project for UBS Trainee Program - Group 2
-## 🐳 Comandos Docker - UBS Watchdog
+# UBS Watchdog - Sistema de Compliance Financeiro
 
-### 🚀 Desenvolvimento Local (sem Docker)
+> Monitoramento de transações financeiras com detecção automática de atividades suspeitas
 
-#### Subir apenas o PostgreSQL
-```bash
-docker-compose up -d postgres
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel-black)](https://ubs-watchdog-frontend-group2.vercel.app/)
+[![API](https://img.shields.io/badge/API-Online-green)](http://72.62.141.100:6001/swagger/index.html)
+[![Backend](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![Frontend](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+
+## 📋 Sobre o Projeto
+
+Sistema completo de compliance financeiro desenvolvido para o **Processo Seletivo Trainee UBS 2026**. Permite registro de clientes e transações, aplicação automática de regras de compliance, geração de alertas e relatórios gerenciais.
+
+### Funcionalidades Principais
+
+- ✅ **Gestão de Clientes**: Cadastro, consulta e atualização de KYC/Nível de Risco
+- 💰 **Transações**: Registro de depósitos, saques e transferências
+- 🚨 **Compliance Automático**: 
+  - Limite diário de movimentação
+  - Detecção de países de alto risco
+  - Fracionamento (structuring)
+- 📊 **Alertas**: Workflow completo (Novo → Em Análise → Resolvido)
+- 📈 **Relatórios**: Análise completa por cliente com gráficos
+
+---
+
+## 🏗️ Arquitetura
+
+```
+Frontend (Next.js + TypeScript + Tailwind)
+         ↓ REST API
+Backend (.NET 8 - Clean Architecture)
+         ↓
+PostgreSQL + EF Core
 ```
 
-#### Rodar a API localmente
+### Stack Tecnológico
+
+| Camada | Tecnologia |
+|--------|-----------|
+| **Frontend** | Next.js 15, React, TypeScript, Tailwind CSS, Redux Toolkit |
+| **Backend** | .NET 8, Entity Framework Core, Serilog |
+| **Banco** | PostgreSQL |
+| **Auth** | Firebase Authentication |
+| **Deploy** | Vercel (Front) + VPS (Back) |
+
+---
+
+## 🚀 Como Executar
+
+### Backend (.NET)
+
 ```bash
 cd UBS.Watchdog.API
+dotnet restore
 dotnet run
 ```
 
-Acesse: `http://localhost:5000/swagger`
+**Acesso local**: `http://localhost:5017/swagger`
 
----
+### Frontend (Next.js)
 
-### 🐋 Rodar tudo no Docker
-
-#### 1. Build e Start (primeira vez)
 ```bash
-docker-compose up --build -d
-```
-
-#### 2. Apenas Start (builds já feitos)
-```bash
-docker-compose up -d
-```
-
-#### 3. Ver logs
-```bash
-# Logs de todos os containers
-docker-compose logs -f
-
-# Logs apenas da API
-docker-compose logs -f ubs-watchdog-api
-
-# Logs apenas do Postgres
-docker-compose logs -f postgres
-```
-
-#### 4. Parar containers
-```bash
-docker-compose down
-```
-
-#### 5. Parar e limpar volumes (⚠️ APAGA DADOS!)
-```bash
-docker-compose down -v
-```
-
----
-
-## 🔍 Verificar Status
-
-### Listar containers rodando
-```bash
-docker-compose ps
-```
-
-### Entrar no container da API
-```bash
-docker exec -it ubs-watchdog-api bash
-```
-
-### Entrar no PostgreSQL
-```bash
-docker exec -it ubs-watchdog-postgres psql -U docker_user -d ubs_watchdog
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Erro: "port is already allocated"
-```bash
-# Ver o que está usando a porta
-sudo lsof -i :6000
-sudo lsof -i :6001
-
-# Matar processo
-kill -9 <PID>
-```
-
-### Rebuild forçado (após mudanças no código)
-```bash
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Ver uso de disco do Docker
-```bash
-docker system df
-```
-
-### Limpar tudo (containers, imagens, volumes não usados)
-```bash
-docker system prune -a --volumes
-```
-
-### Verificar health do Postgres
-```bash
-docker inspect ubs-watchdog-postgres | grep -A 10 Health
-```
-
----
-
-## 📊 Endpoints após subir
-
-### Swagger (API)
-```
-http://localhost:6001
-```
-
-### Health Check
-```bash
-curl http://localhost:6001/api/health
-```
----
-
-## 🔄 Workflow Típico
-
-### Desenvolvimento
-```bash
-# 1. Subir só o banco
-docker-compose up -d postgres
-
-# 2. Rodar API localmente (hot reload)
-cd UBS.Watchdog.API
-dotnet watch run
-
-# 3. Fazer alterações no código
-
-# 4. Testar no Swagger: http://localhost:5000
-```
-
-### deploy completo
-```bash
-# 1. Build e subir tudo
-docker-compose up --build -d
-
-# 2. Ver logs
-docker-compose logs -f
-
-# 3. Testar: http://localhost:6001
-
-# 4. Parar
-docker-compose down
-```
-
----
-
-# FRONTEND:
-
-## Como rodar em DEV
-
-Para rodar o projeto em desenvolvimento (dev), instale as dependências e suba o servidor local. 
-
-No diretório do projeto, execute:
-```bash
+cd frontend
 npm install
-# (ou yarn, pnpm, bun) 
-```
-
-E depois inicie com:
-```bash
 npm run dev
-# (ou yarn, pnpm, bun)
 ```
 
-A aplicação ficará disponível em http://localhost:3000 e atualiza automaticamente conforme os arquivos são editados.
+**Acesso local**: `http://localhost:3000`
 
-## Deploy
+### Docker (Completo)
 
-No deploy, a aplicação está publicada na Vercel e pode ser acessada em https://ubs-watchdog-frontend-group2.vercel.app/. 
+```bash
+docker-compose up -d
+```
+
+- **API**: `http://localhost:6001`
+- **PostgreSQL**: `localhost:6000`
+
+---
+
+## 🌐 Links do Projeto
+
+| Recurso | Link |
+|---------|------|
+| **Frontend (Deploy)** | [https://ubs-watchdog-frontend-group2.vercel.app/](https://ubs-watchdog-frontend-group2.vercel.app/) |
+| **API (Swagger)** | [http://72.62.141.100:6001/swagger](http://72.62.141.100:6001/swagger/index.html) |
+| **Documentação Completa** | [PDF](./Documentacao_UBS_Watchdog_Grupo2.pdf) |
+| **Design System** | [Figma](https://www.figma.com/design/5HeLFhSgztquNfUIVNFKJL/UBS-Frontend-2?node-id=0-1) |
+| **Kanban** | [Notion](https://www.notion.so/839510d4e20541d887b8858685538c1f?v=de99277270c844e28a944dc75cf36f81) |
+
+---
+
+## 📦 Estrutura do Projeto
+
+### Backend (Clean Architecture)
+
+```
+UBS.Watchdog/
+├── Domain/              # Entidades, Value Objects, Enums
+├── Application/         # Services, DTOs, Regras de Compliance
+├── Infrastructure/      # EF Core, Repositories, Migrations
+└── API/                 # Controllers, Program.cs
+```
+
+### Frontend (Atomic Design)
+
+```
+src/
+├── components/          # Componentes reutilizáveis
+├── pages/              # Rotas Next.js
+├── store/              # Redux Toolkit
+└── services/           # API calls
+```
+
+---
+
+## 🔐 Autenticação
+
+**Usuário de Teste**:
+- Email: `teste@ubs.com`
+- Senha: `123456`
+
+*A autenticação é feita via Firebase Authentication no frontend.*
+
+---
+
+## 📊 Endpoints Principais
+
+### Clientes
+- `GET /api/clientes` - Listar todos
+- `POST /api/clientes` - Criar cliente
+- `PATCH /api/clientes/{id}/kyc` - Atualizar KYC
+
+### Transações
+- `POST /api/transacoes` - Registrar transação (+ validação automática)
+- `GET /api/transacoes/clientes/{id}` - Histórico do cliente
+
+### Alertas
+- `GET /api/alertas/filtrar` - Filtrar alertas
+- `PATCH /api/alertas/{id}/resolver` - Resolver alerta
+
+### Relatórios
+- `GET /api/relatorios/cliente/{id}` - Relatório completo
+
+*Documentação completa no [Swagger](http://72.62.141.100:6001/swagger/index.html)*
+
+---
+
+## 🧪 Testes
+
+### Backend
+```bash
+cd UBS.Watchdog.Tests
+dotnet test
+```
+
+- Testes de integração com XUnit
+- Cobertura: 80%+
+
+### Frontend
+```bash
+npm run test
+```
+
+- Testes unitários e de componentes
+- Validação obrigatória no PR
+
+---
+
+## 👥 Equipe - Grupo 2
+
+| Nome | Responsabilidade | GitHub |
+|------|------------------|--------|
+| **Gabriel Candido Santana** | Líder da Equipe | [@GabrielSantana003](https://github.com/GabrielSantana003) |
+| **João Rudge** | Líder de Back-end | [@RudgeJoao](https://github.com/RudgeJoao) |
+| **Fellipe Tripovichy** | Líder de Front-end | [@Fellipe-Tripovichy](https://github.com/Fellipe-Tripovichy) |
+| **Maria Eduarda Facio** | Líder de Documentação | [@dudaribeiro7](https://github.com/dudaribeiro7) |
+| **Thales Nogueira** | Líder de QA | [@Thalessns](https://github.com/Thalessns) |
+
+---
+
+## 📄 Licença
+
+Projeto desenvolvido para o **Processo Seletivo Trainee UBS 2026**.
+
+---
+
+<p align="center">
+  <sub>Desenvolvido com pelos melhores para os melhores</sub>
+</p>
