@@ -23,6 +23,9 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
     const { token, clienteId, severidade, status, dataCriacaoInicio, dataCriacaoFim, dataResolucao } = params;
     const apiUrl = process.env.NEXT_PUBLIC_UBS_WATCHDOG_API;
     
+    console.log("dataCriacaoFim", dataCriacaoFim);
+    console.log("dataResolucao", dataResolucao);
+    
     if (!apiUrl) {
         return null;
     }
@@ -36,6 +39,7 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
         if (dataCriacaoFim) {
             const fimDate = isoToDate(dataCriacaoFim);
             fimDate.setDate(fimDate.getDate() + 1);
+            console.log("dataCriacaoFim", dateToISO(fimDate));
             queryParams.append('dataCriacaoFim', dateToISO(fimDate));
         }
         
@@ -43,6 +47,7 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
         if (dataResolucao) {
             const resolucaoDate = isoToDate(dataResolucao);
             resolucaoDate.setDate(resolucaoDate.getDate() + 1);
+            console.log("dataResolucao", dateToISO(resolucaoDate));
             queryParams.append('dataResolucao', dateToISO(resolucaoDate));
         }
         
