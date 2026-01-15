@@ -1,0 +1,51 @@
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: ubs-watchdog-postgres
+    ports:
+      - '6000:5432'
+    environment:
+      - POSTGRES_USER=docker_user
+      - POSTGRES_PASSWORD=docker_password
+      - POSTGRES_DB=ubs_watchdog
+      - POSTGRES_MULTIPLE_DATABASES=ubs_watchdog,ubs_watchdog_test
+    shm_size: 128mb
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U docker_user -d ubs_watchdog"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ubs-network
+      
+  ubs-watchdog-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ubs-watchdog-api
+    ports:
+      - '6001:5433'
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5433
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=ubs_watchdog;Username=docker_user;Password=docker_password"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ubs-network
+
+networks:
+  ubs-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
