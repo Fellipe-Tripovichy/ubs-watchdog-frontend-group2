@@ -90,16 +90,12 @@ export const getTransactionsAPI = async (params: GetTransactionsParams): Promise
         
         // Adjust dataInicio: subtract one day
         if (dataInicio) {
-            const inicioDate = isoToDate(dataInicio);
-            inicioDate.setDate(inicioDate.getDate() - 1);
-            queryParams.append('dataInicio', dateToISO(inicioDate));
+            queryParams.append('dataInicio', dataInicio);
         }
         
         // Adjust dataFim: add one day
         if (dataFim) {
-            const fimDate = isoToDate(dataFim);
-            fimDate.setDate(fimDate.getDate() + 1);
-            queryParams.append('dataFim', dateToISO(fimDate));
+            queryParams.append('dataFim', dataFim);
         }
         
         const queryString = queryParams.toString();

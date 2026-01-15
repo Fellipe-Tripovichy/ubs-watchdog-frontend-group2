@@ -37,18 +37,12 @@ export const getAlertsAPI = async (params: GetAlertsParams): Promise<Alert[] | n
         
         // Adjust dataCriacaoFim: add one day
         if (dataCriacaoFim) {
-            const fimDate = isoToDate(dataCriacaoFim);
-            fimDate.setDate(fimDate.getDate() + 1);
-            console.log("dataCriacaoFim", dateToISO(fimDate));
-            queryParams.append('dataCriacaoFim', dateToISO(fimDate));
+            queryParams.append('dataCriacaoFim', dataCriacaoFim);
         }
         
         // Adjust dataResolucao: add one day
         if (dataResolucao) {
-            const resolucaoDate = isoToDate(dataResolucao);
-            resolucaoDate.setDate(resolucaoDate.getDate() + 1);
-            console.log("dataResolucao", dateToISO(resolucaoDate));
-            queryParams.append('dataResolucao', dateToISO(resolucaoDate));
+            queryParams.append('dataResolucao', dataResolucao);
         }
         
         if (severidade) queryParams.append('severidade', severidade);
